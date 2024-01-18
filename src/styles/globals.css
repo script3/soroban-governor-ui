@@ -1,9 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --primary-color: #384aff;
+  --bg-color: #1c1b20;
+  --text-color: #8b949e;
+  --link-color: #ffffff;
+  --heading-color: #ffffff;
+  --border-color: #2d2d2d;
+  --header-bg: #1c1b20;
+  --block-bg: transparent;
+  --shadow-color: rgba(255, 255, 255, .036);
 }
+
+textarea,
+select,
+input,
+button,
+input:focus {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  background: transparent
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='time']::-webkit-calendar-picker-indicator {
+  background: none;
+  display: none;
+}
+
+/* // Pointer cursor for file input buttons */
+input[type=file],
+/* FF, IE7+, chrome (except button) */
+input[type=file]::-webkit-file-upload-button {
+  /* chromes and blink button */
+  cursor: pointer;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -15,12 +69,5 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: #1c1b20
 }
-
-

@@ -26,6 +26,7 @@ export function Dropdown({
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button className="inline-flex  w-max bg-transparent border border-snapBorder hover:border-snapLink py-3 px-6 rounded-full justify-center  text-sm font-medium text-white  focus:outline-none focus-visible:ring-2">
         More
+        {/** @dev @TODO make this able to be import  */}
         <svg
           viewBox="0 0 24 24"
           width="1.2em"

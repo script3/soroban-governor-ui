@@ -1,7 +1,7 @@
 import { Container } from "@/components/common/BaseContainer";
+import { Button } from "@/components/common/Button";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Input } from "@/components/common/Input";
-import { TuneButton } from "@/components/common/tune/TuneButton";
 import { useState } from "react";
 
 export default function Spaces() {
@@ -22,9 +22,21 @@ export default function Spaces() {
         </div>
 
         <div className="mt-2 whitespace-nowrap text-right text-skin-text xs:ml-auto xs:mt-0">
-          <TuneButton>
-            <span className="hidden xs:inline">Tune</span>
-          </TuneButton>
+          <Button
+            onClick={() => {
+              console.log("click");
+            }}
+          >
+            Enable button
+          </Button>
+          <Button
+            onClick={() => {
+              console.log("click");
+            }}
+            disabled
+          >
+            Disabled button
+          </Button>
         </div>
 
         <Container>

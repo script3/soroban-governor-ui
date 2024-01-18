@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         snapBorder: "#2d2d2d",
         snapLink: "#8b949e",
+        bg: "#1c1b20",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

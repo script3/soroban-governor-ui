@@ -1,5 +1,6 @@
 import { Container } from "@/components/common/BaseContainer";
 import { Button } from "@/components/common/Button";
+import { DAOCard } from "@/components/common/DAOCard";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Input } from "@/components/common/Input";
 import { useState } from "react";
@@ -50,6 +51,19 @@ export default function Spaces() {
             placement="bottom-end"
             onSelect={(action) => console.log(action)}
           />
+        </Container>
+        <Container className="flex flex-col gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <DAOCard
+              title={`Title Dao #${i}`}
+              description={`Descriptuion dao #${i}`}
+              buttonText="Join"
+              hoverable
+              key={i}
+              onButtonClick={() => console.log(`Join #${i} click`)}
+              onCardClick={() => console.log(`Card #${i} click`)}
+            />
+          ))}
         </Container>
       </Container>
     </div>

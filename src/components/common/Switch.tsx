@@ -1,5 +1,11 @@
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
+/**
+ * @param value - the current value of the toggle
+ * @param onChange - the function to call when the toggle is changed
+ * @param disabled - whether the toggle is disabled
+ * @param color - the color of the toggle when enabled following tailwind color scheme
+ */
 export interface ToggleProps {
   value: boolean;
   onChange: (enabled: boolean) => void;

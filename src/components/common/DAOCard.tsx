@@ -28,7 +28,7 @@ export function DAOCard({
   }
   return (
     <CardContainer hoverable={hoverable} onClick={onCardClick}>
-      <div className="p-4 p-4 leading-5 sm:leading-6 flex w-full h-full flex-col gap-4 justify-center items-center">
+      <div className="p-4  leading-5 sm:leading-6 flex w-full h-full flex-col gap-4 justify-center items-center">
         <img
           className="rounded-full object-cover"
           src="https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7"

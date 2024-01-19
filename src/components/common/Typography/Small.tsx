@@ -6,7 +6,7 @@ export function Small({ className, children, onClick }: TypographyProps) {
       onClick={() => {
         onClick && onClick();
       }}
-      className={`mb-0 mt-0 !h-[32px] text-sm overflow-hidden pb-0 font-normal ${
+      className={`mb-0 mt-0  text-sm overflow-hidden pb-0 font-normal ${
         className || ""
       } `}
     >

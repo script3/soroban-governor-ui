@@ -56,7 +56,7 @@ export function Dropdown({
           boxShadow:
             "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.036) 2px 4px 9px 0px",
         }}
-        className=" absolute bg-bg border border-snapBorder  mt-2  origin-top-right  rounded-md w-full z-50"
+        className=" absolute bg-bg border border-snapBorder  mt-2  min-w-max origin-top-right  rounded-md w-full z-50"
       >
         {" "}
         <div className="no-scrollbar max-h-[300px] overflow-auto">

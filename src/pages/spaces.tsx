@@ -4,7 +4,9 @@ import { Chip } from "@/components/common/Chip";
 import { DAOCard } from "@/components/common/DAOCard";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Input } from "@/components/common/Input";
+import { ProgressWrapper } from "@/components/common/ProgressWrapper";
 import { Toggle } from "@/components/common/Switch";
+import Typography from "@/components/common/Typography";
 import { useState } from "react";
 const ThreeDotsSVG = (
   <svg
@@ -70,13 +72,26 @@ export default function Spaces() {
           </Button>
         </div>
 
-        <Container className="flex flex-col items-center gap-3">
+        <Container className="flex flex-col items-center gap-3 my-2 w-4/5">
+          <ProgressWrapper>
+            <div className="flex gap-2 justify-between w-full ">
+              <div className="flex gap-3">
+                <Typography.P>Resume key submission</Typography.P>
+                <Typography.Tiny className="text-snapLink">
+                  43M LDO
+                </Typography.Tiny>
+              </div>
+              <div className="flex">80%</div>
+            </div>
+          </ProgressWrapper>
+        </Container>
+        <Container className="flex flex-col items-center gap-3 my-2">
           <Chip className="bg-red-500">Problem</Chip>
-          <Chip className="bg-slate-100 text-black">Clear</Chip>
+          <Chip className="bg-slate-100 !text-black">Clear</Chip>
           <Chip className="bg-purple-500">Closed</Chip>
           <Chip>Active</Chip>
         </Container>
-        <Container className="flex flex-col items-center ">
+        <Container className="flex flex-col items-center my-2">
           <Toggle value={toggleValue} onChange={setToggleValue} />
           <Toggle value={toggleValue2} onChange={setToggleValue2} />
           <Toggle
@@ -86,7 +101,7 @@ export default function Spaces() {
             color="purple-500"
           />
         </Container>
-        <Container className="flex items-center gap-2">
+        <Container className="flex items-center gap-2 my-2">
           <Dropdown
             buttonText="Options"
             items={[

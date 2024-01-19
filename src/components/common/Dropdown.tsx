@@ -1,6 +1,8 @@
 import { Menu } from "@headlessui/react";
 import ChevronDown from "../../assets/icons/chevron-down.svg";
 import Image from "next/image";
+import Typography from "./Typography";
+import { ReactNode } from "react";
 export type Alignment = "start" | "end";
 export type Side = "top" | "right" | "bottom" | "left";
 export type AlignedPlacement = `${Side}-${Alignment}`;
@@ -13,35 +15,41 @@ export interface Item {
 export interface DropdownProps {
   items: Item[];
   selected: string;
+  chevron?: boolean;
+  buttonText: ReactNode;
   placement: Placement;
   onSelect: (action: string) => void;
 }
 export function Dropdown({
   items,
+  buttonText,
+  chevron = true,
   selected,
   placement,
   onSelect,
 }: DropdownProps) {
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <Menu.Button className="inline-flex  w-max bg-transparent border border-snapBorder hover:border-snapLink py-3 px-6 rounded-full justify-center  text-sm font-medium text-white  focus:outline-none focus-visible:ring-2">
-        More
+      <Menu.Button className="inline-flex items-center w-max bg-transparent border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center  text-sm font-medium text-white  focus:outline-none focus-visible:ring-2">
+        {buttonText}
         {/** @dev @TODO make this able to be import  */}
-        <svg
-          viewBox="0 0 24 24"
-          width="1.2em"
-          height="1.2em"
-          className="-mr-1 ml-2 h-5 w-5"
-        >
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="m19 9l-7 7l-7-7"
-          ></path>
-        </svg>
+        {chevron && (
+          <svg
+            viewBox="0 0 24 24"
+            width="1.2em"
+            height="1.2em"
+            className="-mr-1 ml-2 h-5 w-5"
+          >
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m19 9l-7 7l-7-7"
+            ></path>
+          </svg>
+        )}
       </Menu.Button>
       <Menu.Items
         style={{
@@ -61,7 +69,7 @@ export function Dropdown({
                   } group flex w-full items-center rounded-md px-2 py-2 text-sm   font-bold cursor-pointer `}
                   onClick={() => onSelect(item.action)}
                 >
-                  {item.text}
+                  <Typography.Small>{item.text}</Typography.Small>
                 </div>
               )}
             </Menu.Item>

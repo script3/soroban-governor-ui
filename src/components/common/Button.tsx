@@ -1,4 +1,5 @@
 import { MouseEvent } from "react";
+import Typography from "./Typography";
 
 export interface ButtonProps {
   onClick: (e: MouseEvent) => void;
@@ -14,13 +15,15 @@ export function Button({
   disabled = false,
 }: ButtonProps) {
   function handleClick(e: MouseEvent) {
-    onClick(e);
+    !disabled && onClick(e);
   }
   return (
     <button
-      className={`${className || ""}
-      flex  w-max bg-transparent border border-snapBorder hover:border-snapLink py-3 px-6 rounded-full justify-center  text-sm font-medium text-white  focus:outline-none focus-visible:ring-2 active:bg-neutral-800
-      ${disabled ? "bg-neutral-600 pointer-events-none opacity-50" : ""}
+      className={`flex w-max  border border-snapBorder hover:border-snapLink py-3 px-6 rounded-full justify-center text-sm font-normal text-white  focus:outline-none focus-visible:ring-2 active:bg-neutral-800 ${
+        disabled
+          ? "bg-neutral-600 pointer-events-none  opacity-50"
+          : "bg-transparent"
+      } ${className || ""}
       `}
       onClick={handleClick}
     >

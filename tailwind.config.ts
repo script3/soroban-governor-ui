@@ -13,6 +13,14 @@ const config: Config = {
         snapLink: "#8b949e",
         bg: "#1c1b20",
       },
+      fontSize: {
+        tiny: "16px",
+        sm: "18px",
+        base: "22px",
+        med: "24px",
+        lg: "32",
+        huge: "36px",
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":

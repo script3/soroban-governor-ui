@@ -29,7 +29,7 @@ export function Toggle({
           /* Use the `checked` state to conditionally style the button. */
           <button
             className={`${
-              checked ? `bg-${color || "green-500"}` : "bg-snapBorder"
+              checked ? `!bg-${color || "green-500"}` : "bg-snapBorder"
             } relative inline-flex h-6 w-11 items-center rounded-full ${
               disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
             } transition-colors`}
@@ -56,9 +56,9 @@ export function Toggle({
                   <path
                     d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2"
                     stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   ></path>
                 </svg>
               )}

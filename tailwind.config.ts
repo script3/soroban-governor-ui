@@ -12,6 +12,9 @@ const config: Config = {
         snapBorder: "#2d2d2d",
         snapLink: "#8b949e",
         bg: "#1c1b20",
+        primary: "#00aabb",
+        secondary: "#ffcc00",
+        accent: "#ffcccc",
       },
       fontSize: {
         tiny: "16px",

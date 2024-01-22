@@ -7,6 +7,7 @@ import { Input } from "@/components/common/Input";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ProgressWrapper } from "@/components/common/ProgressWrapper";
 import { Toggle } from "@/components/common/Switch";
+import { Tab } from "@/components/common/Tab/Tab";
 import Typography from "@/components/common/Typography";
 import { useState } from "react";
 const ThreeDotsSVG = (
@@ -40,6 +41,7 @@ export default function Spaces() {
   const [selected2, setSelected2] = useState<string>("All");
   const [toggleValue, setToggleValue] = useState<boolean>(false);
   const [toggleValue2, setToggleValue2] = useState<boolean>(false);
+  const [tabActive, setTabActive] = useState<number>(1);
   const handleChange = (newValue: string) => {
     console.log(newValue);
     setSearchValue(newValue);
@@ -90,12 +92,12 @@ export default function Spaces() {
           <ProgressBar label="Chainlink CCIP" progress={80} />
           <ProgressBar progress={50} barClassName="!bg-orange-700" />
           <ProgressBar
-            progress={0.4}
+            progress={0.405}
             label="Wormhole & Axelar Multibridge"
             barClassName="!bg-primary"
             endContent={
               <>
-                <Typography.P>18M LDO 99.5%</Typography.P>
+                <Typography.P>18M LDO 40.5%</Typography.P>
               </>
             }
           />
@@ -106,19 +108,49 @@ export default function Spaces() {
           <Chip className="bg-purple-500">Closed</Chip>
           <Chip>Active</Chip>
         </Container>
+        <Container className="flex justify-center items-center gap-3 my-2">
+          <Tab
+            active={tabActive === 1}
+            onClick={() => {
+              setTabActive(1);
+            }}
+          >
+            {" "}
+            Profile
+          </Tab>
+          <Tab
+            active={tabActive === 2}
+            onClick={() => {
+              setTabActive(2);
+            }}
+          >
+            {" "}
+            About
+          </Tab>
+          <Tab
+            active={tabActive === 3}
+            onClick={() => {
+              setTabActive(3);
+            }}
+          >
+            {" "}
+            Settings
+          </Tab>
+        </Container>
         <Container className="flex flex-col items-center my-2">
           <Toggle value={toggleValue} onChange={setToggleValue} />
           <Toggle
             value={toggleValue2}
             onChange={setToggleValue2}
             bgColorClass="bg-slate-100"
-            iconColorClass="text-slate-100"
+            iconColorClass="text-red-500"
           />
           <Toggle
             disabled
             value={toggleValue}
             onChange={setToggleValue}
-            bgColorClass="bg-purple-500"
+            bgColorClass="bg-purple-700"
+            iconColorClass="text-yellow-400"
           />
         </Container>
         <Container className="flex items-center gap-2 my-2">
@@ -146,7 +178,7 @@ export default function Spaces() {
             onSelect={(action) => console.log(action)}
           />
         </Container>
-        <Container className="flex flex-col gap-4">
+        <Container className="grid grid-cols-3 m-auto   gap-6 w-full">
           {[1, 2, 3, 4].map((i) => (
             <DAOCard
               title={`Stargate DAO #${i}`}
@@ -156,6 +188,7 @@ export default function Spaces() {
               key={i}
               onButtonClick={() => console.log(`Join #${i} click`)}
               onCardClick={() => console.log(`Card #${i} click`)}
+              className=""
             />
           ))}
         </Container>

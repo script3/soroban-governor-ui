@@ -27,7 +27,11 @@ export function DAOCard({
     onButtonClick();
   }
   return (
-    <CardContainer hoverable={hoverable} onClick={onCardClick}>
+    <CardContainer
+      className={className}
+      hoverable={hoverable}
+      onClick={onCardClick}
+    >
       <div className="p-4  leading-5 sm:leading-6 flex w-full h-full flex-col gap-4 justify-center items-center">
         <img
           className="rounded-full object-cover"

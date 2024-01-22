@@ -111,13 +111,14 @@ export default function Spaces() {
           <Toggle
             value={toggleValue2}
             onChange={setToggleValue2}
-            color="slate-100"
+            bgColorClass="bg-slate-100"
+            iconColorClass="text-slate-100"
           />
           <Toggle
             disabled
             value={toggleValue}
             onChange={setToggleValue}
-            color="purple-500"
+            bgColorClass="bg-purple-500"
           />
         </Container>
         <Container className="flex items-center gap-2 my-2">

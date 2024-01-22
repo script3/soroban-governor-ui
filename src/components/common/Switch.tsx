@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Switch } from "@headlessui/react";
+import dynamic from "next/dynamic";
+import { useEffect } from "react";
 /**
  * @param value - the current value of the toggle
  * @param onChange - the function to call when the toggle is changed
@@ -12,12 +13,7 @@ export interface ToggleProps {
   disabled?: boolean;
   color?: string;
 }
-export function Toggle({
-  value,
-  onChange,
-  disabled = false,
-  color,
-}: ToggleProps) {
+function toggle({ value, onChange, disabled = false, color }: ToggleProps) {
   function handleChange() {
     !disabled && onChange(!value);
   }
@@ -69,3 +65,7 @@ export function Toggle({
     </div>
   );
 }
+/** @dev this component does not support SSR so it needs to be rendered in client only mode  */
+export const Toggle = dynamic(() => Promise.resolve(toggle), {
+  ssr: false,
+});

@@ -30,7 +30,7 @@ function toggle({
       <Switch disabled={disabled} checked={value} onChange={handleChange}>
         {({ checked }) => (
           /* Use the `checked` state to conditionally style the button. */
-          <button
+          <div
             className={`${
               checked ? ` ${bgColorClass || "bg-green-500"}` : "bg-snapBorder"
             } relative inline-flex h-6 w-11 items-center rounded-full ${
@@ -66,7 +66,7 @@ function toggle({
                 </svg>
               )}
             </span>
-          </button>
+          </div>
         )}
       </Switch>
     </div>

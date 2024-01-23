@@ -30,14 +30,14 @@ export function Dropdown({
 }: DropdownProps) {
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <Menu.Button className="inline-flex items-center w-max bg-transparent border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center  text-sm font-medium text-white  focus:outline-none focus-visible:ring-2">
+      <Menu.Button className="inline-flex items-center w-max bg-transparent border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center  text-tiny font-medium text-white  focus:outline-none focus-visible:ring-2">
         {buttonText}
         {/** @dev @TODO make this able to be import  */}
         {chevron && (
           <svg
             viewBox="0 0 24 24"
-            width="1.2em"
-            height="1.2em"
+            width="12px"
+            height="12px"
             className="-mr-1 ml-2 h-5 w-5"
           >
             <path

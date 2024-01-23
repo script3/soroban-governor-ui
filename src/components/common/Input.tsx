@@ -20,7 +20,7 @@ export function Input({ onChange, placeholder, value, type }: InputProps) {
   };
 
   return (
-    <div className="flex h-[44px] items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink">
+    <div className="flex h-[44px] items-center  flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink">
       <input
         ref={baseInputRef}
         value={value}

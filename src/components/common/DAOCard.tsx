@@ -40,8 +40,8 @@ export function DAOCard({
           width={82}
           height={82}
         />
-        <div className="flex flex-col justify-center items-center ">
-          <Typography.P className="mb-0 mt-0 !h-[32px] overflow-hidden pb-0 font-bold ">
+        <div className="flex flex-col justify-center items-center p-2 ">
+          <Typography.P className="mb-0 mt-0  pb-0 font-bold ">
             {title}
           </Typography.P>
           <Typography.Small className="mb-[12px] text-snapLink">

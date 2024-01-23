@@ -10,7 +10,7 @@ import { Toggle } from "@/components/common/Switch";
 import { Tab } from "@/components/common/Tab/Tab";
 import Typography from "@/components/common/Typography";
 import { useState } from "react";
-const ThreeDotsSVG = (
+export const ThreeDotsSVG = (
   <svg
     fill="#fff"
     height="24px"

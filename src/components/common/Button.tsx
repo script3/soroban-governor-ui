@@ -19,7 +19,7 @@ export function Button({
   }
   return (
     <button
-      className={`flex w-max  border border-snapBorder hover:border-snapLink py-3 px-6 rounded-full justify-center text-sm font-normal text-white  focus:outline-none focus-visible:ring-2 active:bg-neutral-800 ${
+      className={`flex w-max  border border-snapBorder hover:border-snapLink p-4 rounded-full justify-center text-sm font-normal text-white  focus:outline-none focus-visible:ring-2 active:bg-neutral-800 ${
         disabled
           ? "bg-neutral-600 pointer-events-none  opacity-50"
           : "bg-transparent"

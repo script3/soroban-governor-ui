@@ -17,12 +17,12 @@ const config: Config = {
         accent: "#ffcccc",
       },
       fontSize: {
-        tiny: "16px",
-        sm: "18px",
-        base: "22px",
-        med: "24px",
-        lg: "32",
-        huge: "36px",
+        tiny: ["14px", "18px"],
+        sm: ["16px", "18px"],
+        base: ["20px", "24px"],
+        med: ["22px", "26px"],
+        lg: ["30px", "34px"],
+        huge: ["32px", "36px"],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

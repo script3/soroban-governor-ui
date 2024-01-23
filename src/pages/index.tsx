@@ -13,13 +13,13 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
   const [searchValue, setSearchValue] = useState<string>("");
   return (
-    <>
+    <Container className="mx-auto max-w-[1012px]">
       <Container className="flex w-full flex-row justify-between items-center gap-2 py-2 mb-2 ">
         <Container
           slim
           className="w-1/2 flex items-center gap-2 justify-start p-0 "
         >
-          <Container slim className="w-[80%] ">
+          <Container slim className="w-[80%] min-w-[150px] ">
             <Input
               value={searchValue}
               placeholder="search for DAOs"
@@ -44,7 +44,7 @@ export default function Home() {
           </Typography.Small>
         </Container>
       </Container>
-      <Container className="w-full grid grid-cols-3 gap-4">
+      <Container className="w-full grid sm:grid-cols-3 lg:grid-cols-4 gap-4 ">
         {mockDAOS
           .filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
           .map((dao, i) => (
@@ -60,6 +60,6 @@ export default function Home() {
             />
           ))}
       </Container>
-    </>
+    </Container>
   );
 }

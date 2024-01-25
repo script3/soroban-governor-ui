@@ -1,4 +1,4 @@
-import DAOLayout from "@/components/Layout/dao/layout";
+import DAOLayout from "@/components/Layout/dao";
 
 function About() {
   return (

@@ -4,8 +4,9 @@ export interface InputProps {
   placeholder: string;
   value: string | undefined;
   onChange: (new_value: string) => void;
-  type?: "number" | "text";
+  type?: "number" | "text" | "url" | "email" | "password";
   className?: string;
+  icon?: React.ReactNode;
 }
 export function Input({
   onChange,
@@ -13,6 +14,7 @@ export function Input({
   value,
   type,
   className,
+  icon,
 }: InputProps) {
   const baseInputRef = useRef(null);
 
@@ -28,15 +30,16 @@ export function Input({
 
   return (
     <div
-      className={`flex h-[44px] items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink ${
+      className={`flex h-[44px] gap-2 items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink ${
         className || ""
       }`}
     >
+      {!!icon && icon}
       <input
         ref={baseInputRef}
         value={value}
         placeholder={placeholder}
-        type="text"
+        type={type || "text"}
         autoCorrect="off"
         autoCapitalize="none"
         className="input w-full border-none bg-transparent focus:border-none outline-none"

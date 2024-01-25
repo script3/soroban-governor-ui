@@ -17,6 +17,8 @@ export const useBreakpoints = () => {
   const [width, setWidth] = useState<number>(breakpoints.sm);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    setWidth(window.innerWidth);
     const handleWindowResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);

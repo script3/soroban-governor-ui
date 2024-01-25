@@ -7,11 +7,13 @@ import { Input } from "@/components/common/Input";
 import { Dropdown } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const [searchValue, setSearchValue] = useState<string>("");
+  const router = useRouter();
   return (
     <Container className="mx-auto max-w-[1012px]">
       <Container className="flex w-full flex-row justify-between items-center gap-2 py-2 mb-2 ">
@@ -55,7 +57,7 @@ export default function Home() {
               hoverable
               key={i}
               onButtonClick={() => console.log(`Join #${i} click`)}
-              onCardClick={() => console.log(`Card #${i} click`)}
+              onCardClick={() => router.push("/dao")}
               className=""
             />
           ))}

@@ -39,9 +39,9 @@ export default function DAOPage() {
   } = useBreakpoints();
   return (
     <Container className="pt-4 flex flex-col lg:flex-row">
-      <Container className="flex flex-col  lg:w-80 min-w-80">
-        <Box className="flex flex-col w-full py-3">
-          <div className="w-full mb-2">
+      <Container className="flex flex-col  lg:w-80 lg:min-w-80">
+        <Box className="flex flex-col w-full pt-3 !px-0 ">
+          <div className="w-full mb-2 px-3">
             <img
               className="rounded-full object-cover"
               src={mockDAO.logo}
@@ -50,16 +50,16 @@ export default function DAOPage() {
               height={64}
             />
           </div>
-          <div className="w-full">
+          <div className="w-full px-3">
             <Typography.Huge>{mockDAO.name}</Typography.Huge>
           </div>
-          <div className="flex w-full justify-between lg:flex-col lg:w-full gap-4">
+          <div className="flex w-full justify-between flex-col md:max-lg:flex-row  gap-4 px-3">
             <Typography.Medium className="text-snapLink">
               {` ${mockDAO.memberCount} members `}
             </Typography.Medium>
-            <div className="flex gap-2 items-center lg:flex-col lg:w-full">
+            <div className="flex gap-2 items-center  flex-col w-full md:max-lg:flex-row md:max-lg:w-auto">
               <Button
-                className="px-8 !bg-primary  active:!opacity-90  lg:!w-full"
+                className="px-8 !bg-primary  active:!opacity-90  !w-full md:max-lg:!w-auto"
                 onClick={() => {
                   console.log("clicked join button");
                 }}
@@ -70,7 +70,7 @@ export default function DAOPage() {
                 onClick={() => {
                   console.log("report clicked ");
                 }}
-                className="group text-snapLink hover:text-white  active:text-white flex gap-2 lg:!w-full"
+                className="group text-snapLink hover:text-white  active:text-white flex gap-2 !w-full md:max-lg:!w-auto"
               >
                 <FlagIcon className="group-hover:stroke-white" /> Report
               </Button>
@@ -89,15 +89,15 @@ export default function DAOPage() {
           </div>
         </Box>
       </Container>
-      <Container className="flex flex-col w-auto min-w-[50%] max-w-[75%]">
-        <Container className="flex justify-between items-center  flex-wrap py-6">
+      <Container className="flex flex-col w-auto min-w-[50%] lg:max-w-[75%]">
+        <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
           <Typography.Huge className="hidden lg:block text-white w-full mb-4">
             Proposals
           </Typography.Huge>
-          <div className="flex w-1/3">
+          <div className="flex w-full  md:w-60">
             <Input
               value={searchValue}
-              placeholder="search for DAOs"
+              placeholder="search proposals"
               onChange={setSearchValue}
             />
           </div>
@@ -106,7 +106,7 @@ export default function DAOPage() {
             onClick={() => {
               console.log("clicked new proposal button");
             }}
-            className="px-8  active:!opacity-90  "
+            className="px-6 !w-full  md:!w-40 active:!opacity-90  "
           >
             New proposal
           </Button>

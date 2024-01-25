@@ -41,13 +41,15 @@ export function DAOCard({
           height={82}
         />
         <div className="flex flex-col justify-center items-center p-2 ">
-          <Typography.P className="mb-0 mt-0  pb-0 font-bold ">
+          <Typography.P className="mb-0 mt-0  pb-0 font-bold truncate ">
             {title}
           </Typography.P>
           <Typography.Small className="mb-[12px] text-snapLink">
             {description}
           </Typography.Small>
-          <Button onClick={handleButtonClick}>{buttonText}</Button>
+          <Button className="px-10" onClick={handleButtonClick}>
+            {buttonText}
+          </Button>
         </div>
       </div>
     </CardContainer>

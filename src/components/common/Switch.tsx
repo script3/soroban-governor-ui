@@ -1,6 +1,5 @@
 import { Switch } from "@headlessui/react";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
 /**
  * @param value - the current value of the toggle
  * @param onChange - the function to call when the toggle is changed

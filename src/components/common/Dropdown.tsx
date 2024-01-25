@@ -1,5 +1,4 @@
 import { Menu } from "@headlessui/react";
-import ChevronDown from "../../assets/icons/chevron-down.svg";
 import Image from "next/image";
 import Typography from "./Typography";
 import { ReactNode } from "react";

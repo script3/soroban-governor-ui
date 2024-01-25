@@ -5,8 +5,15 @@ export interface InputProps {
   value: string | undefined;
   onChange: (new_value: string) => void;
   type?: "number" | "text";
+  className?: string;
 }
-export function Input({ onChange, placeholder, value, type }: InputProps) {
+export function Input({
+  onChange,
+  placeholder,
+  value,
+  type,
+  className,
+}: InputProps) {
   const baseInputRef = useRef(null);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -20,7 +27,11 @@ export function Input({ onChange, placeholder, value, type }: InputProps) {
   };
 
   return (
-    <div className="flex h-[44px] items-center  flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink">
+    <div
+      className={`flex h-[44px] items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink ${
+        className || ""
+      }`}
+    >
       <input
         ref={baseInputRef}
         value={value}

@@ -19,11 +19,13 @@ export function Button({
   }
   return (
     <button
-      className={`flex w-max text-sm  border border-snapBorder hover:border-snapLink p-4 rounded-full justify-center font-normal  text-white  focus:outline-none focus-visible:ring-2 active:bg-neutral-800 ${
+      className={`${
         disabled
           ? "bg-neutral-600 pointer-events-none  opacity-50"
           : "bg-transparent"
-      } ${className || ""}
+      } ${
+        className || ""
+      } flex w-max text-sm  border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center font-normal   focus:outline-none focus-visible:ring-2 active:bg-neutral-800  
       `}
       onClick={handleClick}
     >

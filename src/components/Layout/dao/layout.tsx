@@ -1,18 +1,13 @@
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
-import { Chip } from "@/components/common/Chip";
-import { Input } from "@/components/common/Input";
+import { useEffect, useState } from "react";
 import { TabBar, TabItem } from "@/components/common/Tab/TabBar";
 import Typography from "@/components/common/Typography";
 import { FlagIcon } from "@/components/common/icons/Flag";
-import { classByStatus } from "@/constants";
 import { useBreakpoints } from "@/hooks/breakpoints";
 import { mockDAOS } from "@/mock/dao";
-import { getRelativeProposalPeriod } from "@/utils/date";
-import { shortenAddress } from "@/utils/shortenAddress";
-import Image from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const mockDAO = mockDAOS[0];
 
@@ -31,16 +26,19 @@ const Tabs: TabItem[] = [
   },
 ];
 
-export default function DAOPage() {
+export default function DAOLayout({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<string>("Proposals");
-  const [searchValue, setSearchValue] = useState<string>("");
   const {
     breakpoints: { lg: isLg },
   } = useBreakpoints();
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/dao/${activeTab.toLowerCase()}`);
+  }, [activeTab]);
   return (
-    <Container className="pt-4 flex flex-col lg:flex-row">
-      <Container className="flex flex-col  lg:w-80 lg:min-w-80">
-        <Box className="flex flex-col w-full pt-3 !px-0 ">
+    <Container className="pt-4 px-12 flex flex-col lg:flex-row ">
+      <Container className="flex flex-col  lg:w-70 lg:min-w-70">
+        <Box className="flex flex-col w-faull pt-3 !px-0 ">
           <div className="w-full mb-2 px-3">
             <img
               className="rounded-full object-cover"
@@ -90,59 +88,7 @@ export default function DAOPage() {
         </Box>
       </Container>
       <Container className="flex flex-col w-auto min-w-[50%] lg:max-w-[75%]">
-        <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
-          <Typography.Huge className="hidden lg:block text-white w-full mb-4">
-            Proposals
-          </Typography.Huge>
-          <div className="flex w-full  md:w-60">
-            <Input
-              value={searchValue}
-              placeholder="search proposals"
-              onChange={setSearchValue}
-            />
-          </div>
-
-          <Button
-            onClick={() => {
-              console.log("clicked new proposal button");
-            }}
-            className="px-6 !w-full  md:!w-40 active:!opacity-90  "
-          >
-            New proposal
-          </Button>
-        </Container>
-        {/* proposals  */}
-        <Container className="flex flex-col gap-4">
-          {mockDAO.proposals.map((proposal) => (
-            <Box key={proposal.id} className="p-4 flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <Typography.Small className="font-bold">
-                  {shortenAddress(proposal.proposer)}
-                </Typography.Small>
-                <Chip className={classByStatus[proposal.status]}>
-                  {proposal.status}
-                </Chip>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Typography.Medium className="font-semibold">
-                  {proposal.title}
-                </Typography.Medium>
-                <Typography.P className="line-clamp-2 break-words text-md ">
-                  {proposal.description}
-                </Typography.P>
-                <div className="flex flex-col">{/* votes progress bar */}</div>
-                <Typography.Tiny className="text-snapLink">
-                  {/* X days remaining / ended X days ago  */}{" "}
-                  {getRelativeProposalPeriod(
-                    proposal.status,
-                    proposal.vote_start,
-                    proposal.vote_end
-                  )}
-                </Typography.Tiny>
-              </div>
-            </Box>
-          ))}
-        </Container>
+        {children}
       </Container>
     </Container>
   );

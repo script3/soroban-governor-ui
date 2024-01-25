@@ -36,9 +36,9 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
     router.replace(`/dao/${activeTab.toLowerCase()}`);
   }, [activeTab]);
   return (
-    <Container className="pt-4 px-12 flex flex-col lg:flex-row ">
-      <Container className="flex flex-col  lg:w-70 lg:min-w-70">
-        <Box className="flex flex-col w-faull pt-3 !px-0 ">
+    <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
+      <Container className="flex flex-col  lg:w-70 lg:min-w-70 ">
+        <Box className="flex flex-col w-full pt-3 !px-0 ">
           <div className="w-full mb-2 px-3">
             <img
               className="rounded-full object-cover"
@@ -87,7 +87,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
           </div>
         </Box>
       </Container>
-      <Container className="flex flex-col w-auto min-w-[50%] lg:max-w-[75%]">
+      <Container className="flex flex-col w-auto min-w-[50%] lg:max-w-[80%]">
         {children}
       </Container>
     </Container>

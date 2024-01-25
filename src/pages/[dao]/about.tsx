@@ -16,7 +16,7 @@ function About() {
   const [newTerms, setNewTerms] = useState<string>(mockDAO.name);
   const [newHide, setNewHide] = useState<boolean>(!!mockDAO.name);
   return (
-    <Container className="flex flex-col gap-6 w-full">
+    <Container slim className=" mt-3 flex flex-col gap-6 w-full">
       <Box className="flex flex-col gap-3 p-4 w-full">
         <Typography.Big>Profile</Typography.Big>
         <Typography.Small>Avatar</Typography.Small>

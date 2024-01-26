@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useRef } from "react";
+import Typography from "./Typography";
 export interface InputProps {
   symbol?: string;
   placeholder: string;
@@ -7,6 +8,8 @@ export interface InputProps {
   type?: "number" | "text" | "url" | "email" | "password";
   className?: string;
   icon?: React.ReactNode;
+  error?: boolean;
+  errorMessage?: string;
 }
 export function Input({
   onChange,
@@ -15,6 +18,8 @@ export function Input({
   type,
   className,
   icon,
+  error = false,
+  errorMessage,
 }: InputProps) {
   const baseInputRef = useRef(null);
 
@@ -30,9 +35,9 @@ export function Input({
 
   return (
     <div
-      className={`flex h-[44px] gap-2 items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink ${
-        className || ""
-      }`}
+      className={`flex h-[44px] gap-2 items-center flex-auto bg-transparent rounded-full border pl-4 pr-0 invalid:border-error focus-within:border-snapLink ${
+        error ? "border-error" : " border-snapBorder "
+      }  ${className || ""}`}
     >
       {!!icon && icon}
       <input
@@ -42,9 +47,12 @@ export function Input({
         type={type || "text"}
         autoCorrect="off"
         autoCapitalize="none"
-        className="input w-full border-none bg-transparent focus:border-none outline-none"
+        className="input w-full border-none bg-transparent focus:border-none outline-none "
         onChange={handleChange}
       />
+      {!!errorMessage && (
+        <Typography.Tiny className="text-red">{errorMessage}</Typography.Tiny>
+      )}
     </div>
   );
 }

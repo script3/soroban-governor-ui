@@ -1,4 +1,4 @@
-import DAOLayout from "@/components/Layout/dao";
+import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Dropdown } from "@/components/common/Dropdown";

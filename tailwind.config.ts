@@ -15,6 +15,9 @@ const config: Config = {
         primary: "#ee2529",
         secondary: "#ffcc00",
         accent: "#ffcccc",
+        error: "#ff0000",
+        success: "#00ff00",
+        warning: "#ffff00",
       },
       fontSize: {
         tiny: ["14px", "18px"],

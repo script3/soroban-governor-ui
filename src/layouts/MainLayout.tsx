@@ -1,5 +1,5 @@
-import { SideBar } from "../Nav/Sidebar";
-import { TopBar } from "../Nav/Topbar";
+import { SideBar } from "../components/Nav/Sidebar";
+import { TopBar } from "../components/Nav/Topbar";
 import { Footer } from "./Footer";
 export interface MainLayoutProps {
   children: React.ReactNode;

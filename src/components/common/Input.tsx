@@ -1,19 +1,20 @@
 import React, { ChangeEvent, useRef } from "react";
-export interface SearchInputProps {
-  symbol: string;
+export interface InputProps {
+  symbol?: string;
   placeholder: string;
   value: string | undefined;
   onChange: (new_value: string) => void;
   type?: "number" | "text";
+  className?: string;
 }
-function SearchInput({ onChange, placeholder, value, type }: SearchInputProps) {
+export function Input({
+  onChange,
+  placeholder,
+  value,
+  type,
+  className,
+}: InputProps) {
   const baseInputRef = useRef(null);
-
-  //   useEffect(() => {
-  //     if (focusOnMount) {
-  //       baseInputRef.current.focus();
-  //     }
-  //   }, [focusOnMount]);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
@@ -26,8 +27,11 @@ function SearchInput({ onChange, placeholder, value, type }: SearchInputProps) {
   };
 
   return (
-    <div className="flex h-44 items-center ">
-      {/*search icon */}
+    <div
+      className={`flex h-[44px] items-center flex-auto bg-transparent border-snapBorder rounded-full border pl-4 pr-0 focus-within:border-snapLink ${
+        className || ""
+      }`}
+    >
       <input
         ref={baseInputRef}
         value={value}
@@ -35,10 +39,9 @@ function SearchInput({ onChange, placeholder, value, type }: SearchInputProps) {
         type="text"
         autoCorrect="off"
         autoCapitalize="none"
-        className="input w-full border-none"
+        className="input w-full border-none bg-transparent focus:border-none outline-none"
         onChange={handleChange}
       />
-      {/* replace with X svg for clear input icon*/}
     </div>
   );
 }

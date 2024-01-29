@@ -91,25 +91,27 @@ export default function CreateProposal() {
         )}
       </div>
 
-      <Box className="flex flex-col p-6 my-2 w-full gap-2 h-max lg:w-4/12 lg:min-w-[321px] ">
-        <Button
-          className=" !w-full"
-          onClick={() => {
-            console.log("clicked");
-            setIsPreview(!isPreview);
-          }}
-        >
-          {isPreview ? "Edit" : "Preview"}
-        </Button>
-        <Button
-          className="!bg-primary  !w-full"
-          onClick={() => {
-            console.log("clicked");
-          }}
-        >
-          Connect Wallet
-        </Button>
-      </Box>
+      <div className="flex lg:w-4/12 lg:min-w-[321px]  ">
+        <Box className="flex flex-col p-6 my-2 w-full gap-2  lg:w-[320px] lg:fixed">
+          <Button
+            className=" !w-full"
+            onClick={() => {
+              console.log("clicked");
+              setIsPreview(!isPreview);
+            }}
+          >
+            {isPreview ? "Edit" : "Preview"}
+          </Button>
+          <Button
+            className="!bg-primary  !w-full"
+            onClick={() => {
+              console.log("clicked");
+            }}
+          >
+            Connect Wallet
+          </Button>
+        </Box>
+      </div>
     </Container>
   );
 }

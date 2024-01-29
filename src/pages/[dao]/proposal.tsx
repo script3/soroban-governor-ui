@@ -99,6 +99,7 @@ export default function CreateProposal() {
               console.log("clicked");
               setIsPreview(!isPreview);
             }}
+            disabled={!title && !description}
           >
             {isPreview ? "Edit" : "Preview"}
           </Button>

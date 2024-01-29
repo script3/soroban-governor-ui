@@ -18,7 +18,7 @@ function Proposals() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const daoId = pathname.split("/")[1];
+  const daoId = pathname?.split("/")[1];
   return (
     <>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">

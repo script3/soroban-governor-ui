@@ -13,8 +13,8 @@ import { useState } from "react";
 export const ThreeDotsSVG = (
   <svg
     fill="#fff"
-    height="24px"
-    width="24px"
+    height="22px"
+    width="22px"
     version="1.1"
     id="Capa_1"
     xmlns="http://www.w3.org/2000/svg"

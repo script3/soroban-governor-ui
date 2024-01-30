@@ -33,7 +33,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
   } = useBreakpoints();
   const router = useRouter();
   const pathname = usePathname();
-  const { dao } = useParams();
+  const params = useParams();
   const routeTab = pathname?.split("/")[2];
   const [activeTab, setActiveTab] = useState<string>("proposals");
 
@@ -44,7 +44,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
   }, [routeTab]);
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
-      <Container className="flex flex-col  lg:w-70 lg:min-w-70 ">
+      <Container className="flex flex-col  lg:w-72 lg:min-w-72 ">
         <Box className="flex flex-col w-full pt-3 lg:!px-0 ">
           <div className="w-full mb-2 px-3">
             <img
@@ -85,7 +85,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
             <TabBar
               tabs={Tabs}
               onClick={({ route }) => {
-                router.replace(`/${dao}${route}`);
+                router.replace(`/${params?.dao}${route}`);
               }}
               activeTabName={activeTab}
               className="lg:!flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"

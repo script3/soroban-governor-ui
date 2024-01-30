@@ -9,9 +9,9 @@ export function BackArrow({ className }: { className?: string }) {
       <path
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         d="m11 17l-5-5m0 0l5-5m-5 5h12"
       ></path>
     </svg>

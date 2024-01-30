@@ -7,7 +7,8 @@ import Typography from "@/components/common/Typography";
 import { FlagIcon } from "@/components/common/icons/Flag";
 import { useBreakpoints } from "@/hooks/breakpoints";
 import { mockDAOS } from "@/mock/dao";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { capitalizeFirstLetter } from "@/utils/string";
 
 const mockDAO = mockDAOS[0];
 
@@ -27,11 +28,17 @@ const Tabs: TabItem[] = [
 ];
 
 export default function DAOLayout({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState<string>("Proposals");
   const {
     breakpoints: { lg: isLg },
   } = useBreakpoints();
   const router = useRouter();
+  const pathname = usePathname();
+  const routeTab = pathname?.split("/")[2];
+  const [activeTab, setActiveTab] = useState<string>("proposals");
+
+  useEffect(() => {
+    setActiveTab(capitalizeFirstLetter(routeTab || "Proposals"));
+  });
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
       <Container className="flex flex-col  lg:w-70 lg:min-w-70 ">

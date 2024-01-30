@@ -36,7 +36,7 @@ export function Dropdown({
           noBorder
             ? "hover:opacity-50"
             : "border border-snapBorder hover:border-snapLink "
-        } p-3 rounded-full justify-center  text-tiny font-medium text-white  focus:outline-none focus-visible:ring-2`}
+        } p-2 rounded-full justify-center  text-tiny font-medium text-white  focus:outline-none focus-visible:ring-2`}
       >
         {buttonText}
         {/** @dev @TODO make this able to be import  */}
@@ -63,7 +63,7 @@ export function Dropdown({
           boxShadow:
             "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.036) 2px 4px 9px 0px",
         }}
-        className=" absolute bg-bg border border-snapBorder  min-w-max origin-top-right  rounded-2xl w-full z-50"
+        className=" absolute bg-bg border border-snapBorder right-0 origin-top-right min-w-max  rounded-2xl w-full z-50"
       >
         {" "}
         <div className="no-scrollbar max-h-[300px] overflow-auto">

@@ -8,6 +8,7 @@ import { mockDAOS } from "@/mock/dao";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useParams, useRouter } from "next/navigation";
 import { ThreeDotsSVG } from "../test/comps";
+import { MarkdownPreview } from "@/components/MarkdownPreview";
 
 const mockDAO = mockDAOS[0];
 const shareOptions: Item[] = [
@@ -101,7 +102,9 @@ export default function Proposal() {
               </Container>
             </Container>
           </Container>
-          <Container slim>Proposal Content with view more</Container>
+          <Container slim>
+            <MarkdownPreview body={proposal.description} />
+          </Container>
           <Container slim>Discusion</Container>
           <Container slim>Votes</Container>
         </Container>

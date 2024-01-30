@@ -60,7 +60,12 @@ function Proposals() {
                 {proposal.status}
               </Chip>
             </div>
-            <div className="flex flex-col gap-3">
+            <div
+              className="flex flex-col gap-3 cursor-pointer"
+              onClick={() => {
+                router.push(`/${daoId}/${proposal.id}`);
+              }}
+            >
               <Typography.Medium className="font-semibold">
                 {proposal.title}
               </Typography.Medium>

@@ -1,4 +1,4 @@
-import { ThreeDotsSVG } from "@/pages/comps";
+import { ThreeDotsSVG } from "@/pages/test/comps";
 import { Button } from "../common/Button";
 import Typography from "../common/Typography";
 import { useRouter } from "next/navigation";

@@ -86,7 +86,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
                 router.replace(`/dao/${activeTab.toLowerCase()}`);
               }}
               activeTabName={activeTab}
-              className="sm:!flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"
+              className="lg:!flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"
               position={isLg ? "left" : "bottom"}
             />
           </div>

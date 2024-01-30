@@ -7,7 +7,7 @@ import Typography from "@/components/common/Typography";
 import { FlagIcon } from "@/components/common/icons/Flag";
 import { useBreakpoints } from "@/hooks/breakpoints";
 import { mockDAOS } from "@/mock/dao";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { capitalizeFirstLetter } from "@/utils/string";
 
 const mockDAO = mockDAOS[0];
@@ -15,15 +15,15 @@ const mockDAO = mockDAOS[0];
 const Tabs: TabItem[] = [
   {
     name: "Proposals",
-    route: "/dao/proposals",
+    route: "/proposals",
   },
   {
     name: "About",
-    route: "/dao/about",
+    route: "/about",
   },
   {
     name: "Overview",
-    route: "/dao/settings",
+    route: "/settings",
   },
 ];
 
@@ -33,12 +33,15 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
   } = useBreakpoints();
   const router = useRouter();
   const pathname = usePathname();
+  const { dao } = useParams();
   const routeTab = pathname?.split("/")[2];
   const [activeTab, setActiveTab] = useState<string>("proposals");
 
   useEffect(() => {
-    setActiveTab(capitalizeFirstLetter(routeTab || "Proposals"));
-  });
+    if (routeTab) {
+      setActiveTab(capitalizeFirstLetter(routeTab));
+    }
+  }, [routeTab]);
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
       <Container className="flex flex-col  lg:w-70 lg:min-w-70 ">
@@ -81,9 +84,8 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
           <div className="flex ">
             <TabBar
               tabs={Tabs}
-              onClick={({ name }) => {
-                setActiveTab(name);
-                router.replace(`/dao/${activeTab.toLowerCase()}`);
+              onClick={({ route }) => {
+                router.replace(`/${dao}${route}`);
               }}
               activeTabName={activeTab}
               className="lg:!flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"
@@ -92,7 +94,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
           </div>
         </Box>
       </Container>
-      <Container className="flex flex-col w-auto min-w-[50%] lg:max-w-[80%]">
+      <Container className="flex flex-col w-auto min-w-[50%]  lg:!max-w-[70%]">
         {children}
       </Container>
     </Container>

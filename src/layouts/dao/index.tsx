@@ -32,13 +32,10 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
     breakpoints: { lg: isLg },
   } = useBreakpoints();
   const router = useRouter();
-  useEffect(() => {
-    router.replace(`/dao/${activeTab.toLowerCase()}`);
-  }, [activeTab]);
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
       <Container className="flex flex-col  lg:w-70 lg:min-w-70 ">
-        <Box className="flex flex-col w-full pt-3 !px-0 ">
+        <Box className="flex flex-col w-full pt-3 lg:!px-0 ">
           <div className="w-full mb-2 px-3">
             <img
               className="rounded-full object-cover"
@@ -79,9 +76,10 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
               tabs={Tabs}
               onClick={({ name }) => {
                 setActiveTab(name);
+                router.replace(`/dao/${activeTab.toLowerCase()}`);
               }}
               activeTabName={activeTab}
-              className="lg:flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"
+              className="sm:!flex-col lg:justify-start lg:text-left lg:items-baseline lg:mt-3"
               position={isLg ? "left" : "bottom"}
             />
           </div>

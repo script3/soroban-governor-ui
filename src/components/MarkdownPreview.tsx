@@ -26,12 +26,12 @@ export function MarkdownPreview({ body }: { body: string }) {
     function replaceIpfsUrl(match: string, p1: string) {
       return match.replace(p1, getIpfsUrl(p1) || "");
     }
-    body = body.replace(
+    const toRender = body.replace(
       /!\[.*?\]\((ipfs:\/\/[a-zA-Z0-9]+?)\)/g,
       replaceIpfsUrl
     );
 
-    return remarkable.render(body);
+    return remarkable.render(toRender);
   }, [body]);
 
   function copyToClipboard(text: string) {

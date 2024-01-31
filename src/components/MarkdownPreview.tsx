@@ -60,11 +60,6 @@ export function MarkdownPreview({ body }: { body: string }) {
         });
         code.appendChild(copyButton);
       });
-      //   body.querySelectorAll("a[href]").forEach(function (link) {
-      //     link.addEventListener("click", function (e) {
-      //       handleLinkClick(e, link.getAttribute("href"));
-      //     });
-      //   });
     }
   }, []);
   return (

@@ -1,4 +1,4 @@
-import Typography from "../common/Typography";
+import Typography from "../components/common/Typography";
 
 export function Footer() {
   return (

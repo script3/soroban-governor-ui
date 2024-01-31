@@ -76,7 +76,7 @@ export default function Spaces() {
         </div>
 
         <Container className="flex flex-col items-center gap-3 my-2 w-4/5">
-          <ProgressWrapper>
+          <ProgressWrapper percentage={80}>
             <div className="flex gap-2 justify-between w-full ">
               <div className="flex gap-3">
                 <Typography.P>Resume key submission</Typography.P>

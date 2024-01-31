@@ -1,4 +1,4 @@
-import DAOLayout from "@/components/Layout/dao";
+import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
@@ -11,9 +11,14 @@ import { mockDAOS } from "@/mock/dao";
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const mockDAO = mockDAOS[0];
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const daoId = pathname?.split("/")[1];
   return (
     <>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
@@ -30,7 +35,13 @@ function Proposals() {
 
         <Button
           onClick={() => {
-            console.log("clicked new proposal button");
+            console.log({
+              pathname,
+              params,
+              split: pathname.split("/")[1],
+              id: params.get("daoId"),
+            });
+            router.push(`/${daoId}/proposal`, { scroll: false });
           }}
           className="px-6 !w-full  md:!w-40 active:!opacity-90  "
         >

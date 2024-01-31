@@ -5,6 +5,7 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/layouts/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -15,6 +16,9 @@ const config: Config = {
         primary: "#ee2529",
         secondary: "#ffcc00",
         accent: "#ffcccc",
+        error: "#ff0000",
+        success: "#00ff00",
+        warning: "#ffff00",
       },
       fontSize: {
         tiny: ["14px", "18px"],
@@ -29,6 +33,11 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+    },
+  },
+  variants: {
+    extend: {
+      stroke: ["active,group-hover"],
     },
   },
   plugins: [],

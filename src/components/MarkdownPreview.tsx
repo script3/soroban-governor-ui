@@ -20,7 +20,13 @@ const copyIcon = `<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Re
   <path d="M28,10H22V4a2.0023,2.0023,0,0,0-2-2H4A2.0023,2.0023,0,0,0,2,4V20a2.0023,2.0023,0,0,0,2,2h6v6a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V12A2,2,0,0,0,28,10ZM4,20,3.9985,4H20v6H12a2,2,0,0,0-2,2v8Z"/>
   <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/>
 </svg>`;
-export function MarkdownPreview({ body }: { body: string }) {
+export function MarkdownPreview({
+  body,
+  className,
+}: {
+  body: string;
+  className: string;
+}) {
   const bodyToRender = useMemo(() => {
     // Add the ipfs gateway to markdown images that start with ipfs://
     function replaceIpfsUrl(match: string, p1: string) {
@@ -69,7 +75,7 @@ export function MarkdownPreview({ body }: { body: string }) {
   }, []);
   return (
     <div
-      className="markdown-body"
+      className={`markdown-body break-words ${className || ""}}`}
       dangerouslySetInnerHTML={{ __html: bodyToRender }}
     ></div>
   );

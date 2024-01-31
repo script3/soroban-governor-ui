@@ -9,6 +9,8 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import { useParams, useRouter } from "next/navigation";
 import { ThreeDotsSVG } from "../test/comps";
 import { MarkdownPreview } from "@/components/MarkdownPreview";
+import { useState } from "react";
+import { Button } from "@/components/common/Button";
 
 const mockDAO = mockDAOS[0];
 const shareOptions: Item[] = [
@@ -24,6 +26,7 @@ const shareOptions: Item[] = [
 export default function Proposal() {
   const params = useParams();
   const router = useRouter();
+  const [isFullView, setIsFullView] = useState(false);
   const proposal = mockDAO.proposals[Number(params?.proposal) || 0];
   function handleAction(action: string) {
     console.log({ action });
@@ -63,7 +66,7 @@ export default function Proposal() {
         className="flex flex-col px-0 md:px-4 mx-auto max-w-[1012px] mt-[20px] w-auto m-auto lg:flex-row "
       >
         <Container slim className="relative  lg:w-8/12 lg:pr-5">
-          <Container slim className="flex flex-col">
+          <Container slim className="flex flex-col mb-2">
             <Chip className={classByStatus[proposal.status] + " mb-4"}>
               {proposal.status}
             </Chip>
@@ -103,17 +106,40 @@ export default function Proposal() {
             </Container>
           </Container>
           <Container slim>
-            <MarkdownPreview body={proposal.description} />
+            <div className="">
+              <MarkdownPreview
+                className={`${
+                  isFullView
+                    ? "overflow-hidden mb-[92px]"
+                    : "overflow-hidden h-[600px] mb-[56px]"
+                }`}
+                body={proposal.description}
+              />
+              <Button
+                onClick={() => {
+                  setIsFullView(!isFullView);
+                }}
+              >
+                switch
+              </Button>
+            </div>
           </Container>
           <Container slim>Discusion</Container>
           <Container slim>Votes</Container>
         </Container>
         <Container slim className="w-full lg:w-4/12 lg:min-w-[321px]">
           <Box>
-            <Typography.Big>Information</Typography.Big>
+            <Container>
+              <Typography.Medium className="flex w-full border-b border-snapBorder">
+                Information
+              </Typography.Medium>
+            </Container>
+            <Container slim>
+              <Typography.Small>voting system</Typography.Small>
+            </Container>
           </Box>
           <Box>
-            <Typography.Big>Results</Typography.Big>
+            <Typography.Medium>Results</Typography.Medium>
           </Box>
         </Container>
       </Container>

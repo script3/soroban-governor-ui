@@ -25,7 +25,7 @@ export function MarkdownPreview({
   className,
 }: {
   body: string;
-  className: string;
+  className?: string;
 }) {
   const bodyToRender = useMemo(() => {
     // Add the ipfs gateway to markdown images that start with ipfs://

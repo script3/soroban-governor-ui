@@ -22,3 +22,4 @@ export const classByStatus: ObType = {
   Active: "bg-green-500",
   Pending: "bg-neutral-500 ",
 };
+export const EighteenDecimals = 10_000_000_000_000_000_000;

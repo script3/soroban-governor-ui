@@ -15,7 +15,8 @@ import { ViewMore } from "@/components/ViewMore";
 import Link from "next/link";
 import { formatCompactNumber, formatDate } from "@/utils/date";
 import { ProgressBar } from "@/components/common/ProgressBar";
-const EighteenDecimals = 10_000_000_000_000_000_000;
+import { Modal } from "@/components/Modal";
+import { VoteListItem } from "@/components/VoteListItem";
 const mockDAO = mockDAOS[0];
 const shareOptions: Item[] = [
   {
@@ -31,6 +32,7 @@ export default function Proposal() {
   const params = useParams();
   const router = useRouter();
   const [isFullView, setIsFullView] = useState(false);
+  const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const proposal = mockDAO.proposals[Number(params?.proposal) || 0];
   function handleAction(action: string) {
     console.log({ action });
@@ -148,32 +150,12 @@ export default function Proposal() {
                 </Chip>
               </Container>
               {proposal.votes.slice(0, 10).map((vote, index) => (
-                <Container
-                  className={`flex items-center gap-3 justify-between border-snapBorder px-4 py-[14px]  ${
-                    index === 0
-                      ? "!border-0"
-                      : index === proposal.votes.length - 1
-                      ? "border-b-0 border-t"
-                      : "border-t"
-                  }`}
-                >
-                  <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
-                    {shortenAddress(vote.address)}
-                  </Typography.P>
-                  <Typography.P className=" truncate px-2 text-center ">
-                    {vote.choice}
-                  </Typography.P>
-                  <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-                    {formatCompactNumber(
-                      Number(vote.balance / BigInt(EighteenDecimals))
-                    )}
-                  </Typography.P>
-                </Container>
+                <VoteListItem vote={vote} index={index} proposal={proposal} />
               ))}
               <div
                 className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
                 onClick={() => {
-                  console.log("open votes modal");
+                  setIsVotesModalOpen(true);
                 }}
               >
                 {" "}
@@ -306,6 +288,19 @@ export default function Proposal() {
           </Box>
         </Container>
       </Container>
+      <Modal
+        isOpen={isVotesModalOpen}
+        onClose={() => {
+          setIsVotesModalOpen(false);
+        }}
+        title="Votes"
+      >
+        <Container className="h-max">
+          {proposal.votes.map((vote, index) => (
+            <VoteListItem vote={vote} index={index} proposal={proposal} />
+          ))}
+        </Container>
+      </Modal>
     </Container>
   );
 }

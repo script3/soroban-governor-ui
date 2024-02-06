@@ -308,7 +308,7 @@ export default function Proposal() {
         }}
         title="Votes"
       >
-        <Container className="h-max">
+        <Container slim className="h-max !p-4">
           {proposal.votes.map((vote, index) => (
             <VoteListItem vote={vote} index={index} proposal={proposal} />
           ))}

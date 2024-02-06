@@ -67,7 +67,7 @@ export function MarkdownPreview({
         });
         code.appendChild(copyButton);
       });
-      const viewer = new Viewer(body, {
+      new Viewer(body, {
         navbar: false,
         toolbar: false,
       });

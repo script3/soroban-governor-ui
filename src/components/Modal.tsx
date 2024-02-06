@@ -16,7 +16,7 @@ export function Modal({
   return (
     <>
       {isOpen && (
-        <Container slim className="modal  z-50 mx-auto w-screen">
+        <Container slim className="modal z-50 mx-auto w-screen">
           <Container className="backdrop flex items-center">
             <Container className="shell  relative overflow-hidden rounded-none md:rounded-3xl">
               <Container className="p-4 text-center border-b border-snapBorder">

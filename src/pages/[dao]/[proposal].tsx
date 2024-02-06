@@ -6,7 +6,7 @@ import Typography from "@/components/common/Typography";
 import { classByStatus } from "@/constants";
 import { mockDAOS } from "@/mock/dao";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ThreeDotsSVG } from "../test/comps";
 import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { useState } from "react";
@@ -17,6 +17,7 @@ import { formatCompactNumber, formatDate } from "@/utils/date";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
 import { VoteListItem } from "@/components/VoteListItem";
+import { copyToClipboard } from "@/utils/string";
 const mockDAO = mockDAOS[0];
 const shareOptions: Item[] = [
   {
@@ -31,11 +32,18 @@ const shareOptions: Item[] = [
 export default function Proposal() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const proposal = mockDAO.proposals[Number(params?.proposal) || 0];
   function handleAction(action: string) {
-    console.log({ action });
+    switch (action) {
+      case "copy":
+        copyToClipboard(`${window.location.origin}${pathname}`);
+      default:
+        console.log("action", action);
+        break;
+    }
   }
   return (
     <Container className="flex flex-col gap-6 ">

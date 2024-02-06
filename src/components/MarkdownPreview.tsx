@@ -1,7 +1,12 @@
 import { getIpfsUrl } from "@/utils/getIpfsUrl";
+import { copyToClipboard } from "@/utils/string";
 import { useEffect, useMemo } from "react";
 import { Remarkable } from "remarkable";
 import { linkify } from "remarkable/linkify";
+
+import "viewerjs/dist/viewer.css";
+import Viewer from "viewerjs";
+
 const remarkable = new Remarkable({
   html: false,
   breaks: true,
@@ -40,12 +45,8 @@ export function MarkdownPreview({
     return remarkable.render(toRender);
   }, [body]);
 
-  function copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text);
-  }
-
   useEffect(() => {
-    const body = document.querySelector(".markdown-body");
+    const body = document.getElementById("md-body");
 
     if (body !== null) {
       body.querySelectorAll("pre>code").forEach(function (code) {
@@ -66,17 +67,17 @@ export function MarkdownPreview({
         });
         code.appendChild(copyButton);
       });
-      //   body.querySelectorAll("a[href]").forEach(function (link) {
-      //     link.addEventListener("click", function (e) {
-      //       handleLinkClick(e, link.getAttribute("href"));
-      //     });
-      //   });
+      const viewer = new Viewer(body, {
+        navbar: false,
+        toolbar: false,
+      });
     }
   }, []);
   return (
     <div
       className={`markdown-body break-words ${className || ""}}`}
       dangerouslySetInnerHTML={{ __html: bodyToRender }}
+      id="md-body"
     ></div>
   );
 }

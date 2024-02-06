@@ -17,11 +17,7 @@ export function VoteListItem({
     <Container
       key={index}
       className={`flex items-center gap-3 justify-between border-snapBorder px-4 py-[14px]  ${
-        index === 0
-          ? "!border-0"
-          : index === proposal.votes.length - 1
-          ? "border-b-0 border-t"
-          : "border-t"
+        index === proposal.votes.length - 1 ? "border-b-0 border-t" : "border-t"
       }`}
     >
       <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">

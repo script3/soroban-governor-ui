@@ -35,6 +35,7 @@ export default function Proposal() {
   const pathname = usePathname();
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const proposal = mockDAO.proposals[Number(params?.proposal) || 0];
   function handleAction(action: string) {
     switch (action) {
@@ -44,6 +45,9 @@ export default function Proposal() {
         console.log("action", action);
         break;
     }
+  }
+  function handleLinkClick(link: string) {
+    window.open(link, "_blank");
   }
   return (
     <Container className="flex flex-col gap-6 ">
@@ -135,14 +139,15 @@ export default function Proposal() {
           </Container>
           <Container slim>
             {!!proposal.link && (
-              <Box className="flex min-h-20 items-center my-2 justify-center gap-2">
-                <Link
-                  className="flex hover:underline text-lg items-center gap-2"
-                  href={proposal.link}
-                  target="_blank"
-                >
+              <Box
+                className="flex min-h-20 items-center cursor-pointer hover:border hover:border-snapLink active:opacity-50 my-2 justify-center gap-2"
+                onClick={() => {
+                  setIsLinkModalOpen(true);
+                }}
+              >
+                <Typography.P className="flex  text-lg items-center gap-2">
                   Discussion link{" "}
-                </Link>
+                </Typography.P>
                 <Typography.Small className="text-snapLink flex ">
                   ({proposal.link})
                 </Typography.Small>
@@ -307,6 +312,44 @@ export default function Proposal() {
           {proposal.votes.map((vote, index) => (
             <VoteListItem vote={vote} index={index} proposal={proposal} />
           ))}
+        </Container>
+      </Modal>
+      <Modal
+        isOpen={isLinkModalOpen}
+        onClose={() => {
+          setIsLinkModalOpen(false);
+        }}
+        title="Proceed with caution!"
+      >
+        <Container
+          slim
+          className="h-max !p-4 text-center mb-2 border-b border-snapBorder w-full"
+        >
+          <Typography.P className="text-snapLink">
+            This link will take you to{" "}
+            <Typography.P className="text-white">{proposal.link}</Typography.P>
+            <br />
+            Be careful, this link could be malicious. Are you sure you want to
+            continue?
+          </Typography.P>
+        </Container>
+        <Container className="flex gap-4 justify-center p-4">
+          <Button
+            onClick={() => {
+              setIsLinkModalOpen(false);
+            }}
+            className="px-16"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleLinkClick(proposal.link);
+            }}
+            className="!bg-primary px-16"
+          >
+            Continue
+          </Button>
         </Container>
       </Modal>
     </Container>

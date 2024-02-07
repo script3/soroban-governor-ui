@@ -2,6 +2,7 @@ import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import { Markdown } from "./icons/Markdown";
 import { useImageUpload } from "@/hooks/upload";
+import Image from "next/image";
 
 interface TextAreaProps {
   preview: boolean;
@@ -103,7 +104,13 @@ const TextArea: React.FC<TextAreaProps> = ({
               className="relative inline"
               target="_blank"
             >
-              <Markdown className="fill-snapLink" />
+              <Image
+                src="/icons/markdown.svg"
+                width={22}
+                height={22}
+                alt="markdown"
+                className="fill-snapLink"
+              />
             </Link>
           </label>
         </div>

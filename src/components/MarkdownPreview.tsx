@@ -3,7 +3,7 @@ import { copyToClipboard } from "@/utils/string";
 import { useEffect, useMemo } from "react";
 import { Remarkable } from "remarkable";
 import { linkify } from "remarkable/linkify";
-
+import copy from "../../public/icons/copy.svg";
 import "viewerjs/dist/viewer.css";
 import Viewer from "viewerjs";
 
@@ -13,18 +13,6 @@ const remarkable = new Remarkable({
   typographer: false,
   linkTarget: "_blank",
 }).use(linkify);
-const copyIcon = `<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg fill="#8b949e" width="24px" height="24px" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <style>
-      .cls-1 {
-        fill: none;
-      }
-    </style>
-  </defs>
-  <path d="M28,10H22V4a2.0023,2.0023,0,0,0-2-2H4A2.0023,2.0023,0,0,0,2,4V20a2.0023,2.0023,0,0,0,2,2h6v6a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V12A2,2,0,0,0,28,10ZM4,20,3.9985,4H20v6H12a2,2,0,0,0-2,2v8Z"/>
-  <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/>
-</svg>`;
 export function MarkdownPreview({
   body,
   className,
@@ -58,7 +46,7 @@ export function MarkdownPreview({
         if (parent !== null) parent.classList.add("rounded-lg");
         const copyButton = document.createElement("a");
         copyButton.setAttribute("id", "copyBtn");
-        copyButton.innerHTML = copyIcon;
+        copyButton.innerHTML = copy;
         copyButton.classList.add("copy");
         copyButton.classList.add("cursor-pointer");
         copyButton.classList.add("active:opacity-50");

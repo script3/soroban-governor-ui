@@ -7,17 +7,16 @@ import { classByStatus } from "@/constants";
 import { mockDAOS } from "@/mock/dao";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { ThreeDotsSVG } from "../test/comps";
 import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { useState } from "react";
 import { Button } from "@/components/common/Button";
 import { ViewMore } from "@/components/ViewMore";
-import Link from "next/link";
 import { formatCompactNumber, formatDate } from "@/utils/date";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
 import { VoteListItem } from "@/components/VoteListItem";
 import { copyToClipboard } from "@/utils/string";
+import Image from "next/image";
 const mockDAO = mockDAOS[0];
 const shareOptions: Item[] = [
   {
@@ -60,20 +59,13 @@ export default function Proposal() {
         >
           {mockDAO.name}
         </Typography.Small>
-        <svg
-          viewBox="0 0 24 24"
-          width="1.2em"
-          height="1.2em"
+        <Image
+          src="/icons/chevron-right.svg"
+          width={20}
+          height={20}
           className="shrink-0 text-sm stroke-snapLink"
-        >
-          <path
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="m9 5l7 7l-7 7"
-          ></path>
-        </svg>
+          alt="chevright"
+        />
         <Typography.Small className=" opacity-40 line-clamp-1 max-w-[380px]">
           {" "}
           {proposal.title}
@@ -114,7 +106,14 @@ export default function Proposal() {
                 <Dropdown
                   chevron={false}
                   noBorder
-                  buttonText={ThreeDotsSVG}
+                  buttonText={
+                    <Image
+                      src="/icons/three-dots.svg"
+                      width={20}
+                      height={20}
+                      alt="threedots"
+                    />
+                  }
                   items={shareOptions}
                   onSelect={(action) => {
                     handleAction(action);

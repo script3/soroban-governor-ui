@@ -1,4 +1,5 @@
-<svg viewBox="0 0 24 24" width="1.2em" height="1.2em" class="ml-1 mr-[12px] text-xs text-skin-link">
-    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+<svg viewBox="0 0 24 24" width="22px" height="22px" class="ml-1 mr-[12px] text-xs text-skin-link" version="1.1"
+    xmlns="http://www.w3.org/2000/svg">
+    <path fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="m19 9l-7 7l-7-7"></path>
 </svg>

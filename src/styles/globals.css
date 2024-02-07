@@ -569,6 +569,7 @@ span {
   right: 1.2rem;
   top: 0;
   display: flex;
+  margin-top: 10px;
 }
 
 .markdown-body pre>code {

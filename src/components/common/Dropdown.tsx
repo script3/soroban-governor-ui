@@ -2,6 +2,7 @@ import { Menu } from "@headlessui/react";
 import Image from "next/image";
 import Typography from "./Typography";
 import { ReactNode } from "react";
+
 export type Alignment = "start" | "end";
 export type Side = "top" | "right" | "bottom" | "left";
 export type AlignedPlacement = `${Side}-${Alignment}`;
@@ -41,21 +42,13 @@ export function Dropdown({
         {buttonText}
         {/** @dev @TODO make this able to be import  */}
         {chevron && (
-          <svg
-            viewBox="0 0 24 24"
-            width="12px"
-            height="12px"
-            className="-mr-1 ml-2 h-5 w-5"
-          >
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m19 9l-7 7l-7-7"
-            ></path>
-          </svg>
+          <Image
+            alt="arrowdown"
+            src="/icons/chevron-down.svg"
+            className="ml-1"
+            width={16}
+            height={16}
+          />
         )}
       </Menu.Button>
       <Menu.Items

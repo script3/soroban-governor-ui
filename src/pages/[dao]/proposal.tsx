@@ -5,8 +5,7 @@ import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import TextArea from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
-import { BackArrow } from "@/components/common/icons/BackArrow";
-import { Info } from "@/components/common/icons/Info";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -27,14 +26,20 @@ export default function CreateProposal() {
           }}
           className="text-snapLink  hover:underline cursor-pointer  flex "
         >
-          <BackArrow /> Back
+          <Image
+            src="/icons/back-arrow.svg"
+            alt="back"
+            width={24}
+            height={24}
+          />{" "}
+          Back
         </Typography.P>
 
         {true && (
           <Box className="flex  border-snapLink  flex-col gap-2 p-6 m-4">
             <Typography.Small className="text-snapLink flex gap-2">
-              <Info /> You need to connect your wallet in order to submit a
-              proposal.
+              <Image src="/icons/info.svg" height={18} width={18} alt="info" />{" "}
+              You need to connect your wallet in order to submit a proposal.
             </Typography.Small>
             <Typography.Small className="w-max hover:underline cursor-pointer  flex ">
               Learn more

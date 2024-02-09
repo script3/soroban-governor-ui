@@ -1,3 +1,4 @@
+import { WalletProvider } from "@/hooks/wallet";
 import { MainLayout } from "@/layouts/MainLayout";
 import "@/styles/globals.css";
 import { NextPage } from "next";
@@ -15,5 +16,9 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? ((page) => page);
 
-  return <MainLayout>{getLayout(<Component {...pageProps} />)}</MainLayout>;
+  return (
+    <WalletProvider>
+      <MainLayout>{getLayout(<Component {...pageProps} />)}</MainLayout>
+    </WalletProvider>
+  );
 }

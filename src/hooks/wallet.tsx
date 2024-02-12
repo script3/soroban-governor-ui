@@ -51,7 +51,6 @@ export interface IWalletContext {
     newPassphrase: string,
     newOpts: Network["opts"]
   ) => void;
-  faucet(): Promise<undefined>;
 }
 
 export enum TxStatus {
@@ -230,75 +229,6 @@ export const WalletProvider = ({ children = null as any }) => {
     setTxFailure(undefined);
   }
 
-  async function faucet(): Promise<undefined> {
-    if (connected) {
-      const url = `https://ewqw4hx7oa.execute-api.us-east-1.amazonaws.com/getAssets?userId=${walletAddress}`;
-      try {
-        setTxStatus(TxStatus.BUILDING);
-        const resp = await fetch(url, { method: "GET" });
-        const txEnvelopeXDR = await resp.text();
-        let transaction = new Transaction(
-          xdr.TransactionEnvelope.fromXDR(txEnvelopeXDR, "base64"),
-          network.passphrase
-        );
-        const rpc = rpcServer();
-        let signedTx = new Transaction(
-          await sign(transaction.toXDR()),
-          network.passphrase
-        );
-        let response:
-          | SorobanRpc.Api.SendTransactionResponse
-          | SorobanRpc.Api.GetTransactionResponse = await rpc.sendTransaction(
-          signedTx
-        );
-        let status: string = response.status;
-        const resources = new Resources(0, 0, 0, 0, 0, 0, 0);
-        const tx_hash = response.hash;
-        setTxHash(tx_hash);
-
-        // Poll this until the status is not "NOT_FOUND"
-        const pollingStartTime = Date.now();
-        while (status === "PENDING" || status === "NOT_FOUND") {
-          if (pollingStartTime + 15000 < Date.now()) {
-            console.error(`Transaction timed out with status ${status}`);
-          }
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          // See if the transaction is complete
-          response = await rpc.getTransaction(tx_hash);
-          status = response.status;
-        }
-        // @ts-ignore
-        const result = ContractResult.fromResponse(
-          tx_hash,
-          resources,
-          response,
-          () => undefined
-        );
-        try {
-          if (result.ok) {
-            console.log("Successfully submitted transaction: ", result.hash);
-            setFailureMessage("");
-            setTxStatus(TxStatus.SUCCESS);
-          } else {
-            console.log("Failed submitted transaction: ", result.hash);
-            setFailureMessage(result.error?.message);
-            setTxStatus(TxStatus.FAIL);
-          }
-
-          return result;
-        } catch (e: any) {
-          console.error("Failed submitting transaction: ", e);
-          setFailureMessage(e?.message);
-          setTxStatus(TxStatus.FAIL);
-          return undefined;
-        }
-      } catch (e) {
-        setTxStatus(TxStatus.FAIL);
-        console.error("Faucet Failed", e);
-      }
-    }
-  }
-
   return (
     <WalletContext.Provider
       value={{
@@ -310,7 +240,7 @@ export const WalletProvider = ({ children = null as any }) => {
         connect,
         disconnect,
         clearLastTx,
-        faucet,
+
         rpcServer,
         submitTransaction,
         setNetwork,

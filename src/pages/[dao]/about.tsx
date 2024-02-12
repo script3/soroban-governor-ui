@@ -5,9 +5,10 @@ import { Dropdown } from "@/components/common/Dropdown";
 import { Input } from "@/components/common/Input";
 import { Toggle } from "@/components/common/Switch";
 import Typography from "@/components/common/Typography";
-import { World } from "@/components/common/icons/World";
+
 import { mockDAOS } from "@/mock/dao";
 import { useState } from "react";
+import Image from "next/image";
 const mockDAO = mockDAOS[0];
 function About() {
   const [newName, setNewName] = useState<string>(mockDAO.name);
@@ -21,7 +22,7 @@ function About() {
         <Typography.Big>Profile</Typography.Big>
         <Typography.Small>Avatar</Typography.Small>
         <div className="flex w-full">
-          <img
+          <Image
             className="rounded-full object-cover"
             src={mockDAO.logo}
             alt="project image"
@@ -36,7 +37,15 @@ function About() {
         <Input placeholder="" value={newAbout} onChange={setNewAbout} />
         <Typography.Small>Website</Typography.Small>
         <Input
-          icon={<World className="stroke-snapLink" />}
+          icon={
+            <Image
+              alt="Url"
+              src="/icons/world.svg"
+              width={18}
+              height={18}
+              className="stroke-snapLink"
+            />
+          }
           type="url"
           placeholder="your website url"
           value={newWebsite}
@@ -44,7 +53,15 @@ function About() {
         />
         <Typography.Small>Terms of Service</Typography.Small>
         <Input
-          icon={<World className="stroke-snapLink" />}
+          icon={
+            <Image
+              alt="Url"
+              src="/icons/world.svg"
+              width={18}
+              height={18}
+              className="stroke-snapLink"
+            />
+          }
           type="url"
           placeholder="Terms of Service url"
           value={newTerms}

@@ -1,7 +1,7 @@
-import { ThreeDotsSVG } from "@/pages/comps";
 import { Button } from "../common/Button";
 import Typography from "../common/Typography";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function TopBar() {
   const router = useRouter();
@@ -16,10 +16,19 @@ export function TopBar() {
         Soroban Governor
       </Typography.Medium>
       <div className="flex items-center gap-2">
-        <Button className="px-6" onClick={() => {}}>
+        <Button className="px-6 " onClick={() => {}}>
           Connect Wallet
         </Button>
-        <Button onClick={() => {}}>{ThreeDotsSVG}</Button>
+        <Button onClick={() => {}}>
+          {
+            <Image
+              src="/icons/three-dots.svg"
+              alt="threeDots"
+              height={22}
+              width={22}
+            />
+          }
+        </Button>
       </div>
     </div>
   );

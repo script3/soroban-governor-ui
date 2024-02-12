@@ -57,7 +57,12 @@ const getRelativeTimeFormatter = (options?: object) => {
     options || { style: "short", numeric: "always" }
   );
 };
-
+const getDateTimeFormatter = (options?: object) => {
+  return new Intl.DateTimeFormat(
+    "en-US",
+    options || { dateStyle: "medium", timeStyle: "short" }
+  );
+};
 const getNumberFormatter = (options?: object) => {
   return new Intl.NumberFormat(
     // currently we are using only english number formatting because other
@@ -154,7 +159,9 @@ const getPercentFractionDigits = (value: number) => {
 
   return Math.max(1, Math.min(leadingZeros, 8));
 };
-
+function formatDate(d: Date) {
+  return getDateTimeFormatter().format(d);
+}
 export {
   getRelativeTimeFormatter,
   getNumberFormatter,
@@ -163,6 +170,7 @@ export {
   formatNumber,
   formatCompactNumber,
   formatPercentNumber,
+  formatDate,
   getRelativeProposalPeriod,
   getPercentFractionDigits,
   longRelativeTimeFormatter,

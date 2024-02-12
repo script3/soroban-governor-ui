@@ -1,9 +1,9 @@
-import { ThreeDotsSVG } from "@/pages/comps";
 import { Button } from "../common/Button";
 import Typography from "../common/Typography";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/wallet";
 import { shortenAddress } from "@/utils/shortenAddress";
+import Image from "next/image";
 
 export function TopBar() {
   const router = useRouter();
@@ -28,7 +28,16 @@ export function TopBar() {
         >
           {walletAddress ? shortenAddress(walletAddress) : "Connect Wallet"}
         </Button>
-        <Button onClick={() => {}}>{ThreeDotsSVG}</Button>
+        <Button onClick={() => {}}>
+          {
+            <Image
+              src="/icons/three-dots.svg"
+              alt="threeDots"
+              height={22}
+              width={22}
+            />
+          }
+        </Button>
       </div>
     </div>
   );

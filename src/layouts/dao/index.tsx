@@ -9,6 +9,7 @@ import { useBreakpoints } from "@/hooks/breakpoints";
 import { mockDAOS } from "@/mock/dao";
 import { useRouter, usePathname, useParams } from "next/navigation";
 import { capitalizeFirstLetter } from "@/utils/string";
+import Image from "next/image";
 
 const mockDAO = mockDAOS[0];
 
@@ -47,7 +48,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
       <Container className="flex flex-col  lg:w-72 lg:min-w-72 ">
         <Box className="flex flex-col w-full pt-3 lg:!px-0 ">
           <div className="w-full mb-2 px-3">
-            <img
+            <Image
               className="rounded-full object-cover"
               src={mockDAO.logo}
               alt="project image"

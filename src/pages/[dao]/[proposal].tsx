@@ -162,7 +162,12 @@ export default function Proposal() {
                 </Chip>
               </Container>
               {proposal.votes.slice(0, 10).map((vote, index) => (
-                <VoteListItem vote={vote} index={index} proposal={proposal} />
+                <VoteListItem
+                  key={index}
+                  vote={vote}
+                  index={index}
+                  proposal={proposal}
+                />
               ))}
               <div
                 className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
@@ -309,7 +314,12 @@ export default function Proposal() {
       >
         <Container slim className="h-max !p-4">
           {proposal.votes.map((vote, index) => (
-            <VoteListItem vote={vote} index={index} proposal={proposal} />
+            <VoteListItem
+              key={index}
+              vote={vote}
+              index={index}
+              proposal={proposal}
+            />
           ))}
         </Container>
       </Modal>

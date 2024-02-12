@@ -1,6 +1,5 @@
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
-import { Markdown } from "./icons/Markdown";
+import React, { useRef, useState } from "react";
 import { useImageUpload } from "@/hooks/upload";
 import Image from "next/image";
 

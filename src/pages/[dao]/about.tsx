@@ -1,21 +1,29 @@
 import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
-import { Dropdown } from "@/components/common/Dropdown";
+
 import { Input } from "@/components/common/Input";
 import { Toggle } from "@/components/common/Switch";
 import Typography from "@/components/common/Typography";
 
-import { mockDAOS } from "@/mock/dao";
 import { useState } from "react";
 import Image from "next/image";
-const mockDAO = mockDAOS[0];
+import { useRouter } from "next/router";
+import { useGovernor } from "@/hooks/api";
+
 function About() {
-  const [newName, setNewName] = useState<string>(mockDAO.name);
-  const [newAbout, setNewAbout] = useState<string>(mockDAO.name);
-  const [newWebsite, setNewWebsite] = useState<string>(mockDAO.name);
-  const [newTerms, setNewTerms] = useState<string>(mockDAO.name);
-  const [newHide, setNewHide] = useState<boolean>(!!mockDAO.name);
+  const router = useRouter();
+  const params = router.query;
+  const [newName, setNewName] = useState<string>();
+  const [newAbout, setNewAbout] = useState<string>();
+  const [newWebsite, setNewWebsite] = useState<string>();
+  const [newTerms, setNewTerms] = useState<string>();
+  const [newHide, setNewHide] = useState<boolean>(false);
+  const { governor: currentGovernor } = useGovernor(params.dao as string, {
+    placeholderData: {},
+    enabled: !!params.dao,
+  });
+
   return (
     <Container slim className=" mt-3 flex flex-col gap-6 w-full">
       <Box className="flex flex-col gap-3 p-4 w-full">
@@ -24,7 +32,7 @@ function About() {
         <div className="flex w-full">
           <Image
             className="rounded-full object-cover"
-            src={mockDAO.logo}
+            src={currentGovernor?.logo || "/icons/dao.svg"}
             alt="project image"
             width={64}
             height={64}

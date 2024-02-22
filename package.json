@@ -12,6 +12,7 @@
     "@creit.tech/stellar-wallets-kit": "^0.5.0",
     "@headlessui/react": "^1.7.18",
     "@snapshot-labs/pineapple": "^1.1.0",
+    "@tanstack/react-query": "^5.22.2",
     "@types/remarkable": "^2.0.8",
     "next": "14.0.4",
     "react": "^18",
@@ -21,6 +22,7 @@
     "viewerjs": "^1.11.6"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.20.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

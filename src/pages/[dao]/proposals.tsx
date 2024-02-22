@@ -7,18 +7,23 @@ import { Input } from "@/components/common/Input";
 import { ProgressWrapper } from "@/components/common/ProgressWrapper";
 import Typography from "@/components/common/Typography";
 import { classByStatus } from "@/constants";
-import { mockDAOS } from "@/mock/dao";
+
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-const mockDAO = mockDAOS[0];
+import { useProposals } from "@/hooks/api";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const daoId = pathname?.split("/")[1];
+
+  const { proposals } = useProposals(daoId, {
+    placeholderData: [],
+  });
+
   return (
     <>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
@@ -50,8 +55,8 @@ function Proposals() {
       </Container>
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
-        {mockDAO.proposals.map((proposal) => (
-          <Box key={proposal.id} className="p-4 flex flex-col gap-4">
+        {proposals.map((proposal, ind) => (
+          <Box key={proposal.id + ind} className="p-4 flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <Typography.Small className="font-bold">
                 {shortenAddress(proposal.proposer)}
@@ -75,42 +80,39 @@ function Proposals() {
               <div className="flex flex-col gap-2">
                 {/* votes progress bar */}
                 <ProgressWrapper
-                  percentage={proposal.voteCount.yes / proposal.voteCount.total}
+                  percentage={proposal.votes_for / proposal.total_votes}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>Yes</Typography.Medium>
                     <Typography.Medium>
                       {`${(
-                        (proposal.voteCount.yes / proposal.voteCount.total) *
+                        (proposal.votes_for / proposal.total_votes) *
                         100
                       ).toFixed(2)}%`}
                     </Typography.Medium>
                   </div>
                 </ProgressWrapper>
                 <ProgressWrapper
-                  percentage={proposal.voteCount.no / proposal.voteCount.total}
+                  percentage={proposal.votes_against / proposal.total_votes}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>No</Typography.Medium>
                     <Typography.Medium>
                       {`${(
-                        (proposal.voteCount.no / proposal.voteCount.total) *
+                        (proposal.votes_against / proposal.total_votes) *
                         100
                       ).toFixed(2)}%`}
                     </Typography.Medium>
                   </div>
                 </ProgressWrapper>
                 <ProgressWrapper
-                  percentage={
-                    proposal.voteCount.abstain / proposal.voteCount.total
-                  }
+                  percentage={proposal.votes_abstain / proposal.total_votes}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>Abstain</Typography.Medium>
                     <Typography.Medium>
                       {`${(
-                        (proposal.voteCount.abstain /
-                          proposal.voteCount.total) *
+                        (proposal.votes_abstain / proposal.total_votes) *
                         100
                       ).toFixed(2)}%`}
                     </Typography.Medium>

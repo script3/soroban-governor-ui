@@ -159,7 +159,7 @@ export function useVotingPowerByProposal(
       const result = await getVotingPowerByProposal(
         voteTokenAddress,
         proposalStartTime,
-        false
+        true
       );
       return result || BigInt(0);
     },

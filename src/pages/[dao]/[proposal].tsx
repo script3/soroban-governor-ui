@@ -54,7 +54,7 @@ export default function Proposal() {
   const { vote, connected, connect } = useWallet();
   const { votingPower } = useVotingPowerByProposal(
     "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
-    1,
+    380000,
     proposal.id,
     { placeholderData: BigInt(0) }
   );

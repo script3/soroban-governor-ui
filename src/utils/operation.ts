@@ -6,7 +6,9 @@ import {
 } from "soroban-governor-js-sdk";
 import {
   Account,
+  Asset,
   Horizon,
+  Operation,
   SorobanRpc,
   Transaction,
   TransactionBuilder,
@@ -47,7 +49,7 @@ export async function invokeOperation<T>(
   sign: (txXdr: string) => Promise<string>,
   network: Network,
   txOptions: TxOptions,
-  parse: (value: string | xdr.ScVal | undefined) => T | undefined,
+  parse: any,
   operation: xdr.Operation | string
 ): Promise<ContractResult<any> | ContractError> {
   // create TX
@@ -66,6 +68,7 @@ export async function invokeOperation<T>(
   if (typeof operation === "string") {
     operation = xdr.Operation.fromXDR(operation, "base64");
   }
+
   tx_builder.addOperation(operation);
   const tx = tx_builder.build();
 

@@ -20,7 +20,7 @@
     "remarkable": "^2.0.1",
     "stellar-sdk": "^11.2.1",
     "viewerjs": "^1.11.6",
-    "soroban-governor-js-sdk": "../../soroban-governor-js-sdk/dist/esm/index.js"
+    "soroban-governor-js-sdk": "./node_modules/soroban-governor-js-sdk/dist/esm/index.js"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.20.1",

@@ -268,15 +268,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          (value: string | xdr.ScVal | undefined): xdr.ScVal | undefined => {
-            if (value == undefined) {
-              return undefined;
-            }
-            console.log({ value });
-            const val = scValToNative(value as xdr.ScVal);
-
-            return val;
-          },
+          governorClient.parsers.vote,
           voteOperation
         );
         if (sim) {
@@ -347,15 +339,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          (value: string | xdr.ScVal | undefined): any => {
-            if (value == undefined) {
-              return undefined;
-            }
-
-            const val = scValToNative(value as xdr.ScVal);
-
-            return val;
-          },
+          governorClient.parsers.propose,
           proposeOperation
         );
         if (sim) {
@@ -404,15 +388,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          (value: string | xdr.ScVal | undefined): any => {
-            if (value == undefined) {
-              return BigInt(0);
-            }
-
-            const val = scValToNative(value as xdr.ScVal);
-
-            return val;
-          },
+          votesClient.parsers.balance,
           votesOperation
         );
         if (sim) {
@@ -455,24 +431,16 @@ export const WalletProvider = ({ children = null as any }) => {
         let votesClient = new VotesClient(voteTokenAddress);
         console.log({ walletAddress });
 
-        let proposeOperation = votesClient.getVotes({
-          account: walletAddress,
-          // sequence: proposalStart,
+        let proposeOperation = votesClient.getPastVotes({
+          user: walletAddress,
+          sequence: proposalStart,
         });
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,
           network,
           txOptions,
-          (value: string | xdr.ScVal | undefined): any => {
-            if (value == undefined) {
-              return BigInt(0);
-            }
-
-            const val = scValToNative(value as xdr.ScVal);
-
-            return val;
-          },
+          votesClient.parsers.getVotes,
           proposeOperation
         );
         if (sim) {

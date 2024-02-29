@@ -24,6 +24,7 @@ import {
   useProposal,
   useVoteTokenBalance,
   useVotes,
+  useVotingPowerByProposal,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import { SelectableList } from "@/components/common/SelectableList";
@@ -51,15 +52,17 @@ export default function Proposal() {
     placeholderData: [],
   });
   const { vote, connected, connect } = useWallet();
-  const { balance } = useVoteTokenBalance(
+  const { votingPower } = useVotingPowerByProposal(
     "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+    1,
+    proposal.id,
     { placeholderData: BigInt(0) }
   );
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(0);
-  console.log({ balance });
+  console.log({ balance: votingPower });
   function handleAction(action: string) {
     switch (action) {
       case "copy":
@@ -212,7 +215,7 @@ export default function Proposal() {
                   <Button
                     onClick={() => {
                       if (connected) {
-                        if (balance > BigInt(0)) {
+                        if (votingPower > BigInt(0)) {
                           handleVote();
                         } else {
                           router.replace(`/${params.dao}?wrap=true`);
@@ -224,7 +227,7 @@ export default function Proposal() {
                     className="!bg-primary px-16 !w-full"
                   >
                     {connected
-                      ? balance > BigInt(0)
+                      ? votingPower > BigInt(0)
                         ? "Vote"
                         : "Get vote tokens"
                       : "Connect Wallet to Vote"}

@@ -75,7 +75,12 @@ export interface IWalletContext {
   getVoteTokenBalance: (
     voteTokenAddress: string,
     sim: boolean
-  ) => Promise<bigint | undefined>;
+  ) => Promise<bigint>;
+  getVotingPowerByProposal: (
+    voteTokenAddress: string,
+    proposalStart: number,
+    sim: boolean
+  ) => Promise<bigint>;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -253,7 +258,7 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         let governorClient = new GovernorClient(governorAddress);
-        let { op: voteOperation } = governorClient.vote({
+        let voteOperation = governorClient.vote({
           voter: walletAddress,
           proposal_id: proposalId,
           support,
@@ -272,7 +277,7 @@ export const WalletProvider = ({ children = null as any }) => {
 
             return val;
           },
-          voteOperation.toXDR("base64")
+          voteOperation
         );
         if (sim) {
           const sub = await submission;
@@ -305,8 +310,8 @@ export const WalletProvider = ({ children = null as any }) => {
 
    */
   async function createProposal(
-    calldata: Calldata,
-    sub_calldata: Array<SubCalldata>,
+    calldata_: Calldata,
+    sub_calldata_: Array<SubCalldata>,
     title: string,
     description: string,
     sim: boolean,
@@ -330,10 +335,10 @@ export const WalletProvider = ({ children = null as any }) => {
         let governorClient = new GovernorClient(governorAddress);
         console.log({ walletAddress });
 
-        let { op: proposeOperation } = governorClient.propose({
+        let proposeOperation = governorClient.propose({
           creator: walletAddress,
-          calldata,
-          sub_calldata,
+          calldata_,
+          sub_calldata_,
           title,
           description,
         });
@@ -351,7 +356,7 @@ export const WalletProvider = ({ children = null as any }) => {
 
             return val;
           },
-          proposeOperation.toXDR("base64")
+          proposeOperation
         );
         if (sim) {
           const sub = await submission;
@@ -360,7 +365,8 @@ export const WalletProvider = ({ children = null as any }) => {
           }
           return sub;
         } else {
-          return submitTransaction<bigint>(submission);
+          const result = await submitTransaction<bigint>(submission);
+          return result || BigInt(0);
         }
       } else {
         return;
@@ -387,10 +393,10 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new VotesClient(voteTokenAddress);
+        let votesClient = new VotesClient(voteTokenAddress);
         console.log({ walletAddress });
 
-        let { op: proposeOperation } = governorClient.balance({
+        let votesOperation = votesClient.balance({
           id: walletAddress,
         });
         const submission = invokeOperation<xdr.ScVal>(
@@ -400,14 +406,14 @@ export const WalletProvider = ({ children = null as any }) => {
           txOptions,
           (value: string | xdr.ScVal | undefined): any => {
             if (value == undefined) {
-              return undefined;
+              return BigInt(0);
             }
 
             const val = scValToNative(value as xdr.ScVal);
 
             return val;
           },
-          proposeOperation.toXDR("base64")
+          votesOperation
         );
         if (sim) {
           const sub = await submission;
@@ -416,17 +422,76 @@ export const WalletProvider = ({ children = null as any }) => {
           }
           return sub;
         } else {
-          return submitTransaction<bigint>(submission);
+          return submitTransaction<bigint>(submission) || BigInt(0);
         }
       } else {
-        return;
+        return BigInt(0);
       }
     } catch (e) {
-      console.log("Error creating proposal: ", e);
+      console.log("Error getting vote token balance: ", e);
       throw e;
     }
   }
+  async function getVotingPowerByProposal(
+    voteTokenAddress: string,
+    proposalStart: number,
+    sim: boolean
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new VotesClient(voteTokenAddress);
+        console.log({ walletAddress });
 
+        let proposeOperation = votesClient.getVotes({
+          account: walletAddress,
+          // sequence: proposalStart,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          (value: string | xdr.ScVal | undefined): any => {
+            if (value == undefined) {
+              return BigInt(0);
+            }
+
+            const val = scValToNative(value as xdr.ScVal);
+
+            return val;
+          },
+          proposeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return submitTransaction<bigint>(submission) || BigInt(0);
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error getting voting power : ", e);
+      throw e;
+    }
+  }
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -506,6 +571,7 @@ export const WalletProvider = ({ children = null as any }) => {
         setNetwork,
         closeNotification,
         getVoteTokenBalance,
+        getVotingPowerByProposal,
         notificationMode,
         showNotification,
         notificationTitle,

@@ -122,15 +122,50 @@ export function useVoteTokenBalance(
   voteTokenAddress: string,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
-  const { getVoteTokenBalance } = useWallet();
+  const { getVoteTokenBalance, connected } = useWallet();
   const { data, isLoading, error } = useQuery({
     ...options,
     staleTime: DEFAULT_STALE_TIME,
-    queryKey: ["voteTokenBalance", voteTokenAddress],
-    queryFn: () => getVoteTokenBalance(voteTokenAddress, true),
+    queryKey: ["voteTokenBalance", voteTokenAddress, connected],
+    queryFn: async () => {
+      const result = await getVoteTokenBalance(voteTokenAddress, true);
+      return result || BigInt(0);
+    },
   });
   return {
     balance: data as bigint,
+    isLoading,
+    error,
+  };
+}
+
+export function useVotingPowerByProposal(
+  voteTokenAddress: string,
+  proposalStartTime: number,
+  proposalId: number,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getVotingPowerByProposal, connected } = useWallet();
+  const { data, isLoading, error } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: [
+      "votingPowerByProposal",
+      proposalId,
+      proposalStartTime,
+      connected,
+    ],
+    queryFn: async () => {
+      const result = await getVotingPowerByProposal(
+        voteTokenAddress,
+        proposalStartTime,
+        false
+      );
+      return result || BigInt(0);
+    },
+  });
+  return {
+    votingPower: data as bigint,
     isLoading,
     error,
   };

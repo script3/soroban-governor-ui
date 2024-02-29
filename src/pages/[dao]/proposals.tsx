@@ -11,21 +11,60 @@ import { classByStatus } from "@/constants";
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useProposals } from "@/hooks/api";
+
+import { useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
+import { toBalance } from "@/utils/formatNumber";
+import { useRouter } from "next/router";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
+  const [toWrap, setToWrap] = useState<string>("");
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
-  const daoId = pathname?.split("/")[1];
+  const pathname = router.pathname;
+  const params = router.query;
 
-  const { proposals } = useProposals(daoId, {
+  const { balance } = useVoteTokenBalance(
+    "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+    { placeholderData: BigInt(0) }
+  );
+  const { proposals } = useProposals(params.dao as string, {
     placeholderData: [],
   });
+  const { governor } = useGovernor(params.dao as string, {
+    placeholderData: {},
+  });
+
+  function handleWrapClick() {}
 
   return (
-    <>
+    <Container slim className="flex flex-col gap-4">
+      <Container className="gap-4 ">
+        <Box className="p-2 flex gap-3 flex-col ">
+          <Container slim className="flex flex-col justify-center p-2 ">
+            <Typography.P>
+              Get voting power by wrapping your underlying tokens
+            </Typography.P>
+            <Typography.Small className="text-snapLink">
+              current voting power: {toBalance(balance, 7)}{" "}
+              {/* {governor.name || "$VOTE"} */}
+            </Typography.Small>
+          </Container>
+          <Container slim className="w-full flex flex-row  gap-3">
+            <Input
+              className="!w-1/2 flex"
+              placeholder="Amount to wrap"
+              onChange={setToWrap}
+              value={toWrap}
+              type="number"
+            />
+            <Button
+              className="w-1/2 flex !bg-secondary text-snapBorder active:opacity-50 "
+              onClick={handleWrapClick}
+            >
+              Wrap tokens
+            </Button>
+          </Container>
+        </Box>
+      </Container>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
         <Typography.Huge className="hidden lg:block text-white w-full mb-4">
           Proposals
@@ -44,9 +83,11 @@ function Proposals() {
               pathname,
               params,
               split: pathname.split("/")[1],
-              id: params.get("daoId"),
+              id: params.dao,
             });
-            router.push(`/${daoId}/proposal`, { scroll: false });
+            router.push(`/${params.dao}/proposal`, undefined, {
+              scroll: false,
+            });
           }}
           className="px-6 !w-full  md:!w-40 active:!opacity-90  "
         >
@@ -68,7 +109,7 @@ function Proposals() {
             <div
               className="flex flex-col gap-3 cursor-pointer"
               onClick={() => {
-                router.push(`/${daoId}/${proposal.id}`);
+                router.push(`/${params.dao}/${proposal.id}`);
               }}
             >
               <Typography.Medium className="font-semibold">
@@ -131,7 +172,7 @@ function Proposals() {
           </Box>
         ))}
       </Container>
-    </>
+    </Container>
   );
 }
 

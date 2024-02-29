@@ -1,7 +1,9 @@
 import { mockDAOS, mockProposals, mockVotes } from "@/mock/dao";
 import { Governor, Proposal, Vote } from "@/types";
-
+import { i256 } from "soroban-governor-js-sdk";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
+import { useWallet } from "./wallet";
+
 const DEFAULT_STALE_TIME = 20 * 1000;
 export function useGovernors(
   options: Partial<DefinedInitialDataOptions> = {} as any
@@ -111,6 +113,24 @@ export function useVotes(
 
   return {
     votes: votes as Vote[],
+    isLoading,
+    error,
+  };
+}
+
+export function useVoteTokenBalance(
+  voteTokenAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getVoteTokenBalance } = useWallet();
+  const { data, isLoading, error } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["voteTokenBalance", voteTokenAddress],
+    queryFn: () => getVoteTokenBalance(voteTokenAddress, true),
+  });
+  return {
+    balance: data as bigint,
     isLoading,
     error,
   };

@@ -5,10 +5,12 @@ import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import TextArea from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
+import { useWallet } from "@/hooks/wallet";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { Address, nativeToScVal } from "stellar-sdk";
 
 export default function CreateProposal() {
   const router = useRouter();
@@ -16,6 +18,22 @@ export default function CreateProposal() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
+  const { connected, connect, createProposal, walletAddress } = useWallet();
+
+  function handleProposal() {
+    createProposal(
+      {
+        args: [],
+        contract_id: "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+        function: "balance",
+      },
+      [],
+      title,
+      description,
+      false,
+      "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+    );
+  }
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
@@ -111,10 +129,14 @@ export default function CreateProposal() {
           <Button
             className="!bg-primary  !w-full"
             onClick={() => {
-              console.log("clicked");
+              if (!!connected) {
+                handleProposal();
+              } else {
+                connect();
+              }
             }}
           >
-            Connect Wallet
+            {!connected ? "Connect Wallet" : "Create Proposal"}
           </Button>
         </Box>
       </div>

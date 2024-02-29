@@ -13,9 +13,9 @@ import {
   xdr,
 } from "stellar-sdk";
 export type SorobanResponse =
+  | SorobanRpc.Api.GetTransactionResponse
   | SorobanRpc.Api.SimulateTransactionResponse
-  | SorobanRpc.Api.SendTransactionResponse
-  | SorobanRpc.Api.GetTransactionResponse;
+  | SorobanRpc.Api.SendTransactionResponse;
 
 export interface TxOptions {
   sim: boolean;
@@ -126,10 +126,16 @@ export async function invokeOperation<T>(
     response = await rpc.getTransaction(tx_hash);
     status = response.status;
   }
-  return ContractResult.fromTransactionResponse(
-    response as any,
+  console.log({
+    response,
+    type: typeof response,
+  });
+  const result = ContractResult.fromTransactionResponse(
+    response as SorobanRpc.Api.GetTransactionResponse,
     tx_hash,
     resources,
     parse
   );
+  console.log({ result });
+  return result;
 }

@@ -19,7 +19,15 @@ import { copyToClipboard } from "@/utils/string";
 import Image from "next/image";
 
 import { useRouter } from "next/router";
-import { useGovernor, useProposal, useVotes } from "@/hooks/api";
+import {
+  useGovernor,
+  useProposal,
+  useVoteTokenBalance,
+  useVotes,
+} from "@/hooks/api";
+import { useWallet } from "@/hooks/wallet";
+import { SelectableList } from "@/components/common/SelectableList";
+
 const shareOptions: Item[] = [
   {
     text: "Share on Twitter",
@@ -42,10 +50,16 @@ export default function Proposal() {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
+  const { vote, connected, connect } = useWallet();
+  const { balance } = useVoteTokenBalance(
+    "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+    { placeholderData: BigInt(0) }
+  );
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-
+  const [selectedSupport, setSelectedSupport] = useState(0);
+  console.log({ balance });
   function handleAction(action: string) {
     switch (action) {
       case "copy":
@@ -57,6 +71,16 @@ export default function Proposal() {
   }
   function handleLinkClick(link: string) {
     window.open(link, "_blank");
+  }
+
+  function handleVote() {
+    vote(
+      // proposal?.id as number,
+      1,
+      selectedSupport,
+      false,
+      "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+    );
   }
 
   return (
@@ -87,7 +111,10 @@ export default function Proposal() {
           slim
           className="flex flex-col px-0 md:px-4 gap-4 mx-auto max-w-[1012px] mt-[20px] w-auto m-auto lg:flex-row "
         >
-          <Container slim className="relative  lg:w-8/12 lg:pr-5">
+          <Container
+            slim
+            className="relative  lg:w-8/12 lg:pr-5 flex flex-col gap-4 "
+          >
             <Container slim className="flex flex-col mb-2">
               <Chip className={classByStatus[proposal.status] + " mb-4"}>
                 {proposal.status}
@@ -164,6 +191,46 @@ export default function Proposal() {
                   </Typography.Small>
                 </Box>
               )}
+            </Container>
+            <Container slim>
+              <Box>
+                <Container className="border-b border-snapBorder">
+                  <Typography.Medium className=" !p-4 flex w-full ">
+                    Cast your vote
+                  </Typography.Medium>
+                </Container>
+                <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
+                  <SelectableList
+                    onSelect={setSelectedSupport}
+                    items={[
+                      { value: 0, label: "Yes" },
+                      { value: 1, label: "No" },
+                      { value: 2, label: "Abstain" },
+                    ]}
+                    selected={selectedSupport}
+                  />
+                  <Button
+                    onClick={() => {
+                      if (connected) {
+                        if (balance > BigInt(0)) {
+                          handleVote();
+                        } else {
+                          router.replace(`/${params.dao}?wrap=true`);
+                        }
+                      } else {
+                        connect();
+                      }
+                    }}
+                    className="!bg-primary px-16 !w-full"
+                  >
+                    {connected
+                      ? balance > BigInt(0)
+                        ? "Vote"
+                        : "Get vote tokens"
+                      : "Connect Wallet to Vote"}
+                  </Button>
+                </Container>
+              </Box>
             </Container>
             <Container slim>
               <Box className="!px-0">

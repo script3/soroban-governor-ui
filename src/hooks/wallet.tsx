@@ -81,6 +81,11 @@ export interface IWalletContext {
     proposalStart: number,
     sim: boolean
   ) => Promise<bigint>;
+  wrapToken: (
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) => Promise<bigint>;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -460,6 +465,60 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
+  async function wrapToken(
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) {
+    try {
+      if (connected && walletAddress) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new VotesClient(voteTokenAddress);
+        console.log({ walletAddress });
+
+        let proposeOperation = votesClient.depositFor({
+          from: walletAddress,
+          amount,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          votesClient.parsers.depositFor,
+          proposeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          console.log({ sub });
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return submitTransaction<bigint>(submission) || BigInt(0);
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error wrapping token: ", e);
+      throw e;
+    }
+  }
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -540,6 +599,7 @@ export const WalletProvider = ({ children = null as any }) => {
         closeNotification,
         getVoteTokenBalance,
         getVotingPowerByProposal,
+        wrapToken,
         notificationMode,
         showNotification,
         notificationTitle,

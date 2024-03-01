@@ -13,15 +13,17 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 
 import { useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
-import { toBalance } from "@/utils/formatNumber";
+import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
+import { useWallet } from "@/hooks/wallet";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
+  const { wrapToken } = useWallet();
   const router = useRouter();
   const pathname = router.pathname;
   const params = router.query;
-
+  const decimals = 7;
   const { balance } = useVoteTokenBalance(
     "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
     { placeholderData: BigInt(0) }
@@ -33,13 +35,22 @@ function Proposals() {
     placeholderData: {},
   });
 
-  function handleWrapClick() {}
+  function handleWrapClick() {
+    const amount = scaleNumberToBigInt(toWrap, decimals);
+    wrapToken(
+      "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+      amount,
+      false
+    ).then((res) => {
+      console.log({ res });
+    });
+  }
 
   return (
     <Container slim className="flex flex-col gap-4">
       <Container className="gap-4 ">
-        <Box className="p-2 flex gap-3 flex-col ">
-          <Container slim className="flex flex-col justify-center p-2 ">
+        <Box className="p-3 flex gap-3 flex-col ">
+          <Container slim className="flex flex-col justify-center p-1 ">
             <Typography.P>
               Get voting power by wrapping your underlying tokens
             </Typography.P>
@@ -50,15 +61,16 @@ function Proposals() {
           </Container>
           <Container slim className="w-full flex flex-row  gap-3">
             <Input
-              className="!w-1/2 flex"
+              className="!w-1/3 flex"
               placeholder="Amount to wrap"
               onChange={setToWrap}
               value={toWrap}
               type="number"
             />
             <Button
-              className="w-1/2 flex !bg-secondary text-snapBorder active:opacity-50 "
+              className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
               onClick={handleWrapClick}
+              disabled={!toWrap}
             >
               Wrap tokens
             </Button>

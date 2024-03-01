@@ -24,18 +24,18 @@ export function FlashNotification({
     }
 
     // Set a new timeout if isOpen is true
-    if (isOpen) {
-      timeoutRef.current = setTimeout(() => {
-        onClose && onClose();
-      }, 2000); // Set your desired timeout duration in milliseconds
-    }
+    // if (isOpen) {
+    //   timeoutRef.current = setTimeout(() => {
+    //     onClose && onClose();
+    //   }, 2000); // Set your desired timeout duration in milliseconds
+    // }
 
-    // Clean up the timeout on component unmount or when isOpen becomes false
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
+    // // Clean up the timeout on component unmount or when isOpen becomes false
+    // return () => {
+    //   if (timeoutRef.current) {
+    //     clearTimeout(timeoutRef.current);
+    //   }
+    // };
   }, [isOpen, onClose]);
   return (
     <>
@@ -66,7 +66,7 @@ export function FlashNotification({
               height={22}
               width={22}
               alt="close"
-              className="cursor-pointer  active:opacity-50"
+              className="cursor-pointer  active:opacity-50 m-auto"
             />
           </Container>
         </Container>

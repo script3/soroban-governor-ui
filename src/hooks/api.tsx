@@ -1,6 +1,5 @@
 import { mockDAOS, mockProposals, mockVotes } from "@/mock/dao";
 import { Governor, Proposal, Vote } from "@/types";
-import { i256 } from "soroban-governor-js-sdk";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 

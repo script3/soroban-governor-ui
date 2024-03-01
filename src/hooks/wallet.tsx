@@ -354,7 +354,11 @@ export const WalletProvider = ({ children = null as any }) => {
           }
           return sub;
         } else {
-          const result = await submitTransaction<bigint>(submission);
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal created",
+            successMessage: "Proposal created",
+          });
           return result || BigInt(0);
         }
       } else {

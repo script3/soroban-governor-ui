@@ -27,11 +27,29 @@ export default function CreateProposal() {
   function handleProposal() {
     createProposal(
       {
-        args: [],
+        args: [
+          {
+            value: "GCDUQQ2LP2M32Q563YOJOG36KXO5T635FKSWG4IQWYFE2FQHMMQKYK3S",
+            type: "address",
+          },
+        ],
         contract_id: "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
         function: "balance",
       },
-      [],
+      [
+        {
+          args: [
+            {
+              value: "GCDUQQ2LP2M32Q563YOJOG36KXO5T635FKSWG4IQWYFE2FQHMMQKYK3S",
+              type: "address",
+            },
+          ],
+          contract_id:
+            "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+          function: "balance",
+          sub_auth: [],
+        },
+      ],
       title,
       description,
       false,

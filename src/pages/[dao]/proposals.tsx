@@ -16,10 +16,11 @@ import { useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
+import { connected } from "process";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
-  const { wrapToken } = useWallet();
+  const { wrapToken, connect, connected } = useWallet();
   const router = useRouter();
   const pathname = router.pathname;
   const params = router.query;
@@ -36,14 +37,19 @@ function Proposals() {
   });
 
   function handleWrapClick() {
-    const amount = scaleNumberToBigInt(toWrap, decimals);
-    wrapToken(
-      "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
-      amount,
-      false
-    ).then((res) => {
-      console.log({ res });
-    });
+    if (!connected) {
+      connect();
+      return;
+    } else {
+      const amount = scaleNumberToBigInt(toWrap, decimals);
+      wrapToken(
+        "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+        amount,
+        false
+      ).then((res) => {
+        console.log({ res });
+      });
+    }
   }
 
   return (
@@ -70,9 +76,9 @@ function Proposals() {
             <Button
               className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
               onClick={handleWrapClick}
-              disabled={!toWrap}
+              disabled={connected && !toWrap}
             >
-              Wrap tokens
+              {connected ? "Wrap Tokens" : "Connect wallet"}
             </Button>
           </Container>
         </Box>

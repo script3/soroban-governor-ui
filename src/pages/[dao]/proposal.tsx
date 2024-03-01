@@ -8,6 +8,7 @@ import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
 import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
+import { isCalldata, isSubCalldataArray } from "@/utils/validation";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -25,7 +26,17 @@ export default function CreateProposal() {
   const { connected, connect, createProposal, walletAddress } = useWallet();
 
   function handleProposal() {
-    createProposal(
+    const calldata = {
+      args: [
+        {
+          value: "GCDUQQ2LP2M32Q563YOJOG36KXO5T635FKSWG4IQWYFE2FQHMMQKYK3S",
+          type: "address",
+        },
+      ],
+      contract_id: "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+      function: "balance",
+    };
+    const subCalldata = [
       {
         args: [
           {
@@ -35,21 +46,16 @@ export default function CreateProposal() {
         ],
         contract_id: "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
         function: "balance",
+        sub_auth: [],
       },
-      [
-        {
-          args: [
-            {
-              value: "GCDUQQ2LP2M32Q563YOJOG36KXO5T635FKSWG4IQWYFE2FQHMMQKYK3S",
-              type: "address",
-            },
-          ],
-          contract_id:
-            "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
-          function: "balance",
-          sub_auth: [],
-        },
-      ],
+    ];
+    const cond = isCalldata(executionCalldata);
+    const con2 = isSubCalldataArray(executionSubCalldata);
+
+    console.log({ cond, con2, executionCalldata });
+    createProposal(
+      calldata,
+      subCalldata,
       title,
       description,
       false,

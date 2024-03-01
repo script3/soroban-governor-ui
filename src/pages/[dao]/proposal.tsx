@@ -3,8 +3,10 @@ import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
-import TextArea from "@/components/common/TextArea";
+import MarkdownTextArea from "@/components/common/MarkdownTextArea";
+import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
+import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +19,8 @@ export default function CreateProposal() {
   const [isPreview, setIsPreview] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [executionCalldata, setExecutionCalldata] = useState("");
+  const [executionSubCalldata, setExecutionSubCalldata] = useState("");
   const [link, setLink] = useState("");
   const { connected, connect, createProposal, walletAddress } = useWallet();
 
@@ -73,11 +77,29 @@ export default function CreateProposal() {
             <Typography.Small className="text-snapLink !my-2 ">
               Description
             </Typography.Small>
-            <TextArea
+            <MarkdownTextArea
               value={description}
               onChange={setDescription}
               preview={false}
               bodyLimit={20_000}
+            />
+            <Typography.Small className="text-snapLink !my-2 ">
+              Execution Calldata (optional)
+            </Typography.Small>
+            <TextArea
+              className="min-h-72"
+              value={executionCalldata}
+              onChange={setExecutionCalldata}
+              placeholder={CALLDATA_PLACEHOLDER}
+            />
+            <Typography.Small className="text-snapLink !my-2 ">
+              Execution Subcalldata (optional)
+            </Typography.Small>
+            <TextArea
+              className="min-h-72"
+              value={executionSubCalldata}
+              onChange={setExecutionSubCalldata}
+              placeholder={SUBCALLDATA_PLACEHOLDER}
             />
             <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)

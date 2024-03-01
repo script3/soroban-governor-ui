@@ -7,12 +7,14 @@ export type SelectableListProps = {
   onSelect: (value: any) => void;
   items: { value: any; label: string }[];
   selected: any;
+  disabled?: boolean;
 };
 
 export function SelectableList({
   onSelect,
   selected,
   items,
+  disabled,
 }: SelectableListProps) {
   return (
     <Container slim className="flex flex-col w-full gap-3">
@@ -24,7 +26,9 @@ export function SelectableList({
           }}
           className={`flex flex-row justify-between rounded-full border ${
             selected === value ? "border-white" : "border-snapBorder"
-          } background-snapBg p-4 w-full cursor-pointer`}
+          } background-snapBg p-4 w-full cursor-pointer ${
+            disabled ? "opacity-50 pointer-events-none" : ""
+          }`}
         >
           <Container slim className="ml-4">
             <Typography.P>{label}</Typography.P>

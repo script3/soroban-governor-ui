@@ -28,6 +28,7 @@ import {
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import { SelectableList } from "@/components/common/SelectableList";
+import { toBalance } from "@/utils/formatNumber";
 
 const shareOptions: Item[] = [
   {
@@ -58,10 +59,11 @@ export default function Proposal() {
     proposal.id,
     { placeholderData: BigInt(0) }
   );
+
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [selectedSupport, setSelectedSupport] = useState(0);
+  const [selectedSupport, setSelectedSupport] = useState(null);
   console.log({ balance: votingPower });
   function handleAction(action: string) {
     switch (action) {
@@ -77,13 +79,15 @@ export default function Proposal() {
   }
 
   function handleVote() {
-    vote(
-      // proposal?.id as number,
-      1,
-      selectedSupport,
-      false,
-      "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
-    );
+    if (selectedSupport !== null) {
+      vote(
+        // proposal?.id as number,
+        1,
+        selectedSupport,
+        false,
+        "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+      );
+    }
   }
 
   return (
@@ -197,13 +201,19 @@ export default function Proposal() {
             </Container>
             <Container slim>
               <Box>
-                <Container className="border-b border-snapBorder">
-                  <Typography.Medium className=" !p-4 flex w-full ">
+                <Container className="border-b border-snapBorder flex !flex-row justify-between ">
+                  <Typography.Medium className=" !p-4 flex w-max">
                     Cast your vote
                   </Typography.Medium>
+                  {connected && votingPower > BigInt(0) && (
+                    <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
+                      Voting Power: {toBalance(votingPower, 7)}
+                    </Typography.Medium>
+                  )}
                 </Container>
                 <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
                   <SelectableList
+                    disabled={votingPower === BigInt(0) || !connected}
                     onSelect={setSelectedSupport}
                     items={[
                       { value: 0, label: "Yes" },

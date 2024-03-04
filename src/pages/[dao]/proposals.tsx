@@ -60,10 +60,12 @@ function Proposals() {
             <Typography.P>
               Get voting power by wrapping your underlying tokens
             </Typography.P>
-            <Typography.Small className="text-snapLink">
-              current voting power: {toBalance(balance, 7)}{" "}
-              {/* {governor.name || "$VOTE"} */}
-            </Typography.Small>
+            {connected && (
+              <Typography.Small className="text-snapLink">
+                current voting power: {toBalance(balance, 7)}{" "}
+                {/* {governor.name || "$VOTE"} */}
+              </Typography.Small>
+            )}
           </Container>
           <Container slim className="w-full flex flex-row  gap-3">
             <Input

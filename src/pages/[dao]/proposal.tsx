@@ -81,7 +81,7 @@ export default function CreateProposal() {
           Back
         </Typography.P>
 
-        {true && (
+        {!connected && (
           <Box className="flex  border-snapLink  flex-col gap-2 p-6 m-4">
             <Typography.Small className="text-snapLink flex gap-2">
               <Image src="/icons/info.svg" height={18} width={18} alt="info" />{" "}

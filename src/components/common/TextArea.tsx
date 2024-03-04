@@ -4,6 +4,7 @@ export type TextAreaProps = {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  isError?: boolean;
 };
 export function TextArea({
   value,
@@ -11,6 +12,7 @@ export function TextArea({
   disabled,
   placeholder,
   className,
+  isError,
 }: TextAreaProps) {
   return (
     <textarea
@@ -18,9 +20,11 @@ export function TextArea({
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
       placeholder={placeholder}
-      className={`w-full h-40 p-4 border border-snapBorder rounded-lg outline-none focus:border-snapLink ${
-        className || ""
-      } `}
+      className={`w-full h-40 p-4 border border-snapBorder ${
+        isError ? "!border-error" : "border-snapBorder"
+      } rounded-lg outline-none ${
+        isError ? "focus:!border-red-800" : "focus:border-snapLink"
+      } ${className || ""} `}
     />
   );
 }

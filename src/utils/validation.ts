@@ -10,7 +10,6 @@ export function safeJSONParse(value: any) {
     const data = parse(value);
     return { isValid: true, data };
   } catch (e) {
-    console.log(e);
     return { isValid: false, data: null };
   }
 }

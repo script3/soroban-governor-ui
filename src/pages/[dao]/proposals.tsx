@@ -17,10 +17,11 @@ import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
 import { connected } from "process";
+import { Loader } from "@/components/common/Loader";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
-  const { wrapToken, connect, connected } = useWallet();
+  const { wrapToken, connect, connected, isLoading } = useWallet();
   const router = useRouter();
   const pathname = router.pathname;
   const params = router.query;
@@ -78,9 +79,15 @@ function Proposals() {
             <Button
               className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
               onClick={handleWrapClick}
-              disabled={connected && !toWrap}
+              disabled={isLoading || (connected && !toWrap)}
             >
-              {connected ? "Wrap Tokens" : "Connect wallet"}
+              {isLoading ? (
+                <Loader />
+              ) : connected ? (
+                "Wrap Tokens"
+              ) : (
+                "Connect wallet"
+              )}
             </Button>
           </Container>
         </Box>

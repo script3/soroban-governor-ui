@@ -3,6 +3,7 @@ import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
+import { Loader } from "@/components/common/Loader";
 import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
@@ -180,11 +181,13 @@ export default function CreateProposal() {
               }
             }}
           >
-            {isLoading
-              ? "loading..."
-              : !connected
-              ? "Connect Wallet"
-              : "Create Proposal"}
+            {isLoading ? (
+              <Loader />
+            ) : !connected ? (
+              "Connect Wallet"
+            ) : (
+              "Create Proposal"
+            )}
           </Button>
         </Box>
       </div>

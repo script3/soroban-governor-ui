@@ -34,7 +34,6 @@ export function useGovernor(
     queryFn: () => getGovernorById(governorId),
   });
   async function getGovernorById(governorId: string) {
-    console.log({ governorId });
     const foundGovernor = mockDAOS.find((p) => p.name === governorId);
     return foundGovernor;
   }
@@ -165,6 +164,34 @@ export function useVotingPowerByProposal(
   });
   return {
     votingPower: data as bigint,
+    isLoading,
+    error,
+  };
+}
+
+export function useUserVoteByProposalId(
+  proposalId: number,
+  governorAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getUserVoteByProposalId, connected } = useWallet();
+  const { data, isLoading, error } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+
+    queryKey: ["userVoteByProposalId", proposalId, connected],
+    queryFn: async () => {
+      const result = await getUserVoteByProposalId(
+        proposalId,
+        governorAddress,
+        true
+      );
+      console.log({ result });
+      return result;
+    },
+  });
+  return {
+    userVote: data as bigint,
     isLoading,
     error,
   };

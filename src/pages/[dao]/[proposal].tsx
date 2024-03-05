@@ -22,6 +22,7 @@ import { useRouter } from "next/router";
 import {
   useGovernor,
   useProposal,
+  useUserVoteByProposalId,
   useVoteTokenBalance,
   useVotes,
   useVotingPowerByProposal,
@@ -53,7 +54,17 @@ export default function Proposal() {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
+  const { userVote } = useUserVoteByProposalId(
+    Number(params.proposal),
+    "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL", //currentGovernor.address,
+    {
+      enabled: !!proposal?.id && !!currentGovernor.name,
+      placeholderData: undefined,
+    }
+  );
+  console.log({ userVote });
   const { vote, connected, connect, isLoading } = useWallet();
+
   const { votingPower } = useVotingPowerByProposal(
     "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
     380000,
@@ -65,13 +76,12 @@ export default function Proposal() {
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
-  console.log({ balance: votingPower });
+
   function handleAction(action: string) {
     switch (action) {
       case "copy":
         copyToClipboard(`${window.location.origin}${router.pathname}`);
       default:
-        console.log("action", action);
         break;
     }
   }
@@ -204,7 +214,7 @@ export default function Proposal() {
               <Box>
                 <Container className="border-b border-snapBorder flex !flex-row justify-between ">
                   <Typography.Medium className=" !p-4 flex w-max">
-                    Cast your vote
+                    {userVote !== null ? "Your vote is in" : "Cast your vote"}
                   </Typography.Medium>
                   {connected && votingPower > BigInt(0) && (
                     <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
@@ -215,7 +225,10 @@ export default function Proposal() {
                 <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
                   <SelectableList
                     disabled={
-                      isLoading || votingPower === BigInt(0) || !connected
+                      isLoading ||
+                      userVote !== null ||
+                      votingPower === BigInt(0) ||
+                      !connected
                     }
                     onSelect={setSelectedSupport}
                     items={[
@@ -223,11 +236,11 @@ export default function Proposal() {
                       { value: 1, label: "No" },
                       { value: 2, label: "Abstain" },
                     ]}
-                    selected={selectedSupport}
+                    selected={userVote ?? selectedSupport}
                   />
                   <Button
                     onClick={() => {
-                      if (connected) {
+                      if (connected && userVote !== null) {
                         if (votingPower > BigInt(0)) {
                           handleVote();
                         } else {
@@ -238,7 +251,7 @@ export default function Proposal() {
                       }
                     }}
                     className="!bg-primary px-16 !w-full"
-                    disabled={isLoading}
+                    disabled={isLoading || userVote !== undefined}
                   >
                     {isLoading ? (
                       <Loader />

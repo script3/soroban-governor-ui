@@ -87,6 +87,11 @@ export interface IWalletContext {
     amount: bigint,
     sim: boolean
   ) => Promise<bigint>;
+  getUserVoteByProposalId: (
+    proposalId: number,
+    governorAddress: string,
+    sim: boolean
+  ) => Promise<number | undefined>;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -331,7 +336,6 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         let governorClient = new GovernorClient(governorAddress);
-        console.log({ walletAddress });
 
         let proposeOperation = governorClient.propose({
           creator: walletAddress,
@@ -388,7 +392,6 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         let votesClient = new VotesClient(voteTokenAddress);
-        console.log({ walletAddress });
 
         let votesOperation = votesClient.balance({
           id: walletAddress,
@@ -439,7 +442,6 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         let votesClient = new VotesClient(voteTokenAddress);
-        console.log({ walletAddress });
 
         let proposeOperation = votesClient.getPastVotes({
           user: walletAddress,
@@ -508,7 +510,7 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         if (sim) {
           const sub = await submission;
-          console.log({ sub });
+
           if (sub instanceof ContractResult) {
             return sub.result.unwrap();
           }
@@ -521,6 +523,56 @@ export const WalletProvider = ({ children = null as any }) => {
       }
     } catch (e) {
       console.log("Error wrapping token: ", e);
+      throw e;
+    }
+  }
+
+  async function getUserVoteByProposalId(
+    proposalId: number,
+    governorAddress: string,
+    sim: boolean
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorClient(governorAddress);
+        let voteOperation = governorClient.getVote({
+          voter: walletAddress,
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          governorClient.parsers.getVote,
+          voteOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return submitTransaction<bigint>(submission) || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
       throw e;
     }
   }
@@ -538,7 +590,7 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
-      console.log({ result });
+
       setTxHash(result.hash);
       const isOk = result.result.isOk();
       setNotificationMode("flash");
@@ -609,6 +661,7 @@ export const WalletProvider = ({ children = null as any }) => {
         getVoteTokenBalance,
         getVotingPowerByProposal,
         wrapToken,
+        getUserVoteByProposalId,
         notificationMode,
         showNotification,
         notificationTitle,

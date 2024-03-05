@@ -157,7 +157,6 @@ export default function CreateProposal() {
           <Button
             className=" !w-full"
             onClick={() => {
-              console.log("clicked");
               setIsPreview(!isPreview);
             }}
             disabled={!title && !description}

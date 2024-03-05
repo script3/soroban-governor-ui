@@ -106,12 +106,6 @@ function Proposals() {
 
         <Button
           onClick={() => {
-            console.log({
-              pathname,
-              params,
-              split: pathname.split("/")[1],
-              id: params.dao,
-            });
             router.push(`/${params.dao}/proposal`, undefined, {
               scroll: false,
             });

@@ -24,15 +24,24 @@ export default function CreateProposal() {
   const [executionCalldata, setExecutionCalldata] = useState("");
   const [executionSubCalldata, setExecutionSubCalldata] = useState("");
   const [link, setLink] = useState("");
-  const { connected, connect, createProposal, walletAddress } = useWallet();
+  const { connected, connect, createProposal, isLoading } = useWallet();
   const isSubcalldataDisabled =
     !!executionSubCalldata && !isSubCalldataArrayString(executionSubCalldata);
   const isCalldataDisabled =
-    !!executionCalldata && !isCalldataString(executionCalldata);
+    !executionCalldata ||
+    (!!executionCalldata && !isCalldataString(executionCalldata));
 
   function handleProposal() {
-    const calldata = parse(executionCalldata);
-    const subCalldata = parse(executionSubCalldata);
+    const calldata = parse(
+      executionCalldata ||
+        `{
+      args:[],
+      function:"",
+      contract_id:""
+
+    }`
+    );
+    const subCalldata = parse(executionSubCalldata || "[]");
     createProposal(
       calldata,
       subCalldata,
@@ -171,7 +180,11 @@ export default function CreateProposal() {
               }
             }}
           >
-            {!connected ? "Connect Wallet" : "Create Proposal"}
+            {isLoading
+              ? "loading..."
+              : !connected
+              ? "Connect Wallet"
+              : "Create Proposal"}
           </Button>
         </Box>
       </div>

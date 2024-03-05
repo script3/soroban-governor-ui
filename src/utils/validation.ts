@@ -46,12 +46,6 @@ export function isCalldataString(str: string): boolean {
   if (!isValid) {
     return false;
   }
-  if (data && typeof data === "object") {
-    const len = Object.keys(data).length;
-    if (len === 0) {
-      return true;
-    }
-  }
 
   const condition = isCalldata(data);
   return condition;

@@ -6,12 +6,11 @@ import { TabBar, TabItem } from "@/components/common/Tab/TabBar";
 import Typography from "@/components/common/Typography";
 import { FlagIcon } from "@/components/common/icons/Flag";
 import { useBreakpoints } from "@/hooks/breakpoints";
-import { mockDAOS } from "@/mock/dao";
-import { useRouter, usePathname, useParams } from "next/navigation";
+
 import { capitalizeFirstLetter } from "@/utils/string";
 import Image from "next/image";
-
-const mockDAO = mockDAOS[0];
+import { useGovernor } from "@/hooks/api";
+import { useRouter } from "next/router";
 
 const Tabs: TabItem[] = [
   {
@@ -33,11 +32,13 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
     breakpoints: { lg: isLg },
   } = useBreakpoints();
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
-  const routeTab = pathname?.split("/")[2];
+  const params = router.query;
+  const routeTab = router.pathname?.split("/")[2];
   const [activeTab, setActiveTab] = useState<string>("proposals");
-
+  const { governor } = useGovernor(params?.dao as string, {
+    enabled: !!params?.dao,
+    placeholderData: {},
+  });
   useEffect(() => {
     if (routeTab) {
       setActiveTab(capitalizeFirstLetter(routeTab));
@@ -50,18 +51,18 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
           <div className="w-full mb-2 px-3">
             <Image
               className="rounded-full object-cover"
-              src={mockDAO.logo}
+              src={governor?.logo}
               alt="project image"
               width={64}
               height={64}
             />
           </div>
           <div className="w-full px-3">
-            <Typography.Huge>{mockDAO.name}</Typography.Huge>
+            <Typography.Huge>{governor?.name}</Typography.Huge>
           </div>
           <div className="flex w-full justify-between flex-col md:max-lg:flex-row  gap-4 px-3">
             <Typography.Medium className="text-snapLink">
-              {` ${mockDAO.memberCount} members `}
+              {` ${governor?.memberCount} members `}
             </Typography.Medium>
             <div className="flex gap-2 items-center  flex-col w-full md:max-lg:flex-row md:max-lg:w-auto">
               <Button

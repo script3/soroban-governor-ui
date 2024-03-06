@@ -1,8 +1,19 @@
-import { mockDAOS, mockProposals, mockVotes } from "@/mock/dao";
+import { mockProposals, mockVotes } from "@/mock/dao";
 import { Governor, Proposal, Vote } from "@/types";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
-
+import governors from "../../public/governors/governors.json";
+const mappedGovernors = governors.map(
+  ({ timelock, votePeriod, proposalThreshold, voteDelay, ...rest }) => {
+    return {
+      ...rest,
+      timelock: BigInt(timelock),
+      votePeriod: BigInt(votePeriod),
+      proposalThreshold: BigInt(proposalThreshold),
+      voteDelay: BigInt(voteDelay),
+    };
+  }
+);
 const DEFAULT_STALE_TIME = 20 * 1000;
 export function useGovernors(
   options: Partial<DefinedInitialDataOptions> = {} as any
@@ -14,7 +25,7 @@ export function useGovernors(
     queryFn: loadGovernors,
   });
   async function loadGovernors(): Promise<Governor[]> {
-    return mockDAOS;
+    return mappedGovernors as Governor[];
   }
   return {
     governors: data as Governor[],
@@ -34,7 +45,7 @@ export function useGovernor(
     queryFn: () => getGovernorById(governorId),
   });
   async function getGovernorById(governorId: string) {
-    const foundGovernor = mockDAOS.find((p) => p.name === governorId);
+    const foundGovernor = mappedGovernors.find((p) => p.name === governorId);
     return foundGovernor;
   }
 

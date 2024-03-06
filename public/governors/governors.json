@@ -1,9 +1,9 @@
 [
   {
-    "proposalThreshold": 100000000000000000,
-    "voteDelay": 86400,
-    "votePeriod": 604800,
-    "timelock": 86400,
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
     "quorum": 5000,
     "countingType": 0,
     "voteThreshold": 5000,
@@ -13,10 +13,10 @@
     "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
   },
   {
-    "proposalThreshold": 100000000000000000,
-    "voteDelay": 86400,
-    "votePeriod": 604800,
-    "timelock": 86400,
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
     "quorum": 5000,
     "countingType": 0,
     "voteThreshold": 5000,
@@ -26,10 +26,10 @@
     "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
   },
   {
-    "proposalThreshold": 100000000000000000,
-    "voteDelay": 86400,
-    "votePeriod": 604800,
-    "timelock": 86400,
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
     "quorum": 5000,
     "countingType": 0,
     "voteThreshold": 5000,
@@ -39,10 +39,10 @@
     "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
   },
   {
-    "proposalThreshold": 100000000000000000,
-    "voteDelay": 86400,
-    "votePeriod": 604800,
-    "timelock": 86400,
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
     "quorum": 5000,
     "countingType": 0,
     "voteThreshold": 5000,
@@ -52,10 +52,10 @@
     "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
   },
   {
-    "proposalThreshold": 100000000000000000,
-    "voteDelay": 86400,
-    "votePeriod": 604800,
-    "timelock": 86400,
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
     "quorum": 5000,
     "countingType": 0,
     "voteThreshold": 5000,

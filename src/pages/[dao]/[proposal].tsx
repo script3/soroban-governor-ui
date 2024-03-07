@@ -23,7 +23,6 @@ import {
   useGovernor,
   useProposal,
   useUserVoteByProposalId,
-  useVoteTokenBalance,
   useVotes,
   useVotingPowerByProposal,
 } from "@/hooks/api";
@@ -56,7 +55,7 @@ export default function Proposal() {
   });
   const { userVote } = useUserVoteByProposalId(
     Number(params.proposal),
-    "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL", //currentGovernor.address,
+    currentGovernor.address,
     {
       enabled: !!proposal?.id && !!currentGovernor.name,
       placeholderData: undefined,
@@ -66,7 +65,7 @@ export default function Proposal() {
   const { vote, connected, connect, isLoading } = useWallet();
 
   const { votingPower } = useVotingPowerByProposal(
-    "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+    currentGovernor?.voteTokenAddress,
     380000,
     proposal.id,
     { placeholderData: BigInt(0) }
@@ -96,7 +95,7 @@ export default function Proposal() {
         1,
         selectedSupport,
         false,
-        "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+        currentGovernor.address
       );
     }
   }

@@ -16,25 +16,25 @@ import { useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
-import { connected } from "process";
+
 import { Loader } from "@/components/common/Loader";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
   const { wrapToken, connect, connected, isLoading } = useWallet();
   const router = useRouter();
-  const pathname = router.pathname;
+
   const params = router.query;
   const decimals = 7;
-  const { balance } = useVoteTokenBalance(
-    "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
-    { placeholderData: BigInt(0) }
-  );
-  const { proposals } = useProposals(params.dao as string, {
-    placeholderData: [],
-  });
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
+  });
+  const { balance } = useVoteTokenBalance(governor.voteTokenAddress, {
+    placeholderData: BigInt(0),
+    enabled: connected && !!governor.voteTokenAddress,
+  });
+  const { proposals } = useProposals(params.dao as string, {
+    placeholderData: [],
   });
 
   function handleWrapClick() {
@@ -43,11 +43,7 @@ function Proposals() {
       return;
     } else {
       const amount = scaleNumberToBigInt(toWrap, decimals);
-      wrapToken(
-        "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
-        amount,
-        false
-      ).then((res) => {
+      wrapToken(governor.voteTokenAddress, amount, false).then((res) => {
         console.log({ res });
       });
     }

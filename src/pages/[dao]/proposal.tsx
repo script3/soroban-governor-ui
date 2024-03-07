@@ -11,7 +11,6 @@ import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
 import { isCalldataString, isSubCalldataArrayString } from "@/utils/validation";
 import { parse } from "json5";
-
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -19,6 +18,7 @@ import { useState } from "react";
 
 export default function CreateProposal() {
   const router = useRouter();
+  const params = router.query;
   const [isPreview, setIsPreview] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -49,7 +49,7 @@ export default function CreateProposal() {
       title,
       description,
       false,
-      "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+      params.dao as string
     );
   }
 

@@ -160,7 +160,7 @@ const getPercentFractionDigits = (value: number) => {
   return Math.max(1, Math.min(leadingZeros, 8));
 };
 function formatDate(d: Date) {
-  return getDateTimeFormatter().format(d);
+  return getDateTimeFormatter().format(d || Date.now());
 }
 export {
   getRelativeTimeFormatter,

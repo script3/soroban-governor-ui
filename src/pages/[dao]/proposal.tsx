@@ -3,8 +3,14 @@ import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
-import TextArea from "@/components/common/TextArea";
+import MarkdownTextArea from "@/components/common/MarkdownTextArea";
+import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
+import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
+import { useWallet } from "@/hooks/wallet";
+import { isCalldataString, isSubCalldataArrayString } from "@/utils/validation";
+import { parse } from "json5";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -15,7 +21,36 @@ export default function CreateProposal() {
   const [isPreview, setIsPreview] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [executionCalldata, setExecutionCalldata] = useState("");
+  const [executionSubCalldata, setExecutionSubCalldata] = useState("");
   const [link, setLink] = useState("");
+  const { connected, connect, createProposal, isLoading } = useWallet();
+  const isSubcalldataDisabled =
+    !!executionSubCalldata && !isSubCalldataArrayString(executionSubCalldata);
+  const isCalldataDisabled =
+    !executionCalldata ||
+    (!!executionCalldata && !isCalldataString(executionCalldata));
+
+  function handleProposal() {
+    const calldata = parse(
+      executionCalldata ||
+        `{
+      args:[],
+      function:"",
+      contract_id:""
+
+    }`
+    );
+    const subCalldata = parse(executionSubCalldata || "[]");
+    createProposal(
+      calldata,
+      subCalldata,
+      title,
+      description,
+      false,
+      "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+    );
+  }
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
@@ -35,7 +70,7 @@ export default function CreateProposal() {
           Back
         </Typography.P>
 
-        {true && (
+        {!connected && (
           <Box className="flex  border-snapLink  flex-col gap-2 p-6 m-4">
             <Typography.Small className="text-snapLink flex gap-2">
               <Image src="/icons/info.svg" height={18} width={18} alt="info" />{" "}
@@ -55,11 +90,31 @@ export default function CreateProposal() {
             <Typography.Small className="text-snapLink !my-2 ">
               Description
             </Typography.Small>
-            <TextArea
+            <MarkdownTextArea
               value={description}
               onChange={setDescription}
               preview={false}
               bodyLimit={20_000}
+            />
+            <Typography.Small className="text-snapLink !my-2 ">
+              Execution Calldata (optional)
+            </Typography.Small>
+            <TextArea
+              isError={isCalldataDisabled}
+              className="min-h-72"
+              value={executionCalldata}
+              onChange={setExecutionCalldata}
+              placeholder={CALLDATA_PLACEHOLDER}
+            />
+            <Typography.Small className="text-snapLink !my-2 ">
+              Execution Subcalldata (optional)
+            </Typography.Small>
+            <TextArea
+              isError={isSubcalldataDisabled}
+              className="min-h-72"
+              value={executionSubCalldata}
+              onChange={setExecutionSubCalldata}
+              placeholder={SUBCALLDATA_PLACEHOLDER}
             />
             <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)
@@ -110,11 +165,26 @@ export default function CreateProposal() {
           </Button>
           <Button
             className="!bg-primary  !w-full"
+            disabled={
+              connected &&
+              (!title ||
+                !description ||
+                isCalldataDisabled ||
+                isSubcalldataDisabled)
+            }
             onClick={() => {
-              console.log("clicked");
+              if (!!connected) {
+                handleProposal();
+              } else {
+                connect();
+              }
             }}
           >
-            Connect Wallet
+            {isLoading
+              ? "loading..."
+              : !connected
+              ? "Connect Wallet"
+              : "Create Proposal"}
           </Button>
         </Box>
       </div>

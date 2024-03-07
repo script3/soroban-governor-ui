@@ -1,19 +1,25 @@
-import Image from "next/image";
 import { Inter } from "next/font/google";
 import { Container } from "@/components/common/BaseContainer";
-import { mockDAOS } from "@/mock/dao";
+
 import { DAOCard } from "@/components/common/DAOCard";
 import { Input } from "@/components/common/Input";
-import { Dropdown } from "@/components/common/Dropdown";
+
 import Typography from "@/components/common/Typography";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { Governor } from "@/types";
+import { useGovernors } from "@/hooks/api";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const [searchValue, setSearchValue] = useState<string>("");
   const router = useRouter();
+  const { governors, isLoading } = useGovernors({
+    placeholderData: [],
+  });
+
   return (
     <Container className="mx-auto max-w-[1012px]">
       <Container className="flex w-full flex-row justify-between items-center gap-2 py-2 mb-2 ">
@@ -42,12 +48,12 @@ export default function Home() {
         </Container>{" "}
         <Container slim className="w-max flex">
           <Typography.Small className="text-snapLink">
-            {mockDAOS.length} DAOs
+            {governors.length} DAOs
           </Typography.Small>
         </Container>
       </Container>
       <Container className="w-full grid sm:grid-cols-3 lg:grid-cols-4 gap-4 ">
-        {mockDAOS
+        {governors
           .filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
           .map((dao, i) => (
             <DAOCard

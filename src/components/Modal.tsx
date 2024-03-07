@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Container } from "./common/BaseContainer";
 import { Button } from "./common/Button";
 import Typography from "./common/Typography";
@@ -29,7 +30,7 @@ export function Modal({
                 onClick={onClose}
                 className="border-0 flex items-center rounded-full p-[6px] text-md text-skin-text transition-colors duration-200 hover:text-skin-link absolute right-[20px] top-[20px]"
               >
-                Close
+                <Image src="/icons/x.svg" height={18} width={18} alt="close" />
               </Button>
             </Container>
           </Container>

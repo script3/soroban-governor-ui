@@ -25,8 +25,14 @@ export function Input({
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    /** sanitize if needed */
-    onChange(val);
+
+    if (type === "number" && val !== "") {
+      const sanitizedValue = val.replace(/[^0-9.\.]/gi, "");
+
+      onChange(sanitizedValue);
+    } else {
+      onChange(val);
+    }
   }
 
   const clearInput = () => {
@@ -44,7 +50,6 @@ export function Input({
         ref={baseInputRef}
         value={value}
         placeholder={placeholder}
-        type={type || "text"}
         autoCorrect="off"
         autoCapitalize="none"
         className="input w-full border-none bg-transparent focus:border-none outline-none "

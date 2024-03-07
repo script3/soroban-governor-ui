@@ -516,7 +516,13 @@ export const WalletProvider = ({ children = null as any }) => {
           }
           return sub;
         } else {
-          return submitTransaction<bigint>(submission) || BigInt(0);
+          return (
+            submitTransaction<bigint>(submission, {
+              notificationMode: "flash",
+              notificationTitle: "Tokens succesfully wrapped",
+              successMessage: "Tokens succesfully wrapped",
+            }) || BigInt(0)
+          );
         }
       } else {
         return BigInt(0);

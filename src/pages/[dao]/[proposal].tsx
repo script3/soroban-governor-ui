@@ -57,7 +57,7 @@ export default function Proposal() {
     Number(params.proposal),
     currentGovernor.address,
     {
-      enabled: !!proposal?.id && !!currentGovernor.name,
+      enabled: !!proposal?.id && !!currentGovernor.address,
       placeholderData: undefined,
     }
   );
@@ -68,7 +68,10 @@ export default function Proposal() {
     currentGovernor?.voteTokenAddress,
     380000,
     proposal.id,
-    { placeholderData: BigInt(0) }
+    {
+      placeholderData: BigInt(0),
+      enabled: !!proposal?.id && !!currentGovernor?.voteTokenAddress,
+    }
   );
 
   const [isFullView, setIsFullView] = useState(false);

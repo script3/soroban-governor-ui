@@ -63,7 +63,7 @@ export default function Home() {
               hoverable
               key={i}
               onButtonClick={() => console.log(`Join #${i} click`)}
-              onCardClick={() => router.push(`/${dao.name}/proposals`)}
+              onCardClick={() => router.push(`/${dao.address}/proposals`)}
               className=""
             />
           ))}

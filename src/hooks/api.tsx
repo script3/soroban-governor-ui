@@ -46,7 +46,7 @@ export function useGovernor(
   });
   async function getGovernorById(governorId: string) {
     const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
-    return foundGovernor;
+    return foundGovernor || null;
   }
 
   return {
@@ -198,7 +198,7 @@ export function useUserVoteByProposalId(
         true
       );
       console.log({ result });
-      return result;
+      return result || null;
     },
   });
   return {

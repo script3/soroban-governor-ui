@@ -130,8 +130,8 @@ export interface Vote {
 
 
 export enum VoteSupport {
-  For = 2,
+  For = 1,
   Against = 0,
-  Abstain = 1,
+  Abstain = 2,
 
 }

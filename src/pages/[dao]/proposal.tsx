@@ -164,7 +164,7 @@ export default function CreateProposal() {
             {isPreview ? "Edit" : "Preview"}
           </Button>
           <Button
-            className="!bg-primary  !w-full"
+            className="!bg-secondary  !w-full"
             disabled={
               connected &&
               (!title ||

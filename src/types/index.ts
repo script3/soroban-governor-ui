@@ -127,3 +127,11 @@ export interface Vote {
   amount: bigint;
   voter: string;
 }
+
+
+export enum VoteSupport {
+  For = 2,
+  Against = 0,
+  Abstain = 1,
+
+}

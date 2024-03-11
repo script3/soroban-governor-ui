@@ -29,12 +29,13 @@ function Proposals() {
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
   });
-  const { balance } = useVoteTokenBalance(governor.voteTokenAddress, {
+  const { balance } = useVoteTokenBalance(governor?.voteTokenAddress, {
     placeholderData: BigInt(0),
-    enabled: connected && !!governor.voteTokenAddress,
+    enabled: connected && !!governor?.voteTokenAddress,
   });
   const { proposals } = useProposals(params.dao as string, {
     placeholderData: [],
+    enabled:!!params.dao
   });
 
   function handleWrapClick() {
@@ -48,7 +49,7 @@ function Proposals() {
       });
     }
   }
-
+  console.log({governor})
   return (
     <Container slim className="flex flex-col gap-4">
       <Container className="gap-4 ">
@@ -59,7 +60,7 @@ function Proposals() {
             </Typography.P>
             {connected && (
               <Typography.Small className="text-snapLink">
-                current voting power: {toBalance(balance, 7)}{" "}
+                Current voting power: {toBalance(balance, 7)}{" "}
                 {/* {governor.name || "$VOTE"} */}
               </Typography.Small>
             )}
@@ -95,7 +96,7 @@ function Proposals() {
         <div className="flex w-full  md:w-60">
           <Input
             value={searchValue}
-            placeholder="search proposals"
+            placeholder="Search proposals"
             onChange={setSearchValue}
           />
         </div>

@@ -8,7 +8,7 @@ import { classByStatus } from "@/constants";
 import { shortenAddress } from "@/utils/shortenAddress";
 
 import { MarkdownPreview } from "@/components/MarkdownPreview";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Button } from "@/components/common/Button";
 import { ViewMore } from "@/components/ViewMore";
 import { formatDate } from "@/utils/date";
@@ -55,9 +55,9 @@ export default function Proposal() {
   });
   const { userVote } = useUserVoteByProposalId(
     Number(params.proposal),
-    currentGovernor.address,
+    currentGovernor?.address,
     {
-      enabled: !!proposal?.id && !!currentGovernor.address,
+      enabled: !!proposal?.id && !!currentGovernor?.address,
       placeholderData: undefined,
     }
   );
@@ -109,7 +109,7 @@ export default function Proposal() {
         <Typography.Small
           className="cursor-pointer "
           onClick={() => {
-            router.push(`/${currentGovernor?.name}/proposals`);
+            router.push(`/${currentGovernor?.address}/proposals`);
           }}
         >
           {currentGovernor?.name}
@@ -252,7 +252,7 @@ export default function Proposal() {
                         connect();
                       }
                     }}
-                    className="!bg-primary px-16 !w-full"
+                    className="!bg-secondary px-16 !w-full"
                     disabled={isLoading || userVote !== undefined}
                   >
                     {isLoading ? (
@@ -274,7 +274,7 @@ export default function Proposal() {
               <Box className="!px-0">
                 <Container className="py-4 border-b flex gap-1 border-snapBorder">
                   <Typography.P className="inline">Votes </Typography.P>
-                  <Chip className="!px-1 inline !min-w-[20px] bg-snapLink text-white">
+                  <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
                     {proposal.total_votes}
                   </Chip>
                 </Container>
@@ -467,7 +467,7 @@ export default function Proposal() {
             onClick={() => {
               handleLinkClick(proposal.link);
             }}
-            className="!bg-primary px-16"
+            className="!bg-secondary px-16"
           >
             Continue
           </Button>

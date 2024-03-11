@@ -45,7 +45,7 @@ export function useGovernor(
     queryFn: () => getGovernorById(governorId),
   });
   async function getGovernorById(governorId: string) {
-    const foundGovernor = mappedGovernors.find((p) => p.name === governorId);
+    const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
     return foundGovernor;
   }
 

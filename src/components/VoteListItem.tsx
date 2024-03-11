@@ -4,6 +4,8 @@ import Typography from "./common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { EighteenDecimals } from "@/constants";
 import { getSupportStringFromVote } from "@/utils/vote";
+import { Chip } from "./common/Chip";
+import { VoteSupport } from "@/types";
 
 export function VoteListItem({
   vote,
@@ -14,6 +16,20 @@ export function VoteListItem({
   voteCount: any;
   index: number;
 }) {
+
+  function getColorClassByVote(voteSupport: number) {
+    if (voteSupport === VoteSupport.For) {
+      return "!bg-success";
+    }
+    if (voteSupport === VoteSupport.Against) {
+      return "!bg-primary";
+    }
+    if (voteSupport === VoteSupport.Abstain) {
+      return "!bg-snapLink";
+    }
+    return "!bg-secondary";
+  }
+
   return (
     <Container
       key={index}
@@ -24,9 +40,9 @@ export function VoteListItem({
       <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
         {shortenAddress(vote.address)}
       </Typography.P>
-      <Typography.P className=" truncate px-2 text-center ">
+      <Chip className={` truncate px-2 text-center  ${getColorClassByVote(vote.support)} `}>
         {getSupportStringFromVote(vote.support)}
-      </Typography.P>
+      </Chip>
       <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
         {formatCompactNumber(Number(vote.balance) / EighteenDecimals)}
       </Typography.P>

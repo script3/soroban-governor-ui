@@ -30,7 +30,7 @@ export default function Home() {
           <Container slim className="w-[80%] min-w-[150px] ">
             <Input
               value={searchValue}
-              placeholder="search for DAOs"
+              placeholder="Search for DAOs"
               onChange={setSearchValue}
             />
           </Container>{" "}
@@ -53,8 +53,7 @@ export default function Home() {
         </Container>
       </Container>
       <Container className="w-full grid sm:grid-cols-3 lg:grid-cols-4 gap-4 ">
-        {governors
-          .filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
+        {governors?.filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
           .map((dao, i) => (
             <DAOCard
               title={dao.name}

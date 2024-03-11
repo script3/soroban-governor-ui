@@ -85,6 +85,8 @@ export interface Governor {
   name: string;
   memberCount: number;
   logo: string;
+  address: string;
+  voteTokenAddress: string;
 }
 
 /**

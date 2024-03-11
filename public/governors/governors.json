@@ -1,0 +1,72 @@
+[
+  {
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
+    "quorum": 5000,
+    "countingType": 0,
+    "voteThreshold": 5000,
+    "name": "Decentralized DAO",
+    "memberCount": 828,
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL",
+    "voteTokenAddress": "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI"
+  },
+  {
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
+    "quorum": 5000,
+    "countingType": 0,
+    "voteThreshold": 5000,
+    "name": "Cryptogovernance DAO",
+    "memberCount": 828,
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL",
+    "voteTokenAddress": "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI"
+  },
+  {
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
+    "quorum": 5000,
+    "countingType": 0,
+    "voteThreshold": 5000,
+    "name": "Cryptogovernance DAO",
+    "memberCount": 828,
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL",
+    "voteTokenAddress": "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI"
+  },
+  {
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
+    "quorum": 5000,
+    "countingType": 0,
+    "voteThreshold": 5000,
+    "name": "Cryptogovernance DAO",
+    "memberCount": 828,
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL",
+    "voteTokenAddress": "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI"
+  },
+  {
+    "proposalThreshold": "100000000000000000",
+    "voteDelay": "86400",
+    "votePeriod": "604800",
+    "timelock": "86400",
+    "quorum": 5000,
+    "countingType": 0,
+    "voteThreshold": 5000,
+    "name": "Cryptogovernance DAO",
+    "memberCount": 828,
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL",
+    "voteTokenAddress": "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI"
+  }
+]

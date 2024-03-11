@@ -22,13 +22,14 @@ import { useRouter } from "next/router";
 import {
   useGovernor,
   useProposal,
-  useVoteTokenBalance,
+  useUserVoteByProposalId,
   useVotes,
   useVotingPowerByProposal,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import { SelectableList } from "@/components/common/SelectableList";
 import { toBalance } from "@/utils/formatNumber";
+import { Loader } from "@/components/common/Loader";
 
 const shareOptions: Item[] = [
   {
@@ -52,25 +53,37 @@ export default function Proposal() {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
-  const { vote, connected, connect } = useWallet();
+  const { userVote } = useUserVoteByProposalId(
+    Number(params.proposal),
+    currentGovernor.address,
+    {
+      enabled: !!proposal?.id && !!currentGovernor.address,
+      placeholderData: undefined,
+    }
+  );
+  console.log({ userVote });
+  const { vote, connected, connect, isLoading } = useWallet();
+
   const { votingPower } = useVotingPowerByProposal(
-    "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
+    currentGovernor?.voteTokenAddress,
     380000,
     proposal.id,
-    { placeholderData: BigInt(0) }
+    {
+      placeholderData: BigInt(0),
+      enabled: !!proposal?.id && !!currentGovernor?.voteTokenAddress,
+    }
   );
 
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
-  console.log({ balance: votingPower });
+
   function handleAction(action: string) {
     switch (action) {
       case "copy":
         copyToClipboard(`${window.location.origin}${router.pathname}`);
       default:
-        console.log("action", action);
         break;
     }
   }
@@ -85,7 +98,7 @@ export default function Proposal() {
         1,
         selectedSupport,
         false,
-        "CAZA65HCGNNKGO7P66YNH3RSBVLCOJX5JXYCCUR66MMMBCT7ING4DBJL"
+        currentGovernor.address
       );
     }
   }
@@ -96,7 +109,7 @@ export default function Proposal() {
         <Typography.Small
           className="cursor-pointer "
           onClick={() => {
-            router.push(`/${currentGovernor?.name}`);
+            router.push(`/${currentGovernor?.name}/proposals`);
           }}
         >
           {currentGovernor?.name}
@@ -203,7 +216,7 @@ export default function Proposal() {
               <Box>
                 <Container className="border-b border-snapBorder flex !flex-row justify-between ">
                   <Typography.Medium className=" !p-4 flex w-max">
-                    Cast your vote
+                    {userVote !== null ? "Your vote is in" : "Cast your vote"}
                   </Typography.Medium>
                   {connected && votingPower > BigInt(0) && (
                     <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
@@ -213,34 +226,46 @@ export default function Proposal() {
                 </Container>
                 <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
                   <SelectableList
-                    disabled={votingPower === BigInt(0) || !connected}
+                    disabled={
+                      isLoading ||
+                      userVote !== null ||
+                      votingPower === BigInt(0) ||
+                      !connected
+                    }
                     onSelect={setSelectedSupport}
                     items={[
                       { value: 0, label: "Yes" },
                       { value: 1, label: "No" },
                       { value: 2, label: "Abstain" },
                     ]}
-                    selected={selectedSupport}
+                    selected={userVote ?? selectedSupport}
                   />
                   <Button
                     onClick={() => {
-                      if (connected) {
+                      if (connected && userVote !== null) {
                         if (votingPower > BigInt(0)) {
                           handleVote();
                         } else {
-                          router.replace(`/${params.dao}?wrap=true`);
+                          router.replace(`/${params.dao}/proposals?wrap=true`);
                         }
                       } else {
                         connect();
                       }
                     }}
                     className="!bg-primary px-16 !w-full"
+                    disabled={isLoading || userVote !== undefined}
                   >
-                    {connected
-                      ? votingPower > BigInt(0)
-                        ? "Vote"
-                        : "Get vote tokens"
-                      : "Connect Wallet to Vote"}
+                    {isLoading ? (
+                      <Loader />
+                    ) : connected ? (
+                      votingPower > BigInt(0) ? (
+                        "Vote"
+                      ) : (
+                        "Get vote tokens"
+                      )
+                    ) : (
+                      "Connect Wallet to Vote"
+                    )}
                   </Button>
                 </Container>
               </Box>

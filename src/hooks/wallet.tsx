@@ -13,7 +13,7 @@ import {
   Calldata,
   ContractResult,
   GovernorClient,
-  SubCalldata,
+  ProposalAction,
   VotesClient,
   i128,
 } from "soroban-governor-js-sdk";
@@ -66,10 +66,9 @@ export interface IWalletContext {
     governorAddress: string
   ) => Promise<bigint | undefined>;
   createProposal: (
-    calldata: Calldata,
-    sub_calldata: Array<SubCalldata>,
     title: string,
     description: string,
+    action:ProposalAction,
     sim: boolean,
     governorAddress: string
   ) => Promise<bigint | undefined>;
@@ -159,9 +158,15 @@ export const WalletProvider = ({ children = null as any }) => {
   function setCleanTxMessage(message: string | undefined) {
     if (message) {
       // some contract failures include diagnostic information. If so, try and remove it.
+
       let substrings = message.split("Event log (newest first):");
       if (substrings.length > 1) {
-        setTxMessage(substrings[0].trimEnd());
+        const cleanMessage = substrings[0].trim();
+
+        setTxMessage(cleanMessage);
+      }else{
+        setTxMessage(message);
+      
       }
     }
   }
@@ -313,12 +318,11 @@ export const WalletProvider = ({ children = null as any }) => {
 
    */
   async function createProposal(
-    calldata_: Calldata,
-    sub_calldata_: Array<SubCalldata>,
     title: string,
     description: string,
+    action:ProposalAction,
     sim: boolean,
-    governorAddress: string
+    governorAddress: string,
   ) {
     try {
       if (connected) {
@@ -339,10 +343,9 @@ export const WalletProvider = ({ children = null as any }) => {
 
         let proposeOperation = governorClient.propose({
           creator: walletAddress,
-          calldata_,
-          sub_calldata_,
           title,
           description,
+          action
         });
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
@@ -363,6 +366,7 @@ export const WalletProvider = ({ children = null as any }) => {
             notificationMode: "flash",
             notificationTitle: "Proposal created",
             successMessage: "Proposal created",
+            failureMessage: "Failed to create proposal",
           });
           return result || BigInt(0);
         }
@@ -596,7 +600,7 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
-
+      console.log({result})
       setTxHash(result.hash);
       const isOk = result.result.isOk();
       setNotificationMode("flash");
@@ -612,11 +616,12 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         setTxStatus(TxStatus.SUCCESS);
       } else {
+        const error = result.result.error;
         console.log("Failed submitted transaction: ", result.hash);
-        setCleanTxMessage(options.failureMessage || result.error?.message);
+        setCleanTxMessage(options.failureMessage || error?.message);
         setNotificationTitle("Transaction Failed");
-        setShowNotification(true);
         setTxStatus(TxStatus.FAIL);
+        setShowNotification(true);
       }
       return result;
     } catch (e: any) {

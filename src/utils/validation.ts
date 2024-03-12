@@ -1,4 +1,4 @@
-import { Calldata, SubCalldata } from "soroban-governor-js-sdk";
+import { Calldata, Val } from "soroban-governor-js-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
 export function safeJSONParse(value: any) {
@@ -13,32 +13,33 @@ export function safeJSONParse(value: any) {
     return { isValid: false, data: null };
   }
 }
+export function isVal(obj: any): obj is Val {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "value" in obj &&
+    "type" in obj &&
+    typeof obj.value === "string" &&
+    /* Additional checks for type property based on your requirements */
+    true  // Adjust this line based on your actual checks for the 'type' property
+  );
+}
 
-// Validation function
 export function isCalldata(obj: any): obj is Calldata {
-  console.log({ obj });
-
-  if (
+  return (
     typeof obj === "object" &&
     obj !== null &&
     "args" in obj &&
+    "auths" in obj &&
     "contract_id" in obj &&
     "function" in obj &&
     Array.isArray(obj.args) &&
-    obj.args.every(
-      (arg: any) =>
-        typeof arg === "object" &&
-        "value" in arg &&
-        "type" in arg &&
-        typeof arg.value === "string" &&
-        typeof arg.type === "string"
-    ) &&
+    Array.isArray(obj.auths) &&
+    obj.args.every(isVal) &&
+    obj.auths.every(isCalldata) &&
     typeof obj.contract_id === "string" &&
     typeof obj.function === "string"
-  ) {
-    return true;
-  }
-  return false;
+  );
 }
 
 export function isCalldataString(str: string): boolean {
@@ -51,42 +52,16 @@ export function isCalldataString(str: string): boolean {
   return condition;
 }
 
-// Validation function for SubCalldata
-export function isSubCalldataArray(arr: any): arr is SubCalldata[] {
-  return Array.isArray(arr) && arr.every(isSubCalldata);
-}
+export function parseCallData(calldataObj: any): Calldata | null {
 
-export function isSubCalldataArrayString(str: string) {
-  const { data, isValid } = safeJSONParse(str);
-  if (!isValid) {
-    return false;
+  if (isCalldata(calldataObj)) {
+    return new Calldata(
+      calldataObj.contract_id,
+      calldataObj.function,
+      calldataObj.args.map((arg:any) => new Val(arg.value, arg.type)),
+      calldataObj.auths.map((auth:any) => parseCallData(auth)).filter((auth:any) => auth !== null) as Calldata[]
+      )
   }
-  if (Array.isArray(data) && data.length === 0) {
-    return true;
-  }
-  return Array.isArray(data) && data.every(isSubCalldata);
-}
 
-function isSubCalldata(obj: any): obj is SubCalldata {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "args" in obj &&
-    "contract_id" in obj &&
-    "function" in obj &&
-    "sub_auth" in obj &&
-    Array.isArray(obj.args) &&
-    obj.args.every(
-      (arg: any) =>
-        typeof arg === "object" &&
-        "value" in arg &&
-        "type" in arg &&
-        typeof arg.value === "string" &&
-        typeof arg.type === "string"
-    ) &&
-    typeof obj.contract_id === "string" &&
-    typeof obj.function === "string" &&
-    Array.isArray(obj.sub_auth) &&
-    obj.sub_auth.every(isSubCalldata)
-  );
+  return null;
 }

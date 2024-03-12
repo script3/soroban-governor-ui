@@ -9,12 +9,13 @@ import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
 import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
-import { isCalldataString, isSubCalldataArrayString } from "@/utils/validation";
+import { isCalldataString, parseCallData } from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { Calldata, Val } from "soroban-governor-js-sdk";
 
 export default function CreateProposal() {
   const router = useRouter();
@@ -23,34 +24,54 @@ export default function CreateProposal() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [executionCalldata, setExecutionCalldata] = useState("");
-  const [executionSubCalldata, setExecutionSubCalldata] = useState("");
+  const [proposalAction,setProposalAction] = useState("Calldata");
   const [link, setLink] = useState("");
   const { connected, connect, createProposal, isLoading } = useWallet();
-  const isSubcalldataDisabled =
-    !!executionSubCalldata && !isSubCalldataArrayString(executionSubCalldata);
+  
   const isCalldataDisabled =
     !executionCalldata ||
     (!!executionCalldata && !isCalldataString(executionCalldata));
 
-  function handleProposal() {
-    const calldata = parse(
-      executionCalldata ||
-        `{
-      args:[],
-      function:"",
-      contract_id:""
+  function handleProposal(action:string) {
+    switch (action) {
+      case "Calldata":
+            const calldata = parse(
+              executionCalldata ||
+                `{
+              args:[],
+              function:"",
+              contract_id:""
+        
+            }`
+            ) as Calldata
 
-    }`
-    );
-    const subCalldata = parse(executionSubCalldata || "[]");
-    createProposal(
-      calldata,
-      subCalldata,
-      title,
-      description,
-      false,
-      params.dao as string
-    );
+            const callDataToPass = parseCallData(calldata);
+            console.log({title,
+              description,
+              action:{
+                tag: action,
+                values: [
+                  callDataToPass
+                ],
+              },
+              sim:false,
+              address:params.dao })
+        if(callDataToPass !== null){
+            createProposal(
+              title,
+              description,
+              {
+                tag: action,
+                values: [
+                  callDataToPass
+                ],
+              },
+              false,
+              params.dao as string,
+            );
+          }
+          break;
+    }
   }
 
   return (
@@ -107,16 +128,7 @@ export default function CreateProposal() {
               onChange={setExecutionCalldata}
               placeholder={CALLDATA_PLACEHOLDER}
             />
-            <Typography.Small className="text-snapLink !my-2 ">
-              Execution Subcalldata (optional)
-            </Typography.Small>
-            <TextArea
-              isError={isSubcalldataDisabled}
-              className="min-h-72"
-              value={executionSubCalldata}
-              onChange={setExecutionSubCalldata}
-              placeholder={SUBCALLDATA_PLACEHOLDER}
-            />
+
             <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)
             </Typography.Small>
@@ -169,12 +181,11 @@ export default function CreateProposal() {
               connected &&
               (!title ||
                 !description ||
-                isCalldataDisabled ||
-                isSubcalldataDisabled)
+                isCalldataDisabled )
             }
             onClick={() => {
               if (!!connected) {
-                handleProposal();
+                handleProposal(proposalAction);
               } else {
                 connect();
               }

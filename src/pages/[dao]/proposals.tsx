@@ -49,7 +49,7 @@ function Proposals() {
       });
     }
   }
-  console.log({governor})
+
   return (
     <Container slim className="flex flex-col gap-4">
       <Container className="gap-4 ">

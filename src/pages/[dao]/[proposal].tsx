@@ -45,11 +45,14 @@ export default function Proposal() {
   const router = useRouter();
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
-  const { proposal } = useProposal(Number(params.proposal), {
-    enabled: !!params.proposal,
+  const { proposal } = useProposal(Number(params.proposal),currentGovernor?.address,
+  currentGovernor?.settings?.voteDelay,
+  currentGovernor?.settings?.votePeriod, {
+    enabled: !!params.proposal && !!currentGovernor?.address,
     placeholderData: {},
   });
-  const { votes } = useVotes(Number(params.proposal), {
+
+  const { votes } = useVotes(Number(params.proposal),currentGovernor?.address, {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
@@ -355,9 +358,9 @@ export default function Proposal() {
                     <>
                       <Typography.P>
                         {" "}
-                        {Number(
+                        {proposal.votes_for > 0 ? Number(
                           (proposal.votes_for / proposal.total_votes).toFixed(2)
-                        ) * 100}
+                        ) * 100 : 0}
                         %
                       </Typography.P>
                     </>
@@ -375,11 +378,11 @@ export default function Proposal() {
                     <>
                       <Typography.P>
                         {" "}
-                        {Number(
+                        {proposal.votes_against > 0 ?Number(
                           (
                             proposal.votes_against / proposal.total_votes
                           ).toFixed(2)
-                        ) * 100}
+                        ) * 100 : 0}
                         %
                       </Typography.P>
                     </>
@@ -397,11 +400,11 @@ export default function Proposal() {
                     <>
                       <Typography.P>
                         {" "}
-                        {Number(
+                        {proposal.votes_abstain > 0 ? Number(
                           (
                             proposal.votes_abstain / proposal.total_votes
                           ).toFixed(2)
-                        ) * 100}
+                        ) * 100: 0}
                         %
                       </Typography.P>
                     </>

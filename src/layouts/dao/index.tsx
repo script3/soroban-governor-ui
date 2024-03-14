@@ -44,7 +44,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
       setActiveTab(capitalizeFirstLetter(routeTab));
     }
   }, [routeTab]);
-  console.log({governor,params})
+
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
       <Container className="flex flex-col  lg:w-72 lg:min-w-72 ">

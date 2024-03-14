@@ -129,16 +129,13 @@ export async function invokeOperation<T>(
     response = await rpc.getTransaction(tx_hash);
     status = response.status;
   }
-  console.log({
-    response,
-    type: typeof response,
-  });
+
   const result = ContractResult.fromTransactionResponse(
     response as SorobanRpc.Api.GetTransactionResponse,
     tx_hash,
     resources,
     parse
   );
-  console.log({ result });
+
   return result;
 }

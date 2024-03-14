@@ -46,16 +46,7 @@ export default function CreateProposal() {
             ) as Calldata
 
             const callDataToPass = parseCallData(calldata);
-            console.log({title,
-              description,
-              action:{
-                tag: action,
-                values: [
-                  callDataToPass
-                ],
-              },
-              sim:false,
-              address:params.dao })
+
         if(callDataToPass !== null){
             createProposal(
               title,

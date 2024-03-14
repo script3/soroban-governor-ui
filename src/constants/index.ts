@@ -1,26 +1,48 @@
 export enum ProposalStatusEnum {
-  Pending = "Pending",
-  Active = "Active",
-  Defeated = "Defeated",
-  Succeeded = "Succeeded",
-  Queued = "Queued",
-  Expired = "Expired",
-  Executed = "Executed",
+  /// The proposal is pending and is not open for voting
+  Pending = 0,
+  /// The proposal is active and can be voted on
+  Active = 1,
+  /// The proposal was voted for. If the proposal is executable, the timelock begins once this state is reached.
+  Successful = 2,
+  /// The proposal was voted against
+  Defeated = 3,
+  /// The proposal did not reach quorum before the voting period ended
+  Expired = 4,
+  /// The proposal has been executed
+  Executed = 5,
+  /// The proposal has been canceled
+  Canceled = 6,
 }
 
 export type ProposalStatus =
   | "Pending"
   | "Active"
   | "Defeated"
-  | "Succeeded"
-  | "Queued"
+  | "Successful"
+  | "Canceled"
   | "Expired"
   | "Executed";
+
+  export const ProposalStatusText ={
+    [ProposalStatusEnum.Pending]: "Pending",
+    [ProposalStatusEnum.Active]: "Active",
+    [ProposalStatusEnum.Successful]: "Successful",
+    [ProposalStatusEnum.Defeated]: "Defeated",
+    [ProposalStatusEnum.Expired]: "Expired",
+    [ProposalStatusEnum.Executed]: "Executed",
+    [ProposalStatusEnum.Canceled]: "Canceled",
+  } 
 export type ObType = { [key: string]: string };
 export const classByStatus: ObType = {
-  Succeeded: "bg-fuchsia-400",
-  Active: "bg-green-500",
-  Pending: "bg-neutral-500 ",
+  [ProposalStatusEnum.Successful]: "!bg-fuchsia-400",
+  [ProposalStatusEnum.Active]: "!bg-green-500",
+  [ProposalStatusEnum.Defeated]: "!bg-red-500",
+  [ProposalStatusEnum.Canceled]: "!bg-gray-500",
+  [ProposalStatusEnum.Expired]: "!bg-gray-500",
+  [ProposalStatusEnum.Executed]: "!bg-gray-500",
+  [ProposalStatusEnum.Pending]: "!bg-gray-500",
+
 };
 export const EighteenDecimals = 10_000_000_000_000_000_000;
 export const CALLDATA_PLACEHOLDER = `JSON string of the function arguments.\nExample: {\n\targs: [\n\t\t{ value: 'GCDUQQ2LP2M32Q563YOJOG36KXO5T635FKSWG4IQWYFE2FQHMMQKYK3S', type: 'address' },\n\t],\n\tcontract_id: 'CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI',\n\tfunction: 'balance',\n}`;
@@ -36,3 +58,5 @@ const x = {
   contract_id: "CCXM6K3GSFPUU2G7OGACE3X7NBRYG6REBJN6CWN6RUTYBVOKZ5KSC5ZI",
   function: "balance",
 };
+
+export const DUMMY_ADDRESS = 'GANXGJV2RNOFMOSQ2DTI3RKDBAVERXUVFC27KW3RLVQCLB3RYNO3AAI4'

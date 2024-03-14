@@ -1,3 +1,4 @@
+import { DUMMY_ADDRESS } from "@/constants";
 import { TxOptions, invokeOperation } from "@/utils/operation";
 import {
   FreighterModule,
@@ -11,9 +12,11 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 import {
   Calldata,
+  ContractError,
   ContractResult,
   GovernorClient,
   ProposalAction,
+  VoteCount,
   VotesClient,
   i128,
 } from "soroban-governor-js-sdk";
@@ -68,7 +71,7 @@ export interface IWalletContext {
   createProposal: (
     title: string,
     description: string,
-    action:ProposalAction,
+    action: ProposalAction,
     sim: boolean,
     governorAddress: string
   ) => Promise<bigint | undefined>;
@@ -81,6 +84,11 @@ export interface IWalletContext {
     proposalStart: number,
     sim: boolean
   ) => Promise<bigint>;
+  getTotalVotesByProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<VoteCount | ContractError | undefined>;
   wrapToken: (
     voteTokenAddress: string,
     amount: bigint,
@@ -164,9 +172,9 @@ export const WalletProvider = ({ children = null as any }) => {
         const cleanMessage = substrings[0].trim();
 
         setTxMessage(cleanMessage);
-      }else{
+      } else {
         setTxMessage(message);
-      
+
       }
     }
   }
@@ -320,7 +328,7 @@ export const WalletProvider = ({ children = null as any }) => {
   async function createProposal(
     title: string,
     description: string,
-    action:ProposalAction,
+    action: ProposalAction,
     sim: boolean,
     governorAddress: string,
   ) {
@@ -378,6 +386,52 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
+
+  async function getTotalVotesByProposal(proposalId: number, governorAddress: string, sim = true) {
+    try {
+
+      let txOptions: TxOptions = {
+        sim,
+        pollingInterval: 1000,
+        timeout: 15000,
+        builderOptions: {
+          fee: "10000",
+          timebounds: {
+            minTime: 0,
+            maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+          },
+          networkPassphrase: network.passphrase,
+        },
+      };
+      let governorClient = new GovernorClient(governorAddress);
+
+      let proposeOperation = governorClient.getProposalVotes({
+        proposal_id: proposalId,
+
+      }
+      )
+      const submission = invokeOperation<xdr.ScVal>(
+        DUMMY_ADDRESS,
+        sign,
+        network,
+        txOptions,
+        governorClient.parsers.getProposalVotes,
+        proposeOperation
+      );
+      const sub = await submission;
+      if (sub instanceof ContractResult) {
+        return sub.result.unwrap() as VoteCount;
+      }
+      return sub;
+
+    } catch (e) {
+      console.log("Error creating proposal: ", e);
+      throw e;
+    }
+  }
+
+
 
   async function getVoteTokenBalance(voteTokenAddress: string, sim: boolean) {
     try {
@@ -586,6 +640,11 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
+
+
+
+
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -600,7 +659,7 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
-      console.log({result})
+
       setTxHash(result.hash);
       const isOk = result.result.isOk();
       setNotificationMode("flash");
@@ -673,6 +732,7 @@ export const WalletProvider = ({ children = null as any }) => {
         getVotingPowerByProposal,
         wrapToken,
         getUserVoteByProposalId,
+        getTotalVotesByProposal,
         notificationMode,
         showNotification,
         notificationTitle,

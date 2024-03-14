@@ -1,4 +1,4 @@
-import { Proposal, XDRProposal } from "@/types";
+import { Proposal, Vote, XDRProposal, XDRVote } from "@/types";
 import { ProposalAction } from "soroban-governor-js-sdk";
 import { StrKey, scValToNative, xdr } from "stellar-sdk";
 
@@ -49,6 +49,14 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: bigint, v
     return proposalToReturn
 }
 
-export function parseVoteFromXDR() {
-
+export function parseVoteFromXDR(vote:XDRVote):Vote {
+    const voteToReturn = {
+        voter: scValToNative(xdr.ScVal.fromXDR(vote.voter, "base64")),
+        support: scValToNative(xdr.ScVal.fromXDR(vote.support, "base64")),
+        amount: scValToNative(xdr.ScVal.fromXDR(vote.amount, "base64")),
+        proposal_id: scValToNative(xdr.ScVal.fromXDR(vote.propNum, "base64")),
+        governor: StrKey.encodeContract(xdr.Hash.fromXDR(vote.contract, "base64")),
+        ledger : scValToNative(xdr.ScVal.fromXDR(vote.ledger, "base64"))
+    }
+    return voteToReturn
 }

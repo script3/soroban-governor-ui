@@ -3,7 +3,7 @@ import { Box } from "@/components/common/Box";
 import { Chip } from "@/components/common/Chip";
 import { Dropdown, Item } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
-import { classByStatus } from "@/constants";
+import { ProposalStatusEnum, ProposalStatusText, classByStatus } from "@/constants";
 
 import { shortenAddress } from "@/utils/shortenAddress";
 
@@ -59,23 +59,25 @@ export default function Proposal() {
   const { userVote } = useUserVoteByProposalId(
     Number(params.proposal),
     currentGovernor?.address,
+
     {
       enabled: !!proposal?.id && !!currentGovernor?.address,
       placeholderData: undefined,
     }
   );
-  console.log({ userVote });
+
   const { vote, connected, connect, isLoading } = useWallet();
 
   const { votingPower } = useVotingPowerByProposal(
     currentGovernor?.voteTokenAddress,
-    380000,
-    proposal.id,
+    proposal?.vote_start,
+    proposal?.id,
     {
       placeholderData: BigInt(0),
-      enabled: !!proposal?.id && !!currentGovernor?.voteTokenAddress,
+      enabled: !!proposal?.id && proposal.status === ProposalStatusEnum.Active &&  !!currentGovernor?.voteTokenAddress,
     }
   );
+
 
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
@@ -139,8 +141,8 @@ export default function Proposal() {
             className="relative  lg:w-8/12 lg:pr-5 flex flex-col gap-4 "
           >
             <Container slim className="flex flex-col mb-2">
-              <Chip className={classByStatus[proposal.status] + " mb-4"}>
-                {proposal.status}
+              <Chip className={`!${classByStatus[proposal.status]} mb-4`}>
+                {ProposalStatusText[proposal.status]}
               </Chip>
               <Typography.Big className="break-words leading-8 sm:leading-[44px]">
                 {proposal.title}
@@ -273,7 +275,7 @@ export default function Proposal() {
                 </Container>
               </Box>
             </Container>
-            <Container slim>
+            {votes.length > 0 && <Container slim>
               <Box className="!px-0">
                 <Container className="py-4 border-b flex gap-1 border-snapBorder">
                   <Typography.P className="inline">Votes </Typography.P>
@@ -299,7 +301,7 @@ export default function Proposal() {
                   See more
                 </div>
               </Box>
-            </Container>
+            </Container>}
           </Container>
           <Container
             slim
@@ -366,9 +368,9 @@ export default function Proposal() {
                     </>
                   }
                   progress={
-                    Number(
+                     Number(
                       (proposal.votes_for / proposal.total_votes).toFixed(2)
-                    ) * 100
+                    ) * 100 
                   }
                 />{" "}
                 <ProgressBar

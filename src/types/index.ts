@@ -97,43 +97,17 @@ export interface Governor {
  
 }
 
-/**
- * Interface for the Token Votes contract
- */
-interface Votes {
-  totalSupply: bigint;
 
-  /**
-   * Get the number of votes for a proposal
-   * @param proposal - The proposal to get the votes for
-   * @param address - The address to get the votes for
-   * @returns The number of votes they have for the proposal
-   */
-  getVotes(proposal: Proposal, address: any): bigint;
-}
 
-interface UserVotes {
-  /**
-   * The user's balance of assets in the token voting contract
-   */
-  balance: bigint;
-  /**
-   * The user's current voting power
-   */
-  votingPower: bigint;
-  /**
-   * Who the user is delegating their votes to
-   */
-  delegate: any;
-  address: string;
-  choice: string;
-}
+
 
 export interface Vote {
   proposal_id: string;
   support: number;
   amount: bigint;
   voter: string;
+  governor: string;
+  ledger: string;
 }
 
 
@@ -145,12 +119,21 @@ export enum VoteSupport {
 }
 
 export interface XDRProposal  {
-  "contract": string;
-  "propNum": string;
-  "title": string;
-  "descr": string;
-  "action": string;
-  "creator": string;
-  "status": string;
-  "ledger": string;
+  contract: string;
+  propNum: string;
+  title: string;
+  descr: string;
+  action: string;
+  creator: string;
+  status: string;
+  ledger: string;
+}
+
+export interface XDRVote {
+   contract: string
+   propNum: string
+   voter: string
+   support: string
+   amount: string
+   ledger: string
 }

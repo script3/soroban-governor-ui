@@ -1,9 +1,9 @@
 import { mockProposals, mockVotes } from "@/mock/dao";
-import { Governor, Proposal, Vote } from "@/types";
+import { Governor, Proposal, Vote, XDRVote } from "@/types";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
-import { parseProposalFromXDR } from "@/utils/parse";
+import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
 import { StrKey, nativeToScVal, xdr } from "stellar-sdk";
 import { VoteCount } from "soroban-governor-js-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string
@@ -138,6 +138,7 @@ export function useProposal(
 
 export function useVotes(
   proposalId: number,
+  governorAddress: string,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const {
@@ -148,9 +149,10 @@ export function useVotes(
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["votes", proposalId],
-    queryFn: () => getVotesByProposalId(proposalId),
+    queryFn: async () => getVotesByProposalIdMock(proposalId),
   });
-  async function getVotesByProposalId(proposalId: number) {
+  async function getVotesByProposalIdMock(proposalId: number) {
+    const data = await getVotesByProposalId(proposalId,governorAddress)
     return mockVotes.filter((p) => p.proposal_id === proposalId);
   }
 
@@ -269,6 +271,39 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
   return parseProposalFromXDR(proposal,voteDelay,votePeriod)
 
  }catch(e){
+    console.error(e)
+    return null
+  
+ }
+}
+async function getVotesByProposalId(proposalId:number,governorAddress:string){
+ try{
+const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
+
+  const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
+  console.log({addressHash,proposalNum,governorAddress})
+   const data = await runGraphQLQuery(`query getVotesByProposalId { 
+    zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+      contract
+      propNum
+      voter
+      support
+      amount
+      ledger
+   }
+   }
+   }`,"getVotesByProposalId")
+  if(!data){
+    return null
+  }
+   const votes = data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]?.nodes
+  const parsedVotes = votes.map((vote:XDRVote)=>{
+    return parseVoteFromXDR(vote)
+  })
+  return parsedVotes
+
+ }catch(e){
+
     console.error(e)
     return null
   

@@ -52,10 +52,11 @@ export default function Proposal() {
     placeholderData: {},
   });
 
-  const { votes } = useVotes(Number(params.proposal),currentGovernor?.address, {
+  const { votes } = useVotes(3,currentGovernor?.address, {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
+
   const { userVote } = useUserVoteByProposalId(
     Number(params.proposal),
     currentGovernor?.address,
@@ -74,10 +75,9 @@ export default function Proposal() {
     proposal?.id,
     {
       placeholderData: BigInt(0),
-      enabled: !!proposal?.id && proposal.status === ProposalStatusEnum.Active &&  !!currentGovernor?.voteTokenAddress,
+      enabled: connected && !!proposal?.id && proposal.status === ProposalStatusEnum.Active || proposal.status === ProposalStatusEnum.Pending &&  !!currentGovernor?.voteTokenAddress,
     }
   );
-
 
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
@@ -280,7 +280,7 @@ export default function Proposal() {
                 <Container className="py-4 border-b flex gap-1 border-snapBorder">
                   <Typography.P className="inline">Votes </Typography.P>
                   <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
-                    {proposal.total_votes}
+                    {votes.length}
                   </Chip>
                 </Container>
                 {votes.slice(0, 10).map((vote, index) => (

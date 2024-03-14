@@ -122,7 +122,7 @@ export function useProposal(
     data.votes_abstain = Number(voteCount.abstain)
     data.votes_against = Number(voteCount.against)
   }
-  console.log({data})
+
   return data
 
   // return mockProposals.find((p) => p.id === proposalId);
@@ -149,12 +149,9 @@ export function useVotes(
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["votes", proposalId],
-    queryFn: async () => getVotesByProposalIdMock(proposalId),
+    queryFn: async () => getVotesByProposalId(proposalId,governorAddress),
   });
-  async function getVotesByProposalIdMock(proposalId: number) {
-    const data = await getVotesByProposalId(proposalId,governorAddress)
-    return mockVotes.filter((p) => p.proposal_id === proposalId);
-  }
+
 
   return {
     votes: votes as Vote[],
@@ -201,11 +198,13 @@ export function useVotingPowerByProposal(
       connected,
     ],
     queryFn: async () => {
+
       const result = await getVotingPowerByProposal(
         voteTokenAddress,
         proposalStartTime,
         true
       );
+
       return result || BigInt(0);
     },
   });
@@ -250,7 +249,7 @@ async function getProposalById(proposalId:number,governorAddress:string,voteDela
 const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
 
   const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
-  console.log({addressHash,proposalNum,governorAddress})
+
    const data = await runGraphQLQuery(`query getProposalsById { 
      zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
      contract
@@ -281,7 +280,7 @@ async function getVotesByProposalId(proposalId:number,governorAddress:string){
 const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
 
   const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
-  console.log({addressHash,proposalNum,governorAddress})
+
    const data = await runGraphQLQuery(`query getVotesByProposalId { 
     zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
@@ -296,12 +295,12 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
   if(!data){
     return null
   }
-   const votes = data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]?.nodes
+  const votes = data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]?.nodes
   const parsedVotes = votes.map((vote:XDRVote)=>{
     return parseVoteFromXDR(vote)
   })
-  return parsedVotes
 
+  return parsedVotes
  }catch(e){
 
     console.error(e)

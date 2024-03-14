@@ -515,6 +515,7 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         if (sim) {
           const sub = await submission;
+
           if (sub instanceof ContractResult) {
             return sub.result.unwrap();
           }

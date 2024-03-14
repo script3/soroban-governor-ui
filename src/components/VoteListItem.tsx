@@ -2,7 +2,7 @@ import { formatCompactNumber } from "@/utils/date";
 import { Container } from "./common/BaseContainer";
 import Typography from "./common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { EighteenDecimals } from "@/constants";
+import { EighteenDecimals, SevenDecimals } from "@/constants";
 import { getSupportStringFromVote } from "@/utils/vote";
 import { Chip } from "./common/Chip";
 import { VoteSupport } from "@/types";
@@ -38,13 +38,13 @@ export function VoteListItem({
       }`}
     >
       <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
-        {shortenAddress(vote.address)}
+        {shortenAddress(vote.voter)}
       </Typography.P>
       <Chip className={` truncate px-2 text-center  ${getColorClassByVote(vote.support)} `}>
         {getSupportStringFromVote(vote.support)}
       </Chip>
       <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-        {formatCompactNumber(Number(vote.balance) / EighteenDecimals)}
+        {formatCompactNumber(Number(vote.amount) / SevenDecimals)}
       </Typography.P>
     </Container>
   );

@@ -21,10 +21,8 @@ export function TextArea({
       disabled={disabled}
       placeholder={placeholder}
       className={`w-full h-40 p-4 border border-snapBorder ${
-        isError ? "!border-error" : "border-snapBorder"
-      } rounded-lg outline-none ${
-        isError ? "focus:!border-red-800" : "focus:border-snapLink"
-      } ${className || ""} `}
+        isError ? "!border-error focus:!border-red-800" : "border-snapBorder focus:border-snapLink"
+      } rounded-lg outline-none  ${className || ""} `}
     />
   );
 }

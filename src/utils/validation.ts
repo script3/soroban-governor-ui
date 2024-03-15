@@ -91,3 +91,11 @@ export function isGovernorSettingsString(str: string): boolean {
       return false;
   }
 }
+export function isUpgradeString(str: string,len:number): boolean {
+  const hexRegex = /^0x[0-9A-Fa-f]+$/
+  if (str.length === len && hexRegex.test(str) ){
+    return true
+  }
+  return false 
+
+}

@@ -11,7 +11,7 @@ import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
 import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
-import { isCalldataString, isGovernorSettingsString, parseCallData } from "@/utils/validation";
+import { isCalldataString, isGovernorSettingsString, isUpgradeString, parseCallData } from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,7 +35,7 @@ export default function CreateProposal() {
   const isCalldataDisabled = proposalAction === ProposalActionEnum.CALLDATA && (!executionCalldata ||
     (!!executionCalldata && !isCalldataString(executionCalldata)))
   const isSettingsDisabled = proposalAction === ProposalActionEnum.SETTINGS && (!governorSettings || (!!governorSettings && !isGovernorSettingsString(governorSettings))) 
-  const isUpgradeDisabled = proposalAction === ProposalActionEnum.UPGRADE && !upgradeString
+  const isUpgradeDisabled = proposalAction === ProposalActionEnum.UPGRADE && (!upgradeString || !isUpgradeString(upgradeString,32))
 
 
   function handleProposal(action: string) {
@@ -203,13 +203,14 @@ export default function CreateProposal() {
             </>}
             {proposalAction === ProposalActionEnum.UPGRADE && <>
               <Typography.Small className="text-snapLink !my-2 ">
-                Upgrade HexString 
+              Upgrade to WASM hash
               </Typography.Small>
               <Input
+              error={isUpgradeDisabled}
                 className=""
-                value={governorSettings}
-                onChange={setGovernorSettings}
-                placeholder={"Hex String for upgrade"}
+                value={upgradeString}
+                onChange={setUpgradeString}
+                placeholder={"WASM hash"}
               />
 
             </>}
@@ -218,6 +219,7 @@ export default function CreateProposal() {
               Discussion (optional)
             </Typography.Small>
             <Input
+
               placeholder="https://forum.balancer.fi/proposal"
               type="url"
               value={link}

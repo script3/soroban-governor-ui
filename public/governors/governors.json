@@ -2,14 +2,14 @@
   {
     "settings": {
       "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "countingType": 2,
-      "gracePeriod": 120960,
-      "proposalThreshold": 1000000000,
+      "counting_type": 2,
+      "grace_period": 120960,
+      "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "voteDelay": 720,
-      "votePeriod": 5760,
-      "voteThreshold": 5100
+      "vote_Delay": 720,
+      "vote_period": 5760,
+      "vote_threshold": 5100
     },
     "name": "Decentralized DAO",
     "memberCount": 828,
@@ -20,14 +20,14 @@
   {
     "settings": {
       "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "countingType": 2,
-      "gracePeriod": 120960,
-      "proposalThreshold": 1000000000,
+      "counting_type": 2,
+      "grace_period": 120960,
+      "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "voteDelay": 720,
-      "votePeriod": 5760,
-      "voteThreshold": 5100
+      "vote_Delay": 720,
+      "vote_period": 5760,
+      "vote_threshold": 5100
     },
     "name": "Cryptogovernance DAO",
     "memberCount": 828,
@@ -38,14 +38,14 @@
   {
     "settings": {
       "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "countingType": 2,
-      "gracePeriod": 120960,
-      "proposalThreshold": 1000000000,
+      "counting_type": 2,
+      "grace_period": 120960,
+      "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "voteDelay": 720,
-      "votePeriod": 5760,
-      "voteThreshold": 5100
+      "vote_Delay": 720,
+      "vote_period": 5760,
+      "vote_threshold": 5100
     },
     "name": "Cryptogovernance DAO",
     "memberCount": 828,
@@ -56,14 +56,14 @@
   {
     "settings": {
       "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "countingType": 2,
-      "gracePeriod": 120960,
-      "proposalThreshold": 1000000000,
+      "counting_type": 2,
+      "grace_period": 120960,
+      "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "voteDelay": 720,
-      "votePeriod": 5760,
-      "voteThreshold": 5100
+      "vote_Delay": 720,
+      "vote_period": 5760,
+      "vote_threshold": 5100
     },
     "name": "Cryptogovernance DAO",
     "memberCount": 828,
@@ -74,14 +74,14 @@
   {
     "settings": {
       "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "countingType": 2,
-      "gracePeriod": 120960,
-      "proposalThreshold": 1000000000,
+      "counting_type": 2,
+      "grace_period": 120960,
+      "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "voteDelay": 720,
-      "votePeriod": 5760,
-      "voteThreshold": 5100
+      "vote_Delay": 720,
+      "vote_period": 5760,
+      "vote_threshold": 5100
     },
     "name": "Cryptogovernance DAO",
     "memberCount": 828,

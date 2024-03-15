@@ -2,20 +2,22 @@ import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
+import { Chip } from "@/components/common/Chip";
 import { Input } from "@/components/common/Input";
 import { Loader } from "@/components/common/Loader";
 import MarkdownTextArea from "@/components/common/MarkdownTextArea";
+import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
-import { CALLDATA_PLACEHOLDER, SUBCALLDATA_PLACEHOLDER } from "@/constants";
+import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, SUBCALLDATA_PLACEHOLDER } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
-import { isCalldataString, parseCallData } from "@/utils/validation";
+import { isCalldataString, isGovernorSettingsString, parseCallData } from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Calldata, Val } from "soroban-governor-js-sdk";
+import { Calldata, GovernorSettings, Val } from "soroban-governor-js-sdk";
 
 export default function CreateProposal() {
   const router = useRouter();
@@ -24,44 +26,90 @@ export default function CreateProposal() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [executionCalldata, setExecutionCalldata] = useState("");
-  const [proposalAction,setProposalAction] = useState("Calldata");
+  const [governorSettings, setGovernorSettings] = useState("");
+  const [upgradeString, setUpgradeString] = useState("");
+  const [proposalAction, setProposalAction] = useState(ProposalActionEnum.CALLDATA);
   const [link, setLink] = useState("");
   const { connected, connect, createProposal, isLoading } = useWallet();
-  
-  const isCalldataDisabled =
-    !executionCalldata ||
-    (!!executionCalldata && !isCalldataString(executionCalldata));
 
-  function handleProposal(action:string) {
+  const isCalldataDisabled = proposalAction === ProposalActionEnum.CALLDATA && (!executionCalldata ||
+    (!!executionCalldata && !isCalldataString(executionCalldata)))
+  const isSettingsDisabled = proposalAction === ProposalActionEnum.SETTINGS && (!governorSettings || (!!governorSettings && !isGovernorSettingsString(governorSettings))) 
+  const isUpgradeDisabled = proposalAction === ProposalActionEnum.UPGRADE && !upgradeString
+
+
+  function handleProposal(action: string) {
     switch (action) {
-      case "Calldata":
-            const calldata = parse(
-              executionCalldata ||
-                `{
+      case ProposalActionEnum.CALLDATA:
+        const calldata = parse(
+          executionCalldata ||
+          `{
               args:[],
               function:"",
               contract_id:""
         
             }`
-            ) as Calldata
+        ) as Calldata
 
-            const callDataToPass = parseCallData(calldata);
+        const callDataToPass = parseCallData(calldata);
 
-        if(callDataToPass !== null){
-            createProposal(
-              title,
-              description,
-              {
-                tag: action,
-                values: [
-                  callDataToPass
-                ],
-              },
-              false,
-              params.dao as string,
-            );
-          }
-          break;
+        if (callDataToPass !== null) {
+          createProposal(
+            title,
+            description,
+            {
+              tag: action,
+              values: [
+                callDataToPass
+              ],
+            },
+            false,
+            params.dao as string,
+          );
+        }
+        break;
+      case ProposalActionEnum.UPGRADE:
+        if (!!upgradeString) {
+          createProposal(
+            title,
+            description,
+            {
+              tag: action,
+              values: [Buffer.from(upgradeString)],
+            },
+            false,
+            params.dao as string,
+          );
+        }
+
+        break;
+
+      case ProposalActionEnum.SETTINGS:
+        if(!!governorSettings){
+          const governorToPass = parse(governorSettings) as GovernorSettings;
+          createProposal(
+            title,
+            description,
+            {
+              tag: action,
+              values: [governorToPass],
+            },
+            false,
+            params.dao as string,
+          );
+        }
+
+        case ProposalActionEnum.SNAPSHOT:
+        createProposal(
+          title,
+          description,
+          {
+            tag: action ,
+            values: undefined as any ,
+          },
+          false,
+          params.dao as string,
+        );
     }
   }
 
@@ -94,6 +142,24 @@ export default function CreateProposal() {
             </Typography.Small>
           </Box>
         )}
+
+        <Container slim className=" flex flex-col gap-0 ">
+          <Typography.P className="text-snapLink">Proposal type</Typography.P>
+          <RadioButton endText="DAO will submit a transaction" selected={proposalAction === ProposalActionEnum.CALLDATA} onChange={() => {
+            setProposalAction(ProposalActionEnum.CALLDATA)
+          }} label={<Chip className="!bg-blue-800 text-blue-300 !py-4    ">{ProposalActionEnum.CALLDATA}</Chip>} />
+          <RadioButton endText="Change the contract code of the DAO" selected={proposalAction === ProposalActionEnum.UPGRADE} onChange={() => {
+            setProposalAction(ProposalActionEnum.UPGRADE)
+          }} label={<Chip className="!bg-fuchsia-800 text-fuchsia-300 !py-4    ">{ProposalActionEnum.UPGRADE}</Chip>} />
+          <RadioButton endText="Change the settings of the DAO" selected={proposalAction === ProposalActionEnum.SETTINGS} onChange={() => {
+            setProposalAction(ProposalActionEnum.SETTINGS)
+          }} label={<Chip className="!bg-neutral-700 text-neutral-300 !py-4    ">{ProposalActionEnum.SETTINGS}</Chip>} />
+          <RadioButton endText="No execution action" selected={proposalAction === ProposalActionEnum.SNAPSHOT} onChange={() => {
+            setProposalAction(ProposalActionEnum.SNAPSHOT)
+          }} label={<Chip className="!bg-amber-800 text-amber-300 !py-4    ">{ProposalActionEnum.SNAPSHOT}</Chip>} />
+
+
+        </Container>
         {!isPreview && (
           <>
             <Typography.Small className="text-snapLink !my-2 ">
@@ -109,16 +175,44 @@ export default function CreateProposal() {
               preview={false}
               bodyLimit={20_000}
             />
-            <Typography.Small className="text-snapLink !my-2 ">
-              Execution Calldata (optional)
-            </Typography.Small>
-            <TextArea
-              isError={isCalldataDisabled}
-              className="min-h-72"
-              value={executionCalldata}
-              onChange={setExecutionCalldata}
-              placeholder={CALLDATA_PLACEHOLDER}
-            />
+            {proposalAction === ProposalActionEnum.CALLDATA && <>
+              <Typography.Small className="text-snapLink !my-2 ">
+                Execution Calldata (optional)
+              </Typography.Small>
+              <TextArea
+                isError={isCalldataDisabled}
+                className="min-h-72"
+                value={executionCalldata}
+                onChange={setExecutionCalldata}
+                placeholder={CALLDATA_PLACEHOLDER}
+              />
+
+            </>}
+            {proposalAction === ProposalActionEnum.SETTINGS && <>
+              <Typography.Small className="text-snapLink !my-2 ">
+                Governor Settings 
+              </Typography.Small>
+              <TextArea
+                isError={isSettingsDisabled}
+                className="min-h-72"
+                value={governorSettings}
+                onChange={setGovernorSettings}
+                placeholder={GOVERNOR_SETTINGS_PLACEHOLDER}
+              />
+
+            </>}
+            {proposalAction === ProposalActionEnum.UPGRADE && <>
+              <Typography.Small className="text-snapLink !my-2 ">
+                Upgrade HexString 
+              </Typography.Small>
+              <Input
+                className=""
+                value={governorSettings}
+                onChange={setGovernorSettings}
+                placeholder={"Hex String for upgrade"}
+              />
+
+            </>}
 
             <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)
@@ -172,7 +266,7 @@ export default function CreateProposal() {
               connected &&
               (!title ||
                 !description ||
-                isCalldataDisabled )
+                isCalldataDisabled || isSettingsDisabled || isUpgradeDisabled)
             }
             onClick={() => {
               if (!!connected) {

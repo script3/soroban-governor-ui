@@ -1,4 +1,4 @@
-import { Calldata, Val } from "soroban-governor-js-sdk";
+import { Calldata, GovernorSettings, Val } from "soroban-governor-js-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
 export function safeJSONParse(value: any) {
@@ -64,4 +64,30 @@ export function parseCallData(calldataObj: any): Calldata | null {
   }
 
   return null;
+}
+
+
+export function isGovernorSettings(obj: any): obj is GovernorSettings {
+  return (
+      typeof obj === "object" &&
+      obj !== null &&
+      "council" in obj && typeof obj.council === "string" &&
+      "counting_type" in obj && typeof obj.counting_type === "number" &&
+      "grace_period" in obj && typeof obj.grace_period === "number" &&
+      "proposal_threshold" in obj && typeof obj.proposal_threshold === "bigint" &&
+      "quorum" in obj && typeof obj.quorum === "number" &&
+      "timelock" in obj && typeof obj.timelock === "number" &&
+      "vote_delay" in obj && typeof obj.vote_delay === "number" &&
+      "vote_period" in obj && typeof obj.vote_period === "number" &&
+      "vote_threshold" in obj && typeof obj.vote_threshold === "number"
+  );
+}
+
+export function isGovernorSettingsString(str: string): boolean {
+  try {
+      const data: GovernorSettings = JSON.parse(str);
+      return isGovernorSettings(data);
+  } catch (error) {
+      return false;
+  }
 }

@@ -3,7 +3,7 @@ import { Box } from "@/components/common/Box";
 import { Chip } from "@/components/common/Chip";
 import { Dropdown, Item } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
-import { ProposalStatusEnum, ProposalStatusText, classByStatus } from "@/constants";
+import { ProposalActionEnum, ProposalStatusEnum, ProposalStatusText, classByProposalAction, classByStatus } from "@/constants";
 
 import { shortenAddress } from "@/utils/shortenAddress";
 
@@ -46,8 +46,8 @@ export default function Proposal() {
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
   const { proposal } = useProposal(Number(params.proposal),currentGovernor?.address,
-  currentGovernor?.settings?.voteDelay,
-  currentGovernor?.settings?.votePeriod, {
+  currentGovernor?.settings?.vote_delay,
+  currentGovernor?.settings?.vote_period, {
     enabled: !!params.proposal && !!currentGovernor?.address,
     placeholderData: {},
   });
@@ -141,9 +141,14 @@ export default function Proposal() {
             className="relative  lg:w-8/12 lg:pr-5 flex flex-col gap-4 "
           >
             <Container slim className="flex flex-col mb-2">
+              <Container slim className="flex flex-row gap-2">
               <Chip className={`!${classByStatus[proposal.status]} mb-4`}>
                 {ProposalStatusText[proposal.status]}
               </Chip>
+              <Chip className={`${classByProposalAction[proposal.action.tag]} mb-4`}>
+                {proposal.action.tag}
+              </Chip>
+              </Container>
               <Typography.Big className="break-words leading-8 sm:leading-[44px]">
                 {proposal.title}
               </Typography.Big>

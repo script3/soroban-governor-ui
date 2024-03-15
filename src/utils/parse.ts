@@ -2,7 +2,7 @@ import { Proposal, Vote, XDRProposal, XDRVote } from "@/types";
 import { ProposalAction } from "soroban-governor-js-sdk";
 import { StrKey, scValToNative, xdr } from "stellar-sdk";
 
-export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: bigint, votePeriod: bigint): Proposal {
+export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, votePeriod: number): Proposal {
     let contract = xdr.Hash.fromXDR(
         proposal.contract,
         "base64"

@@ -8,16 +8,13 @@ import { StrKey, nativeToScVal, xdr } from "stellar-sdk";
 import { VoteCount } from "soroban-governor-js-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string
 const mappedGovernors = governors.map(
-  ({ settings:{timelock, votePeriod, proposalThreshold, voteDelay,...settings}, ...rest }) => {
+  ({ settings:{timelock,proposal_threshold ,...settings}, ...rest }) => {
     return {
       ...rest,
-      settings:{
-        ...settings,
-        timelock: BigInt(timelock),
-      votePeriod: BigInt(votePeriod),
-      proposalThreshold: BigInt(proposalThreshold),
-      voteDelay: BigInt(voteDelay),
-      }
+     settings:{
+      ...settings,
+      proposal_threshold: BigInt(proposal_threshold),
+     }
     };
   }
 );
@@ -89,8 +86,8 @@ export function useProposals(
 export function useProposal(
   proposalId: number,
   governorAddress: string,
-  voteDelay: bigint,
-  votePeriod: bigint,
+  voteDelay: number,
+  votePeriod: number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const {getTotalVotesByProposal} = useWallet()
@@ -106,7 +103,7 @@ export function useProposal(
       return await getProposalByIdWithVoteCount(proposalId,governorAddress,voteDelay,votePeriod)
     },
   });
-  async function getProposalByIdWithVoteCount(proposalId: number, governorAddress: string, voteDelay: bigint, votePeriod: bigint) {
+  async function getProposalByIdWithVoteCount(proposalId: number, governorAddress: string, voteDelay: number, votePeriod: number) {
 
     const data = await getProposalById(proposalId,governorAddress,voteDelay,votePeriod)
     if(!data){
@@ -244,7 +241,7 @@ export function useUserVoteByProposalId(
 }
 
 
-async function getProposalById(proposalId:number,governorAddress:string,voteDelay:bigint,votePeriod:bigint){
+async function getProposalById(proposalId:number,governorAddress:string,voteDelay:number,votePeriod:number){
  try{
 const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
 

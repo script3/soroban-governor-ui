@@ -9,7 +9,7 @@ import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
-import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, SUBCALLDATA_PLACEHOLDER } from "@/constants";
+import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, SUBCALLDATA_PLACEHOLDER, classByProposalAction } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
 import { isCalldataString, isGovernorSettingsString, isUpgradeString, parseCallData } from "@/utils/validation";
 import { parse } from "json5";
@@ -147,16 +147,16 @@ export default function CreateProposal() {
           <Typography.P className="text-snapLink">Proposal type</Typography.P>
           <RadioButton endText="DAO will submit a transaction" selected={proposalAction === ProposalActionEnum.CALLDATA} onChange={() => {
             setProposalAction(ProposalActionEnum.CALLDATA)
-          }} label={<Chip className="!bg-blue-800 text-blue-300 !py-4    ">{ProposalActionEnum.CALLDATA}</Chip>} />
+          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.CALLDATA] } !py-4`}>{ProposalActionEnum.CALLDATA}</Chip>} />
           <RadioButton endText="Change the contract code of the DAO" selected={proposalAction === ProposalActionEnum.UPGRADE} onChange={() => {
             setProposalAction(ProposalActionEnum.UPGRADE)
-          }} label={<Chip className="!bg-fuchsia-800 text-fuchsia-300 !py-4    ">{ProposalActionEnum.UPGRADE}</Chip>} />
+          }} label={<Chip className={`${ classByProposalAction[ProposalActionEnum.UPGRADE] } !py-4`}>{ProposalActionEnum.UPGRADE}</Chip>} />
           <RadioButton endText="Change the settings of the DAO" selected={proposalAction === ProposalActionEnum.SETTINGS} onChange={() => {
             setProposalAction(ProposalActionEnum.SETTINGS)
-          }} label={<Chip className="!bg-neutral-700 text-neutral-300 !py-4    ">{ProposalActionEnum.SETTINGS}</Chip>} />
+          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.SETTINGS]} !py-4`}>{ProposalActionEnum.SETTINGS}</Chip>} />
           <RadioButton endText="No execution action" selected={proposalAction === ProposalActionEnum.SNAPSHOT} onChange={() => {
             setProposalAction(ProposalActionEnum.SNAPSHOT)
-          }} label={<Chip className="!bg-amber-800 text-amber-300 !py-4    ">{ProposalActionEnum.SNAPSHOT}</Chip>} />
+          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.SNAPSHOT]} !py-4`}>{ProposalActionEnum.SNAPSHOT}</Chip>} />
 
 
         </Container>

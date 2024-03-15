@@ -7,7 +7,7 @@
       "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "vote_Delay": 720,
+      "vote_delay": 720,
       "vote_period": 5760,
       "vote_threshold": 5100
     },
@@ -25,7 +25,7 @@
       "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "vote_Delay": 720,
+      "vote_delay": 720,
       "vote_period": 5760,
       "vote_threshold": 5100
     },
@@ -43,7 +43,7 @@
       "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "vote_Delay": 720,
+      "vote_delay": 720,
       "vote_period": 5760,
       "vote_threshold": 5100
     },
@@ -61,7 +61,7 @@
       "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "vote_Delay": 720,
+      "vote_delay": 720,
       "vote_period": 5760,
       "vote_threshold": 5100
     },
@@ -79,7 +79,7 @@
       "proposal_threshold": 1000000000,
       "quorum": 500,
       "timelock": 1440,
-      "vote_Delay": 720,
+      "vote_delay": 720,
       "vote_period": 5760,
       "vote_threshold": 5100
     },

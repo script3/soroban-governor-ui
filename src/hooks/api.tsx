@@ -35,7 +35,7 @@ export function useCurrentBlockNumber(options: Partial<DefinedInitialDataOptions
       return data.sequence
       },
   });
-  console.log({data})
+
   return {
     blockNumber: data as number,
     isLoading,

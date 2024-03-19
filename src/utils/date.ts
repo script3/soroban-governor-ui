@@ -131,11 +131,11 @@ const formatPercentNumber = (number: number) =>
   formatNumber(number, percentNumberFormatter);
 
 const getRelativeProposalPeriod = (state: ProposalStatusEnum, startBlock: number, endBlock: number,currentBlock:number): any => {
-  console.log({state,startBlock,endBlock,currentBlock})
+
   const now = new Date()
   const startDate = new Date(now.getTime() + ((startBlock - currentBlock) * 5000))
   const endDate = new Date(now.getTime() +( (endBlock - currentBlock) * 5000))
-console.log({startDate,endDate})
+
   if (
     endDate < now 
   ) {

@@ -130,9 +130,9 @@ const formatCompactNumber = (number: number) =>
 const formatPercentNumber = (number: number) =>
   formatNumber(number, percentNumberFormatter);
 
-const getRelativeProposalPeriod = (state: any, start: any, end: any): any => {
+const getRelativeProposalPeriod = (state: ProposalStatusEnum, start: any, end: any): any => {
   if (
-    state !== ProposalStatusEnum.Active ||
+    state !== ProposalStatusEnum.Active &&
     state !== ProposalStatusEnum.Pending
   ) {
     return `Ended ${formatRelativeTime(end, longRelativeTimeFormatter)} `;

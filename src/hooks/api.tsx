@@ -75,13 +75,13 @@ export function useProposals(
   });
   async function loadProposalsByDaoId(daoId: string,voteDelay:number,votePeriod:number): Promise<Proposal[]> {
     const proposals =  await getProposalsByGovernor(daoId)
-    console.log({proposals})
+
     let proposalsToReturn:Proposal[] = []
     for(let proposal of proposals){
       const data =   parseProposalFromXDR(proposal,voteDelay,votePeriod)
       // get proposal votes from contract 
     const voteCount = await getTotalVotesByProposal(data.id,governorAddress) as VoteCount
-    console.log({voteCount})
+
     if(voteCount?._for !== undefined  ){
       data.votes_for = Number(voteCount._for)
       data.total_votes = Number(voteCount._for + voteCount.against + voteCount.abstain)

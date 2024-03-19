@@ -29,9 +29,10 @@ function About() {
           />
 
         </div> */}
-        <Typography.P>Name</Typography.P>
+       <Typography.P>Name</Typography.P>
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.name}</Typography.Small>
         <Typography.Medium>Settings</Typography.Medium>
+       <Container className="pl-2 flex flex-col gap-3">
 
         <Typography.P>Council</Typography.P>
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.council}</Typography.Small>
@@ -52,6 +53,7 @@ function About() {
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_period}</Typography.Small>
         <Typography.P>Vote Threshold</Typography.P>
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_threshold}</Typography.Small>
+       </Container>
       </Box>
       <Box className="p-2">
         <Typography.Big>Social</Typography.Big>

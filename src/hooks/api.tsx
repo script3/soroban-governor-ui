@@ -163,11 +163,7 @@ export function useProposal(
     data.votes_abstain = Number(voteCount.abstain)
     data.votes_against = Number(voteCount.against)
   }
-
   return data
-
-  // return mockProposals.find((p) => p.id === proposalId);
-  
   }
 
   return {

@@ -1,7 +1,10 @@
 import { ProposalStatusEnum } from "@/constants";
 
 export function getStatusByProposalState(statusFromContract:ProposalStatusEnum,voteStart:number,voteEnd:number,currentBlock:number){
-    const statusOpen = statusFromContract === ProposalStatusEnum.Active || statusFromContract === ProposalStatusEnum.Pending;
+    if(!statusFromContract){
+        return statusFromContract
+    }
+    const statusOpen = statusFromContract === ProposalStatusEnum.Active || statusFromContract === ProposalStatusEnum.Pending as any;
 
     if(statusOpen){
         if(voteStart<currentBlock && voteEnd>currentBlock){

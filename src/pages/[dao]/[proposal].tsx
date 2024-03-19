@@ -54,7 +54,7 @@ export default function Proposal() {
     placeholderData: {},
   });
   const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
-  const proposalStatus = getStatusByProposalState(proposal.status,proposal.vote_start,proposal.vote_end,currentBlockNumber);
+  const proposalStatus = getStatusByProposalState(proposal?.status,proposal?.vote_start,proposal?.vote_end,currentBlockNumber);
 
   const { votes } = useVotes(3,currentGovernor?.address, {
     enabled: !!proposal?.id,
@@ -132,10 +132,10 @@ export default function Proposal() {
         />
         <Typography.Small className=" opacity-40 line-clamp-1 max-w-[380px]">
           {" "}
-          {proposal.title}
+          {proposal?.title}
         </Typography.Small>
       </Container>
-      {!!proposal.id && (
+      {!!proposal?.id && (
         <Container
           slim
           className="flex flex-col px-0 md:px-4 gap-4 mx-auto max-w-[1012px] mt-[20px] w-auto m-auto lg:flex-row "
@@ -154,7 +154,7 @@ export default function Proposal() {
               </Chip>
               </Container>
               <Typography.Big className="break-words leading-8 sm:leading-[44px]">
-                {proposal.title}
+                {proposal?.title}
               </Typography.Big>
               <Container slim className="flex flex-row justify-between">
                 <Container slim>

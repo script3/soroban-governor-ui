@@ -21,10 +21,10 @@ const Tabs: TabItem[] = [
     name: "About",
     route: "/about",
   },
-  {
-    name: "Overview",
-    route: "/settings",
-  },
+  // {
+  //   name: "Overview",
+  //   route: "/settings",
+  // },
 ];
 
 export default function DAOLayout({ children }: { children: React.ReactNode }) {

@@ -142,7 +142,7 @@ export default function Proposal() {
           >
             <Container slim className="flex flex-col mb-2">
               <Container slim className="flex flex-row gap-2">
-              <Chip className={`!${classByStatus[proposal.status]} mb-4`}>
+              <Chip className={`${classByStatus[proposal.status]} mb-4`}>
                 {ProposalStatusText[proposal.status]}
               </Chip>
               <Chip className={`${classByProposalAction[proposal.action.tag]} mb-4`}>

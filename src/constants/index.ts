@@ -43,10 +43,10 @@ export enum ProposalActionEnum {
 }
 
 export const classByProposalAction ={
-  [ProposalActionEnum.CALLDATA]: "!bg-blue-800 text-blue-300",
-  [ProposalActionEnum.UPGRADE]: "!bg-fuchsia-800 text-fuchsia-300",
-  [ProposalActionEnum.SETTINGS]: "!bg-neutral-700 text-neutral-300",
-  [ProposalActionEnum.SNAPSHOT]: "!bg-amber-800 text-amber-300",
+  [ProposalActionEnum.CALLDATA]: "!bg-blue-800 !text-blue-300",
+  [ProposalActionEnum.UPGRADE]: "!bg-fuchsia-800 !text-fuchsia-300",
+  [ProposalActionEnum.SETTINGS]: "!bg-neutral-700 !text-neutral-300",
+  [ProposalActionEnum.SNAPSHOT]: "!bg-amber-800 !text-amber-300",
 }
 
 export type ObType = { [key: string]: string };
@@ -57,7 +57,7 @@ export const classByStatus: ObType = {
   [ProposalStatusEnum.Canceled]: "!bg-gray-500",
   [ProposalStatusEnum.Expired]: "!bg-gray-500",
   [ProposalStatusEnum.Executed]: "!bg-gray-500",
-  [ProposalStatusEnum.Pending]: "!bg-gray-500",
+  [ProposalStatusEnum.Pending]: "!bg-amber-800",
 
 };
 export const EighteenDecimals = 10_000_000_000_000_000_000;

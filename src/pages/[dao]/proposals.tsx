@@ -6,7 +6,7 @@ import { Chip } from "@/components/common/Chip";
 import { Input } from "@/components/common/Input";
 import { ProgressWrapper } from "@/components/common/ProgressWrapper";
 import Typography from "@/components/common/Typography";
-import { classByStatus } from "@/constants";
+import { ProposalStatusText, classByStatus } from "@/constants";
 
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
 
 import { Loader } from "@/components/common/Loader";
+import { stripMarkdown } from "@/utils/string";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
@@ -33,9 +34,9 @@ function Proposals() {
     placeholderData: BigInt(0),
     enabled: connected && !!governor?.voteTokenAddress,
   });
-  const { proposals } = useProposals(params.dao as string, {
+  const { proposals } = useProposals(governor?.address,governor?.settings?.vote_delay,governor?.settings?.vote_period, {
     placeholderData: [],
-    enabled:!!params.dao
+    enabled:!!params.dao && !!governor?.address && !!governor?.settings?.vote_delay && !!governor?.settings?.vote_period,
   });
 
   function handleWrapClick() {
@@ -120,8 +121,8 @@ function Proposals() {
               <Typography.Small className="font-bold">
                 {shortenAddress(proposal.proposer)}
               </Typography.Small>
-              <Chip className={classByStatus[proposal.status]}>
-                {proposal.status}
+              <Chip className={`${classByStatus[proposal.status]} mb-4`}>
+                {ProposalStatusText[proposal.status]}
               </Chip>
             </div>
             <div
@@ -134,46 +135,46 @@ function Proposals() {
                 {proposal.title}
               </Typography.Medium>
               <Typography.P className="line-clamp-2 break-words text-md ">
-                {proposal.description}
+                {stripMarkdown(proposal.description)}
               </Typography.P>
               <div className="flex flex-col gap-2">
                 {/* votes progress bar */}
                 <ProgressWrapper
-                  percentage={proposal.votes_for / proposal.total_votes}
+                  percentage={proposal.total_votes > 0 ? proposal.votes_for / proposal.total_votes : 0}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>Yes</Typography.Medium>
                     <Typography.Medium>
-                      {`${(
-                        (proposal.votes_for / proposal.total_votes) *
+                      {`${proposal.total_votes > 0 ?(
+                         (proposal.votes_for / proposal.total_votes) *
                         100
-                      ).toFixed(2)}%`}
+                      ).toFixed(2) : 0}%`}
                     </Typography.Medium>
                   </div>
                 </ProgressWrapper>
                 <ProgressWrapper
-                  percentage={proposal.votes_against / proposal.total_votes}
+                  percentage={proposal.total_votes > 0 ? proposal.votes_against / proposal.total_votes : 0}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>No</Typography.Medium>
                     <Typography.Medium>
-                      {`${(
-                        (proposal.votes_against / proposal.total_votes) *
+                      {`${proposal.total_votes > 0 ?(
+                         (proposal.votes_against / proposal.total_votes) *
                         100
-                      ).toFixed(2)}%`}
+                      ).toFixed(2) : 0}%`}
                     </Typography.Medium>
                   </div>
                 </ProgressWrapper>
                 <ProgressWrapper
-                  percentage={proposal.votes_abstain / proposal.total_votes}
+                  percentage={proposal.total_votes > 0 ? proposal.votes_abstain / proposal.total_votes : 0}
                 >
                   <div className="flex justify-between w-full">
                     <Typography.Medium>Abstain</Typography.Medium>
                     <Typography.Medium>
-                      {`${(
-                        (proposal.votes_abstain / proposal.total_votes) *
+                      {`${proposal.total_votes > 0 ?(
+                         (proposal.votes_abstain / proposal.total_votes) *
                         100
-                      ).toFixed(2)}%`}
+                      ).toFixed(2) : 0}%`}
                     </Typography.Medium>
                   </div>
                 </ProgressWrapper>

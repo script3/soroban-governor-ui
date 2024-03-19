@@ -1,4 +1,4 @@
-import { mockProposals, mockVotes } from "@/mock/dao";
+
 import { Governor, Proposal, Vote, XDRVote } from "@/types";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
@@ -61,18 +61,36 @@ export function useGovernor(
 }
 
 export function useProposals(
-  daoId: string,
+  governorAddress: string,
+  voteDelay:number,
+  votePeriod:number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
+  const {getTotalVotesByProposal} = useWallet()
   const { data, isLoading, error } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
-    queryKey: ["proposals", daoId],
-    queryFn: () => loadProposalsByDaoId(daoId),
+    queryKey: ["proposals", governorAddress],
+    queryFn: async () => loadProposalsByDaoId(governorAddress,voteDelay,votePeriod),
   });
-  async function loadProposalsByDaoId(daoId: string): Promise<Proposal[]> {
-    // return mockProposals.filter((p) => p.contract_id === daoId);
-    return mockProposals as any
+  async function loadProposalsByDaoId(daoId: string,voteDelay:number,votePeriod:number): Promise<Proposal[]> {
+    const proposals =  await getProposalsByGovernor(daoId)
+    console.log({proposals})
+    let proposalsToReturn:Proposal[] = []
+    for(let proposal of proposals){
+      const data =   parseProposalFromXDR(proposal,voteDelay,votePeriod)
+      // get proposal votes from contract 
+    const voteCount = await getTotalVotesByProposal(data.id,governorAddress) as VoteCount
+    console.log({voteCount})
+    if(voteCount?._for !== undefined  ){
+      data.votes_for = Number(voteCount._for)
+      data.total_votes = Number(voteCount._for + voteCount.against + voteCount.abstain)
+      data.votes_abstain = Number(voteCount.abstain)
+      data.votes_against = Number(voteCount.against)
+      proposalsToReturn.push(data)
+    }
+    }
+    return proposalsToReturn.sort(({id:a},{id:b})=> b-a )
   }
   return {
     proposals: data as Proposal[],
@@ -241,6 +259,37 @@ export function useUserVoteByProposalId(
 }
 
 
+async function getProposalsByGovernor(governorAddress:string){
+ try{
+const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
+
+   const data = await runGraphQLQuery(`query getProposalsByGovernor { 
+    zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontract(hash: "${addressHash}") {
+      nodes {
+        contract
+        propNum
+        title
+        descr
+        action
+        creator
+        status
+        ledger
+      }
+    }
+   }`,"getProposalsByGovernor")
+  if(!data){
+    return null
+  }
+   const proposals = data["zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontract"]?.nodes
+  return proposals
+
+
+ }catch(e){
+    console.error(e)
+    return null
+  
+ }
+}
 async function getProposalById(proposalId:number,governorAddress:string,voteDelay:number,votePeriod:number){
  try{
 const addressHash = StrKey.decodeContract(governorAddress).toString("base64")

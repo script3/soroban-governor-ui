@@ -7,7 +7,7 @@ import copy from "../../public/icons/copy.svg"
 import "viewerjs/dist/viewer.css";
 import Viewer from "viewerjs";
 
-const remarkable = new Remarkable({
+export const remarkable = new Remarkable({
   html: false,
   breaks: true,
   typographer: false,

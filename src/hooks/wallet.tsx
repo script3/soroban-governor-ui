@@ -57,6 +57,7 @@ export interface IWalletContext {
   showNotification: boolean;
   notificationTitle: string;
   isLoading: boolean;
+  network: Network;
   connect: () => Promise<void>;
   disconnect: () => void;
   clearLastTx: () => void;
@@ -720,6 +721,7 @@ export const WalletProvider = ({ children = null as any }) => {
           txStatus === TxStatus.BUILDING ||
           txStatus === TxStatus.SIGNING ||
           txStatus === TxStatus.SUBMITTING,
+          network,
         connect,
         disconnect,
         clearLastTx,

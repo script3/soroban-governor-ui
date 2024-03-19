@@ -4,7 +4,7 @@ import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
 import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
-import { StrKey, nativeToScVal, xdr } from "stellar-sdk";
+import { SorobanRpc, StrKey, nativeToScVal, xdr } from "stellar-sdk";
 import { VoteCount } from "soroban-governor-js-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string
 const mappedGovernors = governors.map(
@@ -19,6 +19,32 @@ const mappedGovernors = governors.map(
   }
 );
 const DEFAULT_STALE_TIME = 20 * 1000;
+
+
+
+export function useCurrentBlockNumber(options: Partial<DefinedInitialDataOptions> = {} as any){
+  const {network} = useWallet()
+  const { data, isLoading, error } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    refetchInterval: 10000,
+    queryKey: ["blockNumber"],
+    queryFn: async ()=>{
+      const rpc = new  SorobanRpc.Server(network.rpc)
+      const data = await rpc.getLatestLedger()
+      return data.sequence
+      },
+  });
+  console.log({data})
+  return {
+    blockNumber: data as number,
+    isLoading,
+    error,
+  }
+}
+
+
+
 export function useGovernors(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
@@ -48,7 +74,7 @@ export function useGovernor(
     queryKey: ["governor", governorId],
     queryFn: () => getGovernorById(governorId),
   });
-  async function getGovernorById(governorId: string) {
+   function getGovernorById(governorId: string) {
     const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
     return foundGovernor || null;
   }
@@ -357,6 +383,8 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
 
 
 
+
+
  async function runGraphQLQuery(queryString:string,operationName:string){
   try{
     const res = await fetch(apiEndpoint, {
@@ -372,6 +400,22 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
     const json_res = await res.json();
     const data = json_res.data;
     return data
+  }
+  catch(e){
+    console.log("error on fetch")
+    console.error(e)
+    return null
+  }
+}
+
+async function getCurrentBlockNumber(horizonEndpoint:string="https://horizon.stellar.org"){
+  try{
+    const res = await fetch(horizonEndpoint, {
+    cache: "no-cache",
+    method: 'GET',
+})
+    const json_res = await res.json();
+    return json_res.core_latest_ledger
   }
   catch(e){
     console.log("error on fetch")

@@ -12,18 +12,20 @@ import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 
-import { useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
+import { useCurrentBlockNumber, useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
 
 import { Loader } from "@/components/common/Loader";
 import { stripMarkdown } from "@/utils/string";
+import { getStatusByProposalState } from "@/utils/proposal";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
   const { wrapToken, connect, connected, isLoading } = useWallet();
   const router = useRouter();
+  const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
 
   const params = router.query;
   const decimals = 7;
@@ -38,6 +40,8 @@ function Proposals() {
     placeholderData: [],
     enabled:!!params.dao && !!governor?.address && !!governor?.settings?.vote_delay && !!governor?.settings?.vote_period,
   });
+
+
 
   function handleWrapClick() {
     if (!connected) {
@@ -115,14 +119,17 @@ function Proposals() {
       </Container>
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
-        {proposals.map((proposal, ind) => (
+        {proposals.map((proposal, ind) => {
+          const proposalStatus = getStatusByProposalState(proposal.status,proposal.vote_start,proposal.vote_end,currentBlockNumber)
+          return (
+
           <Box key={proposal.id + ind} className="p-4 flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <Typography.Small className="font-bold">
                 {shortenAddress(proposal.proposer)}
               </Typography.Small>
-              <Chip className={`${classByStatus[proposal.status]} mb-4`}>
-                {ProposalStatusText[proposal.status]}
+              <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
+                {ProposalStatusText[proposalStatus]}
               </Chip>
             </div>
             <div
@@ -182,14 +189,15 @@ function Proposals() {
               <Typography.Tiny className="text-snapLink">
                 {/* X days remaining / ended X days ago  */}{" "}
                 {getRelativeProposalPeriod(
-                  proposal.status,
+                  proposalStatus,
                   proposal.vote_start,
-                  proposal.vote_end
+                  proposal.vote_end,
+                  currentBlockNumber
                 )}
               </Typography.Tiny>
             </div>
           </Box>
-        ))}
+        )})}
       </Container>
     </Container>
   );

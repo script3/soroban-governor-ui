@@ -104,7 +104,7 @@ const formatRelativeTime = (
 ) => {
   const relativeTo = new Date().getTime() / 1e3;
 
-  const { duration, unit } = getDurationAndUnit(timestamp - relativeTo);
+  const { duration, unit } = getDurationAndUnit((timestamp/1e3) - relativeTo);
 
   formatter = formatter || defaultRelativeTimeFormatter;
 
@@ -130,17 +130,21 @@ const formatCompactNumber = (number: number) =>
 const formatPercentNumber = (number: number) =>
   formatNumber(number, percentNumberFormatter);
 
-const getRelativeProposalPeriod = (state: ProposalStatusEnum, start: any, end: any): any => {
+const getRelativeProposalPeriod = (state: ProposalStatusEnum, startBlock: number, endBlock: number,currentBlock:number): any => {
+  console.log({state,startBlock,endBlock,currentBlock})
+  const now = new Date()
+  const startDate = new Date(now.getTime() + ((startBlock - currentBlock) * 5000))
+  const endDate = new Date(now.getTime() +( (endBlock - currentBlock) * 5000))
+console.log({startDate,endDate})
   if (
-    state !== ProposalStatusEnum.Active &&
-    state !== ProposalStatusEnum.Pending
+    endDate < now 
   ) {
-    return `Ended ${formatRelativeTime(end, longRelativeTimeFormatter)} `;
+    return `Ended ${formatRelativeTime(endDate.getTime(), longRelativeTimeFormatter)} `;
   }
-  if (state === ProposalStatusEnum.Active) {
-    return `Ends ${formatRelativeTime(end, longRelativeTimeFormatter)}`;
+  if (startDate < now && endDate > now) {
+    return `Ends ${formatRelativeTime(endDate.getTime(), longRelativeTimeFormatter)}`;
   }
-  return `Starts ${formatRelativeTime(start, longRelativeTimeFormatter)}`;
+  return `Starts ${formatRelativeTime(startDate.getTime(), longRelativeTimeFormatter)}`;
 };
 
 const getPercentFractionDigits = (value: number) => {
@@ -162,6 +166,8 @@ const getPercentFractionDigits = (value: number) => {
 function formatDate(d: Date) {
   return getDateTimeFormatter().format(d || Date.now());
 }
+
+
 export {
   getRelativeTimeFormatter,
   getNumberFormatter,

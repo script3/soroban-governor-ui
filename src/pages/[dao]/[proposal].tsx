@@ -20,6 +20,7 @@ import Image from "next/image";
 
 import { useRouter } from "next/router";
 import {
+  useCurrentBlockNumber,
   useGovernor,
   useProposal,
   useUserVoteByProposalId,
@@ -30,6 +31,7 @@ import { useWallet } from "@/hooks/wallet";
 import { SelectableList } from "@/components/common/SelectableList";
 import { toBalance } from "@/utils/formatNumber";
 import { Loader } from "@/components/common/Loader";
+import { getStatusByProposalState } from "@/utils/proposal";
 
 const shareOptions: Item[] = [
   {
@@ -51,6 +53,8 @@ export default function Proposal() {
     enabled: !!params.proposal && !!currentGovernor?.address,
     placeholderData: {},
   });
+  const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
+  const proposalStatus = getStatusByProposalState(proposal.status,proposal.vote_start,proposal.vote_end,currentBlockNumber);
 
   const { votes } = useVotes(3,currentGovernor?.address, {
     enabled: !!proposal?.id,
@@ -75,7 +79,7 @@ export default function Proposal() {
     proposal?.id,
     {
       placeholderData: BigInt(0),
-      enabled: connected && !!proposal?.id && proposal.status === ProposalStatusEnum.Active || proposal.status === ProposalStatusEnum.Pending &&  !!currentGovernor?.voteTokenAddress,
+      enabled: connected && !!proposal?.id  && proposalStatus === ProposalStatusEnum.OPEN &&  !!currentGovernor?.voteTokenAddress,
     }
   );
 
@@ -142,8 +146,8 @@ export default function Proposal() {
           >
             <Container slim className="flex flex-col mb-2">
               <Container slim className="flex flex-row gap-2">
-              <Chip className={`${classByStatus[proposal.status]} mb-4`}>
-                {ProposalStatusText[proposal.status]}
+              <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
+                {ProposalStatusText[proposalStatus]}
               </Chip>
               <Chip className={`${classByProposalAction[proposal.action.tag]} mb-4`}>
                 {proposal.action.tag}
@@ -263,7 +267,7 @@ export default function Proposal() {
                       }
                     }}
                     className="!bg-secondary px-16 !w-full"
-                    disabled={isLoading || userVote !== undefined}
+                    disabled={isLoading || userVote !== undefined || proposalStatus !== ProposalStatusEnum.OPEN}
                   >
                     {isLoading ? (
                       <Loader />

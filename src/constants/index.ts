@@ -13,6 +13,10 @@ export enum ProposalStatusEnum {
   Executed = 5,
   /// The proposal has been canceled
   Canceled = 6,
+
+  // frontend status only
+  OPEN=7,
+  CLOSED=8
 }
 
 export type ProposalStatus =
@@ -32,6 +36,8 @@ export const ProposalStatusText = {
   [ProposalStatusEnum.Expired]: "Expired",
   [ProposalStatusEnum.Executed]: "Executed",
   [ProposalStatusEnum.Canceled]: "Canceled",
+  [ProposalStatusEnum.OPEN]: "Open",
+  [ProposalStatusEnum.CLOSED]: "Closed",
 }
 
 export enum ProposalActionEnum {
@@ -53,11 +59,13 @@ export type ObType = { [key: string]: string };
 export const classByStatus: ObType = {
   [ProposalStatusEnum.Successful]: "!bg-fuchsia-400",
   [ProposalStatusEnum.Active]: "!bg-green-500",
+  [ProposalStatusEnum.OPEN]: "!bg-green-500",
   [ProposalStatusEnum.Defeated]: "!bg-red-500",
   [ProposalStatusEnum.Canceled]: "!bg-gray-500",
   [ProposalStatusEnum.Expired]: "!bg-gray-500",
   [ProposalStatusEnum.Executed]: "!bg-gray-500",
   [ProposalStatusEnum.Pending]: "!bg-amber-800",
+  [ProposalStatusEnum.CLOSED]: "!bg-gray-500",
 
 };
 export const EighteenDecimals = 10_000_000_000_000_000_000;

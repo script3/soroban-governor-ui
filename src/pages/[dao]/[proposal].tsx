@@ -11,7 +11,7 @@ import { MarkdownPreview } from "@/components/MarkdownPreview";
 import {  useState } from "react";
 import { Button } from "@/components/common/Button";
 import { ViewMore } from "@/components/ViewMore";
-import { formatDate } from "@/utils/date";
+import { formatDate, getProposalDate } from "@/utils/date";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
 import { VoteListItem } from "@/components/VoteListItem";
@@ -336,7 +336,7 @@ export default function Proposal() {
                     Start date
                   </Typography.P>
                   <Typography.Small className="">
-                    {formatDate(new Date(proposal?.vote_start))}
+                    {formatDate(getProposalDate(proposal?.vote_start,currentBlockNumber))}
                   </Typography.Small>
                 </Container>
                 <Container className="flex justify-between mb-2">
@@ -344,7 +344,7 @@ export default function Proposal() {
                     End Date{" "}
                   </Typography.P>
                   <Typography.Small className="">
-                    {formatDate(new Date(proposal?.vote_end))}
+                    {formatDate(getProposalDate(proposal?.vote_end,currentBlockNumber))}
                   </Typography.Small>
                 </Container>
                 <Container className="flex justify-between mb-2">

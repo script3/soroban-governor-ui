@@ -130,6 +130,16 @@ const formatCompactNumber = (number: number) =>
 const formatPercentNumber = (number: number) =>
   formatNumber(number, percentNumberFormatter);
 
+
+   function getProposalDate(block:number,currentBlock:number){
+
+    const now = new Date()
+    const d = new Date(now.getTime() + ((block - currentBlock) * 5000))
+    return d
+
+  }
+
+
 const getRelativeProposalPeriod = (state: ProposalStatusEnum, startBlock: number, endBlock: number,currentBlock:number): any => {
 
   const now = new Date()
@@ -178,6 +188,7 @@ export {
   formatPercentNumber,
   formatDate,
   getRelativeProposalPeriod,
+  getProposalDate,
   getPercentFractionDigits,
   longRelativeTimeFormatter,
 };

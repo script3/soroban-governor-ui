@@ -18,6 +18,6 @@ export function getStatusByProposalState(statusFromContract:ProposalStatusEnum,v
         }
         return ProposalStatusEnum.OPEN
     }
-    console.log({voteStart,voteEnd,currentBlock,statusFromContract})
+
     return statusFromContract
 }

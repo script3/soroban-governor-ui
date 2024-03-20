@@ -3,7 +3,7 @@ import { Box } from "@/components/common/Box";
 import { Chip } from "@/components/common/Chip";
 import { Dropdown, Item } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
-import { ProposalActionEnum, ProposalStatusEnum, ProposalStatusText, classByProposalAction, classByStatus } from "@/constants";
+import {  ProposalStatusEnum, ProposalStatusText, classByProposalAction, classByStatus } from "@/constants";
 
 import { shortenAddress } from "@/utils/shortenAddress";
 

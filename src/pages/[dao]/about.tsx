@@ -33,7 +33,6 @@ function About() {
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.name}</Typography.Small>
         <Typography.Medium>Settings</Typography.Medium>
        <Container className="pl-2 flex flex-col gap-3">
-
         <Typography.P>Council</Typography.P>
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.council}</Typography.Small>
         <Typography.P>Counting Type</Typography.P>
@@ -55,7 +54,7 @@ function About() {
         <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_threshold}</Typography.Small>
        </Container>
       </Box>
-      <Box className="p-2">
+      {/* <Box className="p-2">
         <Typography.Big>Social</Typography.Big>
         <div className="flex gap-3 justify-between p-4 ">
           <div className="flex flex-col justify-left">
@@ -70,7 +69,7 @@ function About() {
             </Typography.Tiny>
           </div>
         </div>
-      </Box>
+      </Box> */}
     </Container>
   );
 }

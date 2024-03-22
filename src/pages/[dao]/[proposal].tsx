@@ -3,7 +3,7 @@ import { Box } from "@/components/common/Box";
 import { Chip } from "@/components/common/Chip";
 import { Dropdown, Item } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
-import {  ProposalStatusEnum, ProposalStatusText, classByProposalAction, classByStatus } from "@/constants";
+import {  ProposalActionEnum, ProposalStatusEnum, ProposalStatusText, classByProposalAction, classByStatus } from "@/constants";
 
 import { shortenAddress } from "@/utils/shortenAddress";
 
@@ -55,8 +55,8 @@ export default function Proposal() {
   });
   const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
   const proposalStatus = getStatusByProposalState(proposal?.status,proposal?.vote_start,proposal?.vote_end,currentBlockNumber);
-
-  const { votes } = useVotes(3,currentGovernor?.address, {
+  const isExecutable = proposalStatus === ProposalStatusEnum.Successful && proposal?.action.tag !== ProposalActionEnum.SNAPSHOT;
+  const { votes } = useVotes(proposal?.id,currentGovernor?.address, {
     enabled: !!proposal?.id,
     placeholderData: [],
   });
@@ -71,7 +71,7 @@ export default function Proposal() {
     }
   );
 
-  const { vote, connected, connect, isLoading } = useWallet();
+  const { vote, connected, connect, isLoading,executeProposal,closeProposal } = useWallet();
 
   const { votingPower } = useVotingPowerByProposal(
     currentGovernor?.voteTokenAddress,
@@ -103,13 +103,20 @@ export default function Proposal() {
   function handleVote() {
     if (selectedSupport !== null) {
       vote(
-        // proposal?.id as number,
-        1,
+        proposal?.id as number,
         selectedSupport,
         false,
         currentGovernor.address
       );
     }
+  }
+
+  function handleExecute() {
+    executeProposal(proposal.id, currentGovernor.address);
+  }
+
+  function handleClose() {
+    closeProposal(proposal.id, currentGovernor.address);
   }
 
   return (
@@ -165,7 +172,13 @@ export default function Proposal() {
                     </Typography.Small>
                   </Typography.Small>
                 </Container>
-                <Container slim className="flex items-center">
+                <Container slim className="flex items-center gap-2">
+                  {isExecutable && connected &&  <Button className={`w-32 !bg-secondary ${isLoading ? "!py-1.5":""} `}  disabled={isLoading} onClick={handleExecute}>
+                    {isLoading? <Loader  /> : "Execute"}
+                  </Button>}
+                  {proposalStatus === ProposalStatusEnum.CLOSED && connected &&  <Button className={`w-32 !bg-secondary ${isLoading ? "!py-1.5":""} `}  disabled={isLoading} onClick={handleClose}>
+                    {isLoading? <Loader  /> : "Close"}
+                  </Button>}
                   <Dropdown
                     placement="bottom-end"
                     chevron={false}
@@ -226,7 +239,7 @@ export default function Proposal() {
                 </Box>
               )}
             </Container>
-            <Container slim>
+            {proposalStatus === ProposalStatusEnum.Active &&  <Container slim>
               <Box>
                 <Container className="border-b border-snapBorder flex !flex-row justify-between ">
                   <Typography.Medium className=" !p-4 flex w-max">
@@ -234,7 +247,7 @@ export default function Proposal() {
                   </Typography.Medium>
                   {connected && votingPower > BigInt(0) && (
                     <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                      Voting Power: {toBalance(votingPower, 7)}
+                      Voting token balance: {toBalance(votingPower, 7)}
                     </Typography.Medium>
                   )}
                 </Container>
@@ -267,7 +280,7 @@ export default function Proposal() {
                       }
                     }}
                     className="!bg-secondary px-16 !w-full"
-                    disabled={isLoading || userVote !== undefined || proposalStatus !== ProposalStatusEnum.OPEN}
+                    disabled={isLoading || userVote !== undefined || proposalStatus !== ProposalStatusEnum.Active}
                   >
                     {isLoading ? (
                       <Loader />
@@ -283,7 +296,7 @@ export default function Proposal() {
                   </Button>
                 </Container>
               </Box>
-            </Container>
+            </Container>}
             {votes.length > 0 && <Container slim>
               <Box className="!px-0">
                 <Container className="py-4 border-b flex gap-1 border-snapBorder">
@@ -355,7 +368,7 @@ export default function Proposal() {
                 </Container>
               </Container>
             </Box>
-            <Box className="!p-0">
+            {proposalStatus !== ProposalStatusEnum.Canceled && <Box className="!p-0">
               <Container slim className="border-b mb-2 border-snapBorder">
                 <Typography.Medium className=" !p-4 flex w-full ">
                   Results
@@ -427,7 +440,7 @@ export default function Proposal() {
                   }
                 />{" "}
               </Container>
-            </Box>
+            </Box>}
           </Container>
         </Container>
       )}

@@ -61,11 +61,11 @@ function Proposals() {
         <Box className="p-3 flex gap-3 flex-col ">
           <Container slim className="flex flex-col justify-center p-1 ">
             <Typography.P>
-              Get voting power by wrapping your underlying tokens
+              Get voting tokens by wrapping your underlying tokens
             </Typography.P>
             {connected && (
               <Typography.Small className="text-snapLink">
-                Current voting power: {toBalance(balance, 7)}{" "}
+                Current voting tokens: {toBalance(balance, 7)}{" "}
                 {/* {governor.name || "$VOTE"} */}
               </Typography.Small>
             )}

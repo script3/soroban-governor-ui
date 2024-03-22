@@ -76,6 +76,16 @@ export interface IWalletContext {
     sim: boolean,
     governorAddress: string
   ) => Promise<bigint | undefined>;
+  executeProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<bigint | undefined>;
+  closeProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<bigint | undefined>;
   getVoteTokenBalance: (
     voteTokenAddress: string,
     sim: boolean
@@ -384,6 +394,121 @@ export const WalletProvider = ({ children = null as any }) => {
       }
     } catch (e) {
       console.log("Error creating proposal: ", e);
+      throw e;
+    }
+  }
+
+  async function executeProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ){
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorClient(governorAddress);
+
+        let executeOperation = governorClient.execute({
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          governorClient.parsers.execute,
+          executeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal executed",
+            successMessage: "Proposal executed",
+            failureMessage: "Failed to execute proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error executing proposal: ", e);
+      throw e;
+    }
+  }
+
+
+  async function closeProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ){
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorClient(governorAddress);
+
+        let closeOperation = governorClient.close({
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          governorClient.parsers.close,
+          closeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal closed",
+            successMessage: "Proposal closed",
+            failureMessage: "Failed to close proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error closing proposal: ", e);
       throw e;
     }
   }
@@ -727,6 +852,8 @@ export const WalletProvider = ({ children = null as any }) => {
         clearLastTx,
         vote,
         createProposal,
+        executeProposal,
+        closeProposal,
         rpcServer,
         submitTransaction,
         setNetwork,

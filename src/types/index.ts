@@ -96,7 +96,9 @@ export interface XDRProposal  {
   action: string;
   creator: string;
   status: string;
-  ledger: string;
+  vStart: string;
+  vEnd: string;
+  votes?: string;
 }
 
 export interface XDRVote {

@@ -28,6 +28,9 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, v
                 break;
             }
     }
+    if(proposal.votes){
+        
+    }
 
     const proposalToReturn: Proposal = {
         governor,
@@ -37,8 +40,8 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, v
         action,
         proposer: scValToNative(xdr.ScVal.fromXDR(proposal.creator, "base64")),
         status: scValToNative(xdr.ScVal.fromXDR(proposal.status, "base64")),
-        vote_start: scValToNative(xdr.ScVal.fromXDR(proposal.ledger, "base64")) + Number(voteDelay),
-        vote_end: scValToNative(xdr.ScVal.fromXDR(proposal.ledger, "base64")) + Number(voteDelay) + Number(votePeriod),
+        vote_start: scValToNative(xdr.ScVal.fromXDR(proposal.vStart, "base64")) ,
+        vote_end: scValToNative(xdr.ScVal.fromXDR(proposal.vEnd, "base64")),
         link: "",
         votes_for: 0,
         votes_against: 0,

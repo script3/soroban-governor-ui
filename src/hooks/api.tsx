@@ -286,23 +286,26 @@ async function getProposalsByGovernor(governorAddress:string){
 const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
 
    const data = await runGraphQLQuery(`query getProposalsByGovernor { 
-    zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontract(hash: "${addressHash}") {
+    zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract(hash: "${addressHash}") {
       nodes {
         contract
-        propNum
-        title
-        descr
-        action
-        creator
-        status
-        ledger
+      propNum
+      title
+      descr
+      action
+      creator
+      status
+      eta
+      vEnd
+      vStart
+      votes
       }
     }
    }`,"getProposalsByGovernor")
   if(!data){
     return null
   }
-   const proposals = data["zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontract"]?.nodes
+   const proposals = data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract"]?.nodes
   return proposals
 
 
@@ -319,22 +322,25 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
   const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
 
    const data = await runGraphQLQuery(`query getProposalsById { 
-     zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
-     contract
-     propNum
-     title
-     descr
-     action
-     creator
-     status
-     ledger
+     zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+      contract
+      propNum
+      title
+      descr
+      action
+      creator
+      status
+      eta
+      vEnd
+      vStart
+      votes
    }
    }
    }`,"getProposalsById")
   if(!data){
     return null
   }
-   const proposal = data["zephyrdd496Ee27D82Df60346728B50260Ed26Sbycontractandproposalnum"]?.nodes[0]
+   const proposal = data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum"]?.nodes[0]
   return parseProposalFromXDR(proposal,voteDelay,votePeriod)
 
  }catch(e){

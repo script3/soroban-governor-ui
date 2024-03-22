@@ -47,11 +47,12 @@ export default function Proposal() {
   const router = useRouter();
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
-  const { proposal } = useProposal(Number(params.proposal),currentGovernor?.address,
+  const { proposal,refetch } = useProposal(Number(params.proposal),currentGovernor?.address,
   currentGovernor?.settings?.vote_delay,
   currentGovernor?.settings?.vote_period, {
     enabled: !!params.proposal && !!currentGovernor?.address,
     placeholderData: {},
+    
   });
   const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
   const proposalStatus = getStatusByProposalState(proposal?.status,proposal?.vote_start,proposal?.vote_end,currentBlockNumber);
@@ -112,11 +113,15 @@ export default function Proposal() {
   }
 
   function handleExecute() {
-    executeProposal(proposal.id, currentGovernor.address);
+    executeProposal(proposal.id, currentGovernor.address).then(()=>{
+      refetch()
+    })
   }
 
   function handleClose() {
-    closeProposal(proposal.id, currentGovernor.address);
+    closeProposal(proposal.id, currentGovernor.address).then(()=>{
+      refetch()
+    })
   }
 
   return (

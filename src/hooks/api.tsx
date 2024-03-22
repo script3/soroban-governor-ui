@@ -139,6 +139,7 @@ export function useProposal(
     data: proposal,
     isLoading,
     error,
+    refetch
   } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
@@ -170,6 +171,7 @@ export function useProposal(
     proposal: proposal as Proposal,
     isLoading,
     error,
+    refetch
   };
 }
 

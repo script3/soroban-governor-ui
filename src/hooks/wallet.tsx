@@ -93,6 +93,7 @@ export interface IWalletContext {
   getVotingPowerByProposal: (
     voteTokenAddress: string,
     proposalStart: number,
+    currentBlockNumber: number,
     sim: boolean
   ) => Promise<bigint>;
   getTotalVotesByProposal: (
@@ -185,7 +186,6 @@ export const WalletProvider = ({ children = null as any }) => {
         setTxMessage(cleanMessage);
       } else {
         setTxMessage(message);
-
       }
     }
   }
@@ -341,7 +341,7 @@ export const WalletProvider = ({ children = null as any }) => {
     description: string,
     action: ProposalAction,
     sim: boolean,
-    governorAddress: string,
+    governorAddress: string
   ) {
     try {
       if (connected) {
@@ -364,7 +364,7 @@ export const WalletProvider = ({ children = null as any }) => {
           creator: walletAddress,
           title,
           description,
-          action
+          action,
         });
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
@@ -402,7 +402,7 @@ export const WalletProvider = ({ children = null as any }) => {
     proposalId: number,
     governorAddress: string,
     sim = false
-  ){
+  ) {
     try {
       if (connected) {
         let txOptions: TxOptions = {
@@ -455,12 +455,11 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
-
   async function closeProposal(
     proposalId: number,
     governorAddress: string,
     sim = false
-  ){
+  ) {
     try {
       if (connected) {
         let txOptions: TxOptions = {
@@ -513,10 +512,12 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
-
-  async function getTotalVotesByProposal(proposalId: number, governorAddress: string, sim = true) {
+  async function getTotalVotesByProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = true
+  ) {
     try {
-
       let txOptions: TxOptions = {
         sim,
         pollingInterval: 1000,
@@ -534,9 +535,7 @@ export const WalletProvider = ({ children = null as any }) => {
 
       let proposeOperation = governorClient.getProposalVotes({
         proposal_id: proposalId,
-
-      }
-      )
+      });
       const submission = invokeOperation<xdr.ScVal>(
         DUMMY_ADDRESS,
         sign,
@@ -550,14 +549,11 @@ export const WalletProvider = ({ children = null as any }) => {
         return sub.result.unwrap() as VoteCount;
       }
       return sub;
-
     } catch (e) {
       console.log("Error creating proposal: ", e);
       throw e;
     }
   }
-
-
 
   async function getVoteTokenBalance(voteTokenAddress: string, sim: boolean) {
     try {
@@ -608,11 +604,12 @@ export const WalletProvider = ({ children = null as any }) => {
   async function getVotingPowerByProposal(
     voteTokenAddress: string,
     proposalStart: number,
+    currentBlockNumber: number,
     sim: boolean
   ) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
+        const txOptions: TxOptions = {
           sim,
           pollingInterval: 1000,
           timeout: 15000,
@@ -625,18 +622,27 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
-
-        let proposeOperation = votesClient.getPastVotes({
-          user: walletAddress,
-          sequence: proposalStart,
-        });
+        const votesClient = new VotesClient(voteTokenAddress);
+        const proposalIsPast = currentBlockNumber > proposalStart;
+        let proposeOperation;
+        if (proposalIsPast) {
+          proposeOperation = votesClient.getPastVotes({
+            user: walletAddress,
+            sequence: proposalStart,
+          });
+        } else {
+          proposeOperation = votesClient.getVotes({
+            account: walletAddress,
+          });
+        }
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,
           network,
           txOptions,
-          votesClient.parsers.getVotes,
+          proposalIsPast
+            ? votesClient.parsers.getPastVotes
+            : votesClient.parsers.getVotes,
           proposeOperation
         );
         if (sim) {
@@ -768,10 +774,6 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
-
-
-
-
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -846,7 +848,7 @@ export const WalletProvider = ({ children = null as any }) => {
           txStatus === TxStatus.BUILDING ||
           txStatus === TxStatus.SIGNING ||
           txStatus === TxStatus.SUBMITTING,
-          network,
+        network,
         connect,
         disconnect,
         clearLastTx,

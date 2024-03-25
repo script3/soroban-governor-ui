@@ -28,9 +28,7 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, v
                 break;
             }
     }
-    if(proposal.votes){
-        
-    }
+   
 
     const proposalToReturn: Proposal = {
         governor,
@@ -48,6 +46,14 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, v
         votes_abstain: 0,
         total_votes: 0,
     };
+
+    const voteCount = !!proposal.votes && scValToNative(xdr.ScVal.fromXDR(proposal.votes, "base64")) 
+    if(!!voteCount){
+        proposalToReturn.votes_for = voteCount[0]
+        proposalToReturn.votes_against = voteCount[1]
+        proposalToReturn.votes_abstain = voteCount[2]
+        proposalToReturn.total_votes = voteCount[3]
+    }
 
     return proposalToReturn
 }

@@ -9,7 +9,7 @@ import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
-import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, SUBCALLDATA_PLACEHOLDER, classByProposalAction } from "@/constants";
+import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, classByProposalAction } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
 import { isCalldataString, isGovernorSettingsString, isUpgradeString, parseCallData } from "@/utils/validation";
 import { parse } from "json5";

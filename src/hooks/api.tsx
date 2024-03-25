@@ -224,6 +224,7 @@ export function useVotingPowerByProposal(
   voteTokenAddress: string,
   proposalStartTime: number,
   proposalId: number,
+  currentBlockNumber:number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getVotingPowerByProposal, connected } = useWallet();
@@ -241,6 +242,7 @@ export function useVotingPowerByProposal(
       const result = await getVotingPowerByProposal(
         voteTokenAddress,
         proposalStartTime,
+        currentBlockNumber,
         true
       );
 

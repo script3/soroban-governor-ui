@@ -123,7 +123,7 @@ function Proposals() {
           const proposalStatus = getStatusByProposalState(proposal.status,proposal.vote_start,proposal.vote_end,currentBlockNumber)
           return (
 
-          <Box key={proposal.id + ind} className="p-4 flex flex-col gap-4">
+          <Box key={`${proposal.id} ${ind}`} className="p-4 flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <Typography.Small className="font-bold">
                 {shortenAddress(proposal.proposer)}

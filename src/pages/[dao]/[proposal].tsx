@@ -73,7 +73,8 @@ export default function Proposal() {
   );
   const isExecutable =
     proposalStatus === ProposalStatusEnum.Successful &&
-    proposal?.action.tag !== ProposalActionEnum.SNAPSHOT;
+    proposal?.action.tag !== ProposalActionEnum.SNAPSHOT &&
+    proposal?.executionETA <= currentBlockNumber;
   const { votes, refetch: refetchVotes } = useVotes(
     proposal?.id,
     currentGovernor?.address,
@@ -90,7 +91,6 @@ export default function Proposal() {
       placeholderData: undefined,
     }
   );
-  console.log({ userVote });
 
   const {
     walletAddress,
@@ -142,7 +142,10 @@ export default function Proposal() {
         selectedSupport,
         false,
         currentGovernor.address
-      );
+      ).then(() => {
+        refetch();
+        refetchVotes();
+      });
     }
   }
 
@@ -236,7 +239,7 @@ export default function Proposal() {
                       {isLoading ? <Loader /> : "Execute"}
                     </Button>
                   )}
-                  {proposalStatus === ProposalStatusEnum.CLOSED &&
+                  {proposalStatus === ProposalStatusEnum.Closed &&
                     connected && (
                       <Button
                         className={`w-32 !bg-secondary ${
@@ -326,7 +329,9 @@ export default function Proposal() {
                 <Box>
                   <Container className="border-b border-snapBorder flex !flex-row justify-between ">
                     <Typography.Medium className=" !p-4 flex w-max">
-                      {userVote !== null ? "Your vote is in" : "Cast your vote"}
+                      {userVote !== undefined
+                        ? "Your vote is in"
+                        : "Cast your vote"}
                     </Typography.Medium>
                     {connected && votingPower > BigInt(0) && (
                       <Typography.Medium className=" !p-4 flex w-max text-snapLink ">

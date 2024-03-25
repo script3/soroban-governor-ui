@@ -9,9 +9,19 @@ import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
-import { CALLDATA_PLACEHOLDER, GOVERNOR_SETTINGS_PLACEHOLDER, ProposalActionEnum, classByProposalAction } from "@/constants";
+import {
+  CALLDATA_PLACEHOLDER,
+  GOVERNOR_SETTINGS_PLACEHOLDER,
+  ProposalActionEnum,
+  classByProposalAction,
+} from "@/constants";
 import { useWallet } from "@/hooks/wallet";
-import { isCalldataString, isGovernorSettingsString, isUpgradeString, parseCallData } from "@/utils/validation";
+import {
+  isCalldataString,
+  isGovernorSettingsString,
+  isUpgradeString,
+  parseCallData,
+} from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,28 +38,36 @@ export default function CreateProposal() {
   const [executionCalldata, setExecutionCalldata] = useState("");
   const [governorSettings, setGovernorSettings] = useState("");
   const [upgradeString, setUpgradeString] = useState("");
-  const [proposalAction, setProposalAction] = useState(ProposalActionEnum.CALLDATA);
+  const [proposalAction, setProposalAction] = useState(
+    ProposalActionEnum.CALLDATA
+  );
   const [link, setLink] = useState("");
   const { connected, connect, createProposal, isLoading } = useWallet();
 
-  const isCalldataDisabled = proposalAction === ProposalActionEnum.CALLDATA && (!executionCalldata ||
-    (!!executionCalldata && !isCalldataString(executionCalldata)))
-  const isSettingsDisabled = proposalAction === ProposalActionEnum.SETTINGS && (!governorSettings || (!!governorSettings && !isGovernorSettingsString(governorSettings))) 
-  const isUpgradeDisabled = proposalAction === ProposalActionEnum.UPGRADE && (!upgradeString || !isUpgradeString(upgradeString,32))
-
+  const isCalldataDisabled =
+    proposalAction === ProposalActionEnum.CALLDATA &&
+    (!executionCalldata ||
+      (!!executionCalldata && !isCalldataString(executionCalldata)));
+  const isSettingsDisabled =
+    proposalAction === ProposalActionEnum.SETTINGS &&
+    (!governorSettings ||
+      (!!governorSettings && !isGovernorSettingsString(governorSettings)));
+  const isUpgradeDisabled =
+    proposalAction === ProposalActionEnum.UPGRADE &&
+    (!upgradeString || !isUpgradeString(upgradeString, 32));
 
   function handleProposal(action: string) {
     switch (action) {
       case ProposalActionEnum.CALLDATA:
         const calldata = parse(
           executionCalldata ||
-          `{
+            `{
               args:[],
               function:"",
               contract_id:""
         
             }`
-        ) as Calldata
+        ) as Calldata;
 
         const callDataToPass = parseCallData(calldata);
 
@@ -59,12 +77,10 @@ export default function CreateProposal() {
             description,
             {
               tag: action,
-              values: [
-                callDataToPass
-              ],
+              values: [callDataToPass],
             },
             false,
-            params.dao as string,
+            params.dao as string
           );
         }
         break;
@@ -78,14 +94,14 @@ export default function CreateProposal() {
               values: [Buffer.from(upgradeString)],
             },
             false,
-            params.dao as string,
+            params.dao as string
           );
         }
 
         break;
 
       case ProposalActionEnum.SETTINGS:
-        if(!!governorSettings){
+        if (!!governorSettings) {
           const governorToPass = parse(governorSettings) as GovernorSettings;
           createProposal(
             title,
@@ -95,32 +111,32 @@ export default function CreateProposal() {
               values: [governorToPass],
             },
             false,
-            params.dao as string,
+            params.dao as string
           );
         }
 
-        case ProposalActionEnum.SNAPSHOT:
+      case ProposalActionEnum.SNAPSHOT:
         createProposal(
           title,
           description,
           {
-            tag: action ,
-            values: undefined as any ,
+            tag: action,
+            values: undefined as any,
           },
           false,
-          params.dao as string,
+          params.dao as string
         );
     }
   }
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
-      <div className="flex flex-col w-full lg:w-8/12 lg:pr-5">
+      <div className="flex flex-col w-max lg:w-8/12 lg:pr-5">
         <Typography.P
           onClick={() => {
             router.back();
           }}
-          className="text-snapLink  hover:underline cursor-pointer  flex "
+          className="text-snapLink  hover:underline cursor-pointer  flex w-max "
         >
           <Image
             src="/icons/back-arrow.svg"
@@ -145,20 +161,70 @@ export default function CreateProposal() {
 
         <Container slim className=" flex flex-col gap-0 ">
           <Typography.P className="text-snapLink">Proposal type</Typography.P>
-          <RadioButton endText="DAO will submit a transaction" selected={proposalAction === ProposalActionEnum.CALLDATA} onChange={() => {
-            setProposalAction(ProposalActionEnum.CALLDATA)
-          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.CALLDATA] } !py-4`}>{ProposalActionEnum.CALLDATA}</Chip>} />
-          <RadioButton endText="Change the contract code of the DAO" selected={proposalAction === ProposalActionEnum.UPGRADE} onChange={() => {
-            setProposalAction(ProposalActionEnum.UPGRADE)
-          }} label={<Chip className={`${ classByProposalAction[ProposalActionEnum.UPGRADE] } !py-4`}>{ProposalActionEnum.UPGRADE}</Chip>} />
-          <RadioButton endText="Change the settings of the DAO" selected={proposalAction === ProposalActionEnum.SETTINGS} onChange={() => {
-            setProposalAction(ProposalActionEnum.SETTINGS)
-          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.SETTINGS]} !py-4`}>{ProposalActionEnum.SETTINGS}</Chip>} />
-          <RadioButton endText="No execution action" selected={proposalAction === ProposalActionEnum.SNAPSHOT} onChange={() => {
-            setProposalAction(ProposalActionEnum.SNAPSHOT)
-          }} label={<Chip className={`${classByProposalAction[ProposalActionEnum.SNAPSHOT]} !py-4`}>{ProposalActionEnum.SNAPSHOT}</Chip>} />
-
-
+          <RadioButton
+            endText="DAO will submit a transaction"
+            selected={proposalAction === ProposalActionEnum.CALLDATA}
+            onChange={() => {
+              setProposalAction(ProposalActionEnum.CALLDATA);
+            }}
+            label={
+              <Chip
+                className={`${
+                  classByProposalAction[ProposalActionEnum.CALLDATA]
+                } !py-4`}
+              >
+                {ProposalActionEnum.CALLDATA}
+              </Chip>
+            }
+          />
+          <RadioButton
+            endText="Change the contract code of the DAO"
+            selected={proposalAction === ProposalActionEnum.UPGRADE}
+            onChange={() => {
+              setProposalAction(ProposalActionEnum.UPGRADE);
+            }}
+            label={
+              <Chip
+                className={`${
+                  classByProposalAction[ProposalActionEnum.UPGRADE]
+                } !py-4`}
+              >
+                {ProposalActionEnum.UPGRADE}
+              </Chip>
+            }
+          />
+          <RadioButton
+            endText="Change the settings of the DAO"
+            selected={proposalAction === ProposalActionEnum.SETTINGS}
+            onChange={() => {
+              setProposalAction(ProposalActionEnum.SETTINGS);
+            }}
+            label={
+              <Chip
+                className={`${
+                  classByProposalAction[ProposalActionEnum.SETTINGS]
+                } !py-4`}
+              >
+                {ProposalActionEnum.SETTINGS}
+              </Chip>
+            }
+          />
+          <RadioButton
+            endText="No execution action"
+            selected={proposalAction === ProposalActionEnum.SNAPSHOT}
+            onChange={() => {
+              setProposalAction(ProposalActionEnum.SNAPSHOT);
+            }}
+            label={
+              <Chip
+                className={`${
+                  classByProposalAction[ProposalActionEnum.SNAPSHOT]
+                } !py-4`}
+              >
+                {ProposalActionEnum.SNAPSHOT}
+              </Chip>
+            }
+          />
         </Container>
         {!isPreview && (
           <>
@@ -175,51 +241,53 @@ export default function CreateProposal() {
               preview={false}
               bodyLimit={20_000}
             />
-            {proposalAction === ProposalActionEnum.CALLDATA && <>
-              <Typography.Small className="text-snapLink !my-2 ">
-                Execution Calldata (optional)
-              </Typography.Small>
-              <TextArea
-                isError={isCalldataDisabled}
-                className="min-h-72"
-                value={executionCalldata}
-                onChange={setExecutionCalldata}
-                placeholder={CALLDATA_PLACEHOLDER}
-              />
-
-            </>}
-            {proposalAction === ProposalActionEnum.SETTINGS && <>
-              <Typography.Small className="text-snapLink !my-2 ">
-                Governor Settings 
-              </Typography.Small>
-              <TextArea
-                isError={isSettingsDisabled}
-                className="min-h-72"
-                value={governorSettings}
-                onChange={setGovernorSettings}
-                placeholder={GOVERNOR_SETTINGS_PLACEHOLDER}
-              />
-
-            </>}
-            {proposalAction === ProposalActionEnum.UPGRADE && <>
-              <Typography.Small className="text-snapLink !my-2 ">
-              Upgrade to WASM hash
-              </Typography.Small>
-              <Input
-              error={isUpgradeDisabled}
-                className=""
-                value={upgradeString}
-                onChange={setUpgradeString}
-                placeholder={"WASM hash"}
-              />
-
-            </>}
+            {proposalAction === ProposalActionEnum.CALLDATA && (
+              <>
+                <Typography.Small className="text-snapLink !my-2 ">
+                  Execution Calldata (optional)
+                </Typography.Small>
+                <TextArea
+                  isError={isCalldataDisabled}
+                  className="min-h-72"
+                  value={executionCalldata}
+                  onChange={setExecutionCalldata}
+                  placeholder={CALLDATA_PLACEHOLDER}
+                />
+              </>
+            )}
+            {proposalAction === ProposalActionEnum.SETTINGS && (
+              <>
+                <Typography.Small className="text-snapLink !my-2 ">
+                  Governor Settings
+                </Typography.Small>
+                <TextArea
+                  isError={isSettingsDisabled}
+                  className="min-h-72"
+                  value={governorSettings}
+                  onChange={setGovernorSettings}
+                  placeholder={GOVERNOR_SETTINGS_PLACEHOLDER}
+                />
+              </>
+            )}
+            {proposalAction === ProposalActionEnum.UPGRADE && (
+              <>
+                <Typography.Small className="text-snapLink !my-2 ">
+                  Upgrade to WASM hash
+                </Typography.Small>
+                <Input
+                  error={isUpgradeDisabled}
+                  className=""
+                  value={upgradeString}
+                  onChange={setUpgradeString}
+                  placeholder={"WASM hash"}
+                />
+              </>
+            )}
 
             <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)
             </Typography.Small>
             <Input
-
               placeholder="https://forum.balancer.fi/proposal"
               type="url"
               value={link}
@@ -268,7 +336,9 @@ export default function CreateProposal() {
               connected &&
               (!title ||
                 !description ||
-                isCalldataDisabled || isSettingsDisabled || isUpgradeDisabled)
+                isCalldataDisabled ||
+                isSettingsDisabled ||
+                isUpgradeDisabled)
             }
             onClick={() => {
               if (!!connected) {

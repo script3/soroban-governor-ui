@@ -4,19 +4,18 @@ export function getStatusByProposalState(statusFromContract:ProposalStatusEnum,v
     if(statusFromContract === undefined && statusFromContract === null){
         return statusFromContract
     }
-    const statusOpen = statusFromContract === ProposalStatusEnum.OPEN || statusFromContract === ProposalStatusEnum.Active || statusFromContract === ProposalStatusEnum.Pending
 
-    if(statusOpen){
+    if(statusFromContract === ProposalStatusEnum.Open){
         if(voteStart<currentBlock && voteEnd>currentBlock){
             return ProposalStatusEnum.Active
         }
         if(voteEnd < currentBlock){
-            return ProposalStatusEnum.CLOSED
+            return ProposalStatusEnum.Closed
         }
         if(voteStart > currentBlock){
             return ProposalStatusEnum.Pending
         }
-        return ProposalStatusEnum.OPEN
+        return ProposalStatusEnum.Open
     }
 
     return statusFromContract

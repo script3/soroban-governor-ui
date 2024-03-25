@@ -1,5 +1,9 @@
 import { DUMMY_ADDRESS } from "@/constants";
-import { TxOptions, invokeOperation } from "@/utils/operation";
+import {
+  TxOptions,
+  invokeOperation,
+  parseResultFromXDRString,
+} from "@/utils/operation";
 import {
   FreighterModule,
   ISupportedWallet,
@@ -11,14 +15,13 @@ import {
 
 import React, { useContext, useEffect, useState } from "react";
 import {
-  Calldata,
   ContractError,
   ContractResult,
-  GovernorClient,
   ProposalAction,
   VoteCount,
-  VotesClient,
-  i128,
+  GovernorContract,
+  TokenVotesContract,
+  StakingVotesContract,
 } from "soroban-governor-js-sdk";
 import { SorobanRpc, scValToNative, xdr } from "stellar-sdk";
 export class Resources {
@@ -82,6 +85,11 @@ export interface IWalletContext {
     sim?: boolean
   ) => Promise<bigint | undefined>;
   closeProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<bigint | undefined>;
+  cancelProposal: (
     proposalId: number,
     governorAddress: string,
     sim?: boolean
@@ -292,7 +300,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
         let voteOperation = governorClient.vote({
           voter: walletAddress,
           proposal_id: proposalId,
@@ -303,7 +311,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.vote,
+          GovernorContract.parsers.vote,
           voteOperation
         );
         if (sim) {
@@ -358,7 +366,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
 
         let proposeOperation = governorClient.propose({
           creator: walletAddress,
@@ -371,7 +379,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.propose,
+          GovernorContract.parsers.propose,
           proposeOperation
         );
         if (sim) {
@@ -418,7 +426,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
 
         let executeOperation = governorClient.execute({
           proposal_id: proposalId,
@@ -428,7 +436,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.execute,
+          GovernorContract.parsers.execute,
           executeOperation
         );
         if (sim) {
@@ -475,7 +483,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
 
         let closeOperation = governorClient.close({
           proposal_id: proposalId,
@@ -485,7 +493,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.close,
+          GovernorContract.parsers.close,
           closeOperation
         );
         if (sim) {
@@ -512,6 +520,63 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
+  async function cancelProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorContract(governorAddress);
+        let cancelOperation = governorClient.cancel({
+          from: walletAddress,
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          GovernorContract.parsers.cancel,
+          cancelOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal cancelled",
+            successMessage: "Proposal cancelled",
+            failureMessage: "Failed to cancel proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error cancelling proposal: ", e);
+      throw e;
+    }
+  }
+
   async function getTotalVotesByProposal(
     proposalId: number,
     governorAddress: string,
@@ -531,7 +596,7 @@ export const WalletProvider = ({ children = null as any }) => {
           networkPassphrase: network.passphrase,
         },
       };
-      let governorClient = new GovernorClient(governorAddress);
+      let governorClient = new GovernorContract(governorAddress);
 
       let proposeOperation = governorClient.getProposalVotes({
         proposal_id: proposalId,
@@ -541,7 +606,7 @@ export const WalletProvider = ({ children = null as any }) => {
         sign,
         network,
         txOptions,
-        governorClient.parsers.getProposalVotes,
+        parseResultFromXDRString,
         proposeOperation
       );
       const sub = await submission;
@@ -571,7 +636,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
+        let votesClient = new TokenVotesContract(voteTokenAddress);
 
         let votesOperation = votesClient.balance({
           id: walletAddress,
@@ -581,7 +646,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          votesClient.parsers.balance,
+          TokenVotesContract.parsers.balance,
           votesOperation
         );
         if (sim) {
@@ -622,7 +687,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        const votesClient = new VotesClient(voteTokenAddress);
+        const votesClient = new TokenVotesContract(voteTokenAddress);
         const proposalIsPast = currentBlockNumber > proposalStart;
         let proposeOperation;
         if (proposalIsPast) {
@@ -641,8 +706,8 @@ export const WalletProvider = ({ children = null as any }) => {
           network,
           txOptions,
           proposalIsPast
-            ? votesClient.parsers.getPastVotes
-            : votesClient.parsers.getVotes,
+            ? TokenVotesContract.parsers.getPastVotes
+            : TokenVotesContract.parsers.getVotes,
           proposeOperation
         );
         if (sim) {
@@ -684,10 +749,10 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
+        let votesClient = new StakingVotesContract(voteTokenAddress);
         console.log({ walletAddress });
 
-        let proposeOperation = votesClient.depositFor({
+        let proposeOperation = votesClient.deposit({
           from: walletAddress,
           amount,
         });
@@ -696,7 +761,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          votesClient.parsers.depositFor,
+          StakingVotesContract.parsers.deposit,
           proposeOperation
         );
         if (sim) {
@@ -744,7 +809,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
         let voteOperation = governorClient.getVote({
           voter: walletAddress,
           proposal_id: proposalId,
@@ -754,7 +819,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.getVote,
+          GovernorContract.parsers.getVote,
           voteOperation
         );
         if (sim) {
@@ -805,6 +870,7 @@ export const WalletProvider = ({ children = null as any }) => {
         setTxStatus(TxStatus.SUCCESS);
       } else {
         const error = result.result.error;
+        console.log({ error });
         console.log("Failed submitted transaction: ", result.hash);
         setCleanTxMessage(options.failureMessage || error?.message);
         setNotificationTitle("Transaction Failed");
@@ -856,6 +922,7 @@ export const WalletProvider = ({ children = null as any }) => {
         createProposal,
         executeProposal,
         closeProposal,
+        cancelProposal,
         rpcServer,
         submitTransaction,
         setNetwork,

@@ -38,6 +38,7 @@ import { SelectableList } from "@/components/common/SelectableList";
 import { toBalance } from "@/utils/formatNumber";
 import { Loader } from "@/components/common/Loader";
 import { getStatusByProposalState } from "@/utils/proposal";
+import { VoteSupport } from "@/types";
 
 const shareOptions: Item[] = [
   {
@@ -73,27 +74,33 @@ export default function Proposal() {
   const isExecutable =
     proposalStatus === ProposalStatusEnum.Successful &&
     proposal?.action.tag !== ProposalActionEnum.SNAPSHOT;
-  const { votes } = useVotes(proposal?.id, currentGovernor?.address, {
-    enabled: !!proposal?.id,
-    placeholderData: [],
-  });
+  const { votes, refetch: refetchVotes } = useVotes(
+    proposal?.id,
+    currentGovernor?.address,
+    {
+      enabled: !!proposal?.id,
+      placeholderData: [],
+    }
+  );
   const { userVote } = useUserVoteByProposalId(
     Number(params.proposal),
     currentGovernor?.address,
-
     {
       enabled: !!proposal?.id && !!currentGovernor?.address,
       placeholderData: undefined,
     }
   );
+  console.log({ userVote });
 
   const {
+    walletAddress,
     vote,
     connected,
     connect,
     isLoading,
     executeProposal,
     closeProposal,
+    cancelProposal,
   } = useWallet();
 
   const { votingPower } = useVotingPowerByProposal(
@@ -142,12 +149,21 @@ export default function Proposal() {
   function handleExecute() {
     executeProposal(proposal.id, currentGovernor.address).then(() => {
       refetch();
+      refetchVotes();
     });
   }
 
   function handleClose() {
     closeProposal(proposal.id, currentGovernor.address).then(() => {
       refetch();
+      refetchVotes();
+    });
+  }
+
+  function handleCancel() {
+    cancelProposal(proposal.id, currentGovernor.address).then(() => {
+      refetch();
+      refetchVotes();
     });
   }
 
@@ -232,6 +248,19 @@ export default function Proposal() {
                         {isLoading ? <Loader /> : "Close"}
                       </Button>
                     )}
+                  {proposal?.proposer === walletAddress &&
+                    connected &&
+                    proposalStatus === ProposalStatusEnum.Pending && (
+                      <Button
+                        className={`w-32 !bg-secondary ${
+                          isLoading ? "!py-1.5" : ""
+                        } `}
+                        disabled={isLoading}
+                        onClick={handleCancel}
+                      >
+                        {isLoading ? <Loader /> : "Cancel"}
+                      </Button>
+                    )}
                   <Dropdown
                     placement="bottom-end"
                     chevron={false}
@@ -309,21 +338,21 @@ export default function Proposal() {
                     <SelectableList
                       disabled={
                         isLoading ||
-                        userVote !== null ||
+                        userVote !== undefined ||
                         votingPower === BigInt(0) ||
                         !connected
                       }
                       onSelect={setSelectedSupport}
                       items={[
-                        { value: 0, label: "Yes" },
-                        { value: 1, label: "No" },
-                        { value: 2, label: "Abstain" },
+                        { value: VoteSupport.For, label: "For" },
+                        { value: VoteSupport.Against, label: "Against" },
+                        { value: VoteSupport.Abstain, label: "Abstain" },
                       ]}
                       selected={userVote ?? selectedSupport}
                     />
                     <Button
                       onClick={() => {
-                        if (connected && userVote !== null) {
+                        if (connected && userVote === undefined) {
                           if (votingPower > BigInt(0)) {
                             handleVote();
                           } else {

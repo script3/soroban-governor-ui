@@ -40,6 +40,7 @@ export function parseProposalFromXDR(proposal: XDRProposal, voteDelay: number, v
         status: scValToNative(xdr.ScVal.fromXDR(proposal.status, "base64")),
         vote_start: scValToNative(xdr.ScVal.fromXDR(proposal.vStart, "base64")) ,
         vote_end: scValToNative(xdr.ScVal.fromXDR(proposal.vEnd, "base64")),
+        executionETA : !! proposal.eta && scValToNative(xdr.ScVal.fromXDR(proposal.eta, "base64")),
         link: "",
         votes_for: 0,
         votes_against: 0,

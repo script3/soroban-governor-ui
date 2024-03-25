@@ -16,7 +16,6 @@ export function VoteListItem({
   voteCount: any;
   index: number;
 }) {
-
   function getColorClassByVote(voteSupport: number) {
     if (voteSupport === VoteSupport.For) {
       return "!bg-success";
@@ -40,7 +39,11 @@ export function VoteListItem({
       <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
         {shortenAddress(vote.voter)}
       </Typography.P>
-      <Chip className={` truncate px-2 text-center  ${getColorClassByVote(vote.support)} `}>
+      <Chip
+        className={` truncate px-2 text-center  ${getColorClassByVote(
+          vote.support
+        )} `}
+      >
         {getSupportStringFromVote(vote.support)}
       </Chip>
       <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">

@@ -1,6 +1,6 @@
 import { VoteSupport } from "@/types";
 
-export function getSupportStringFromVote(voteSupport: number) {
+export function getSupportStringFromVote(voteSupport: VoteSupport) {
   if (voteSupport === VoteSupport.For) {
     return "For";
   }

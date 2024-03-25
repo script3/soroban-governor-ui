@@ -40,6 +40,7 @@ export interface Proposal {
   total_votes: number;
   governor: string;
   action:ProposalAction
+  executionETA: number;
 
 }
 
@@ -85,7 +86,6 @@ export enum VoteSupport {
   For = 1,
   Against = 0,
   Abstain = 2,
-
 }
 
 export interface XDRProposal  {
@@ -99,6 +99,7 @@ export interface XDRProposal  {
   vStart: string;
   vEnd: string;
   votes?: string;
+  eta?:string
 }
 
 export interface XDRVote {

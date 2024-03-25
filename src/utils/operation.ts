@@ -9,6 +9,7 @@ import {
   Asset,
   Horizon,
   Operation,
+  scValToNative,
   SorobanRpc,
   Transaction,
   TransactionBuilder,
@@ -138,4 +139,10 @@ export async function invokeOperation<T>(
   );
 
   return result;
+}
+
+
+export function parseResultFromXDRString(result: string) {
+  const val = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
+  return val;
 }

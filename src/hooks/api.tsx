@@ -1,49 +1,46 @@
-
-import { Governor, Proposal, Vote, XDRVote } from "@/types";
+import { Governor, Proposal, Vote, VoteSupport, XDRVote } from "@/types";
 import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
 import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
 import { SorobanRpc, StrKey, nativeToScVal, xdr } from "stellar-sdk";
 import { VoteCount } from "soroban-governor-js-sdk";
-const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string
+const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const mappedGovernors = governors.map(
-  ({ settings:{timelock,proposal_threshold ,...settings}, ...rest }) => {
+  ({ settings: { timelock, proposal_threshold, ...settings }, ...rest }) => {
     return {
       ...rest,
-     settings:{
-      ...settings,
-      proposal_threshold: BigInt(proposal_threshold),
-     }
+      settings: {
+        ...settings,
+        proposal_threshold: BigInt(proposal_threshold),
+      },
     };
   }
 );
 const DEFAULT_STALE_TIME = 20 * 1000;
 
-
-
-export function useCurrentBlockNumber(options: Partial<DefinedInitialDataOptions> = {} as any){
-  const {network} = useWallet()
+export function useCurrentBlockNumber(
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { network } = useWallet();
   const { data, isLoading, error } = useQuery({
     ...options,
     staleTime: DEFAULT_STALE_TIME,
     refetchInterval: 10000,
     queryKey: ["blockNumber"],
-    queryFn: async ()=>{
-      const rpc = new  SorobanRpc.Server(network.rpc)
-      const data = await rpc.getLatestLedger()
-      return data.sequence
-      },
+    queryFn: async () => {
+      const rpc = new SorobanRpc.Server(network.rpc);
+      const data = await rpc.getLatestLedger();
+      return data.sequence;
+    },
   });
 
   return {
     blockNumber: data as number,
     isLoading,
     error,
-  }
+  };
 }
-
-
 
 export function useGovernors(
   options: Partial<DefinedInitialDataOptions> = {} as any
@@ -74,7 +71,7 @@ export function useGovernor(
     queryKey: ["governor", governorId],
     queryFn: () => getGovernorById(governorId),
   });
-   function getGovernorById(governorId: string) {
+  function getGovernorById(governorId: string) {
     const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
     return foundGovernor || null;
   }
@@ -88,35 +85,45 @@ export function useGovernor(
 
 export function useProposals(
   governorAddress: string,
-  voteDelay:number,
-  votePeriod:number,
+  voteDelay: number,
+  votePeriod: number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
-  const {getTotalVotesByProposal} = useWallet()
+  const { getTotalVotesByProposal } = useWallet();
   const { data, isLoading, error } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["proposals", governorAddress],
-    queryFn: async () => loadProposalsByDaoId(governorAddress,voteDelay,votePeriod),
+    queryFn: async () =>
+      loadProposalsByDaoId(governorAddress, voteDelay, votePeriod),
   });
-  async function loadProposalsByDaoId(daoId: string,voteDelay:number,votePeriod:number): Promise<Proposal[]> {
-    const proposals =  await getProposalsByGovernor(daoId)
+  async function loadProposalsByDaoId(
+    daoId: string,
+    voteDelay: number,
+    votePeriod: number
+  ): Promise<Proposal[]> {
+    const proposals = await getProposalsByGovernor(daoId);
 
-    let proposalsToReturn:Proposal[] = []
-    for(let proposal of proposals){
-      const data =   parseProposalFromXDR(proposal,voteDelay,votePeriod)
-      // get proposal votes from contract 
-    const voteCount = await getTotalVotesByProposal(data.id,governorAddress) as VoteCount
+    let proposalsToReturn: Proposal[] = [];
+    for (let proposal of proposals) {
+      const data = parseProposalFromXDR(proposal, voteDelay, votePeriod);
+      // get proposal votes from contract
+      const voteCount = (await getTotalVotesByProposal(
+        data.id,
+        governorAddress
+      )) as VoteCount;
 
-    if(voteCount?._for !== undefined  ){
-      data.votes_for = Number(voteCount._for)
-      data.total_votes = Number(voteCount._for + voteCount.against + voteCount.abstain)
-      data.votes_abstain = Number(voteCount.abstain)
-      data.votes_against = Number(voteCount.against)
-      proposalsToReturn.push(data)
+      if (voteCount?._for !== undefined) {
+        data.votes_for = Number(voteCount._for);
+        data.total_votes = Number(
+          voteCount._for + voteCount.against + voteCount.abstain
+        );
+        data.votes_abstain = Number(voteCount.abstain);
+        data.votes_against = Number(voteCount.against);
+        proposalsToReturn.push(data);
+      }
     }
-    }
-    return proposalsToReturn.sort(({id:a},{id:b})=> b-a )
+    return proposalsToReturn.sort(({ id: a }, { id: b }) => b - a);
   }
   return {
     proposals: data as Proposal[],
@@ -125,8 +132,6 @@ export function useProposals(
   };
 }
 
-
-
 export function useProposal(
   proposalId: number,
   governorAddress: string,
@@ -134,44 +139,63 @@ export function useProposal(
   votePeriod: number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
-  const {getTotalVotesByProposal} = useWallet()
+  const { getTotalVotesByProposal } = useWallet();
   const {
     data: proposal,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["proposal", proposalId],
-    queryFn: async ()=>{
-      return await getProposalByIdWithVoteCount(proposalId,governorAddress,voteDelay,votePeriod)
+    queryFn: async () => {
+      return await getProposalByIdWithVoteCount(
+        proposalId,
+        governorAddress,
+        voteDelay,
+        votePeriod
+      );
     },
   });
-  async function getProposalByIdWithVoteCount(proposalId: number, governorAddress: string, voteDelay: number, votePeriod: number) {
-
-    const data = await getProposalById(proposalId,governorAddress,voteDelay,votePeriod)
-    if(!data){
-      return null
+  async function getProposalByIdWithVoteCount(
+    proposalId: number,
+    governorAddress: string,
+    voteDelay: number,
+    votePeriod: number
+  ) {
+    const data = await getProposalById(
+      proposalId,
+      governorAddress,
+      voteDelay,
+      votePeriod
+    );
+    if (!data) {
+      return null;
     }
 
-  // get proposal votes from contract 
-  const voteCount = await getTotalVotesByProposal(proposalId,governorAddress) as VoteCount
+    // get proposal votes from contract
+    const voteCount = (await getTotalVotesByProposal(
+      proposalId,
+      governorAddress
+    )) as VoteCount;
 
-  if(voteCount?._for  ){
-    data.votes_for = Number(voteCount._for)
-    data.total_votes = Number(voteCount._for + voteCount.against + voteCount.abstain)
-    data.votes_abstain = Number(voteCount.abstain)
-    data.votes_against = Number(voteCount.against)
-  }
-  return data
+    if (voteCount?._for) {
+      data.votes_for = Number(voteCount._for);
+      data.total_votes = Number(
+        voteCount._for + voteCount.against + voteCount.abstain
+      );
+      data.votes_abstain = Number(voteCount.abstain);
+      data.votes_against = Number(voteCount.against);
+    }
+    return data;
   }
 
   return {
     proposal: proposal as Proposal,
     isLoading,
     error,
-    refetch
+    refetch,
   };
 }
 
@@ -184,18 +208,19 @@ export function useVotes(
     data: votes,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["votes", proposalId],
-    queryFn: async () => getVotesByProposalId(proposalId,governorAddress),
+    queryFn: async () => getVotesByProposalId(proposalId, governorAddress),
   });
-
 
   return {
     votes: votes as Vote[],
     isLoading,
     error,
+    refetch,
   };
 }
 
@@ -224,7 +249,7 @@ export function useVotingPowerByProposal(
   voteTokenAddress: string,
   proposalStartTime: number,
   proposalId: number,
-  currentBlockNumber:number,
+  currentBlockNumber: number,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getVotingPowerByProposal, connected } = useWallet();
@@ -238,7 +263,6 @@ export function useVotingPowerByProposal(
       connected,
     ],
     queryFn: async () => {
-
       const result = await getVotingPowerByProposal(
         voteTokenAddress,
         proposalStartTime,
@@ -259,7 +283,7 @@ export function useVotingPowerByProposal(
 export function useUserVoteByProposalId(
   proposalId: number,
   governorAddress: string,
- 
+
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getUserVoteByProposalId, connected } = useWallet();
@@ -274,22 +298,27 @@ export function useUserVoteByProposalId(
         governorAddress,
         true
       );
-      return result || null;
+
+      /** this is done because useQuery doesnt accept functions that return undefined values  */
+      return result === undefined ? null : result;
     },
   });
+
   return {
-    userVote: data as bigint,
+    /** if value is null set as undefined to prevent having to do null handling */
+    userVote: data === null ? undefined : (data as VoteSupport),
     isLoading,
     error,
   };
 }
 
+async function getProposalsByGovernor(governorAddress: string) {
+  try {
+    const addressHash =
+      StrKey.decodeContract(governorAddress).toString("base64");
 
-async function getProposalsByGovernor(governorAddress:string){
- try{
-const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
-
-   const data = await runGraphQLQuery(`query getProposalsByGovernor { 
+    const data = await runGraphQLQuery(
+      `query getProposalsByGovernor { 
     zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract(hash: "${addressHash}") {
       nodes {
         contract
@@ -305,27 +334,36 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
       votes
       }
     }
-   }`,"getProposalsByGovernor")
-  if(!data){
-    return null
+   }`,
+      "getProposalsByGovernor"
+    );
+    if (!data) {
+      return null;
+    }
+    const proposals =
+      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract"]?.nodes;
+    return proposals;
+  } catch (e) {
+    console.error(e);
+    return null;
   }
-   const proposals = data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract"]?.nodes
-  return proposals
-
-
- }catch(e){
-    console.error(e)
-    return null
-  
- }
 }
-async function getProposalById(proposalId:number,governorAddress:string,voteDelay:number,votePeriod:number){
- try{
-const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
+async function getProposalById(
+  proposalId: number,
+  governorAddress: string,
+  voteDelay: number,
+  votePeriod: number
+) {
+  try {
+    const addressHash =
+      StrKey.decodeContract(governorAddress).toString("base64");
 
-  const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
+    const proposalNum = nativeToScVal(proposalId, { type: "u32" }).toXDR(
+      "base64"
+    );
 
-   const data = await runGraphQLQuery(`query getProposalsById { 
+    const data = await runGraphQLQuery(
+      `query getProposalsById { 
      zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
@@ -340,26 +378,35 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
       votes
    }
    }
-   }`,"getProposalsById")
-  if(!data){
-    return null
+   }`,
+      "getProposalsById"
+    );
+    if (!data) {
+      return null;
+    }
+    const proposal =
+      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum"]
+        ?.nodes[0];
+    return parseProposalFromXDR(proposal, voteDelay, votePeriod);
+  } catch (e) {
+    console.error(e);
+    return null;
   }
-   const proposal = data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum"]?.nodes[0]
-  return parseProposalFromXDR(proposal,voteDelay,votePeriod)
-
- }catch(e){
-    console.error(e)
-    return null
-  
- }
 }
-async function getVotesByProposalId(proposalId:number,governorAddress:string){
- try{
-const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
+async function getVotesByProposalId(
+  proposalId: number,
+  governorAddress: string
+) {
+  try {
+    const addressHash =
+      StrKey.decodeContract(governorAddress).toString("base64");
 
-  const proposalNum =   nativeToScVal(proposalId,{type:"u32"}).toXDR("base64")
+    const proposalNum = nativeToScVal(proposalId, { type: "u32" }).toXDR(
+      "base64"
+    );
 
-   const data = await runGraphQLQuery(`query getVotesByProposalId { 
+    const data = await runGraphQLQuery(
+      `query getVotesByProposalId { 
     zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
@@ -369,63 +416,45 @@ const addressHash = StrKey.decodeContract(governorAddress).toString("base64")
       ledger
    }
    }
-   }`,"getVotesByProposalId")
-  if(!data){
-    return null
+   }`,
+      "getVotesByProposalId"
+    );
+    if (!data) {
+      return null;
+    }
+    const votes =
+      data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]
+        ?.nodes;
+    const parsedVotes = votes.map((vote: XDRVote) => {
+      return parseVoteFromXDR(vote);
+    });
+
+    return parsedVotes;
+  } catch (e) {
+    console.error(e);
+    return null;
   }
-  const votes = data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]?.nodes
-  const parsedVotes = votes.map((vote:XDRVote)=>{
-    return parseVoteFromXDR(vote)
-  })
-
-  return parsedVotes
- }catch(e){
-
-    console.error(e)
-    return null
-  
- }
 }
 
-
-
-
-
- async function runGraphQLQuery(queryString:string,operationName:string){
-  try{
+async function runGraphQLQuery(queryString: string, operationName: string) {
+  try {
     const res = await fetch(apiEndpoint, {
-    cache: "no-cache",
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-  body: JSON.stringify({
-    operationName,
-    query: queryString})
-})
+      cache: "no-cache",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        operationName,
+        query: queryString,
+      }),
+    });
     const json_res = await res.json();
     const data = json_res.data;
-    return data
-  }
-  catch(e){
-    console.log("error on fetch")
-    console.error(e)
-    return null
-  }
-}
-
-async function getCurrentBlockNumber(horizonEndpoint:string="https://horizon.stellar.org"){
-  try{
-    const res = await fetch(horizonEndpoint, {
-    cache: "no-cache",
-    method: 'GET',
-})
-    const json_res = await res.json();
-    return json_res.core_latest_ledger
-  }
-  catch(e){
-    console.log("error on fetch")
-    console.error(e)
-    return null
+    return data;
+  } catch (e) {
+    console.log("error on fetch");
+    console.error(e);
+    return null;
   }
 }

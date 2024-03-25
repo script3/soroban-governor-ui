@@ -12,7 +12,12 @@ import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 
-import { useCurrentBlockNumber, useGovernor, useProposals, useVoteTokenBalance } from "@/hooks/api";
+import {
+  useCurrentBlockNumber,
+  useGovernor,
+  useProposals,
+  useVoteTokenBalance,
+} from "@/hooks/api";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useWallet } from "@/hooks/wallet";
@@ -25,7 +30,7 @@ function Proposals() {
   const [toWrap, setToWrap] = useState<string>("");
   const { wrapToken, connect, connected, isLoading } = useWallet();
   const router = useRouter();
-  const {blockNumber:currentBlockNumber} = useCurrentBlockNumber();
+  const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
 
   const params = router.query;
   const decimals = 7;
@@ -36,12 +41,19 @@ function Proposals() {
     placeholderData: BigInt(0),
     enabled: connected && !!governor?.voteTokenAddress,
   });
-  const { proposals } = useProposals(governor?.address,governor?.settings?.vote_delay,governor?.settings?.vote_period, {
-    placeholderData: [],
-    enabled:!!params.dao && !!governor?.address && !!governor?.settings?.vote_delay && !!governor?.settings?.vote_period,
-  });
-
-
+  const { proposals } = useProposals(
+    governor?.address,
+    governor?.settings?.vote_delay,
+    governor?.settings?.vote_period,
+    {
+      placeholderData: [],
+      enabled:
+        !!params.dao &&
+        !!governor?.address &&
+        !!governor?.settings?.vote_delay &&
+        !!governor?.settings?.vote_period,
+    }
+  );
 
   function handleWrapClick() {
     if (!connected) {
@@ -120,84 +132,118 @@ function Proposals() {
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
         {proposals.map((proposal, ind) => {
-          const proposalStatus = getStatusByProposalState(proposal.status,proposal.vote_start,proposal.vote_end,currentBlockNumber)
+          const proposalStatus = getStatusByProposalState(
+            proposal.status,
+            proposal.vote_start,
+            proposal.vote_end,
+            currentBlockNumber
+          );
           return (
-
-          <Box key={`${proposal.id} ${ind}`} className="p-4 flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <Typography.Small className="font-bold">
-                {shortenAddress(proposal.proposer)}
-              </Typography.Small>
-              <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
-                {ProposalStatusText[proposalStatus]}
-              </Chip>
-            </div>
-            <div
-              className="flex flex-col gap-3 cursor-pointer"
-              onClick={() => {
-                router.push(`/${params.dao}/${proposal.id}`);
-              }}
+            <Box
+              key={`${proposal.id} ${ind}`}
+              className="p-4 flex flex-col gap-4"
             >
-              <Typography.Medium className="font-semibold">
-                {proposal.title}
-              </Typography.Medium>
-              <Typography.P className="line-clamp-2 break-words text-md ">
-                {stripMarkdown(proposal.description)}
-              </Typography.P>
-              <div className="flex flex-col gap-2">
-                {/* votes progress bar */}
-                <ProgressWrapper
-                  percentage={proposal.total_votes > 0 ? proposal.votes_for / proposal.total_votes : 0}
-                >
-                  <div className="flex justify-between w-full">
-                    <Typography.Medium>Yes</Typography.Medium>
-                    <Typography.Medium>
-                      {`${proposal.total_votes > 0 ?(
-                         (proposal.votes_for / proposal.total_votes) *
-                        100
-                      ).toFixed(2) : 0}%`}
-                    </Typography.Medium>
-                  </div>
-                </ProgressWrapper>
-                <ProgressWrapper
-                  percentage={proposal.total_votes > 0 ? proposal.votes_against / proposal.total_votes : 0}
-                >
-                  <div className="flex justify-between w-full">
-                    <Typography.Medium>No</Typography.Medium>
-                    <Typography.Medium>
-                      {`${proposal.total_votes > 0 ?(
-                         (proposal.votes_against / proposal.total_votes) *
-                        100
-                      ).toFixed(2) : 0}%`}
-                    </Typography.Medium>
-                  </div>
-                </ProgressWrapper>
-                <ProgressWrapper
-                  percentage={proposal.total_votes > 0 ? proposal.votes_abstain / proposal.total_votes : 0}
-                >
-                  <div className="flex justify-between w-full">
-                    <Typography.Medium>Abstain</Typography.Medium>
-                    <Typography.Medium>
-                      {`${proposal.total_votes > 0 ?(
-                         (proposal.votes_abstain / proposal.total_votes) *
-                        100
-                      ).toFixed(2) : 0}%`}
-                    </Typography.Medium>
-                  </div>
-                </ProgressWrapper>
+              <div className="flex justify-between items-center">
+                <Typography.Small className="font-bold">
+                  {shortenAddress(proposal.proposer)}
+                </Typography.Small>
+                <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
+                  {ProposalStatusText[proposalStatus]}
+                </Chip>
               </div>
-              <Typography.Tiny className="text-snapLink">
-                {/* X days remaining / ended X days ago  */}{" "}
-                {getRelativeProposalPeriod(
-                  proposalStatus,
-                  proposal.vote_start,
-                  proposal.vote_end,
-                  currentBlockNumber
-                )}
-              </Typography.Tiny>
-            </div>
-          </Box>
-        )})}
+              <div
+                className="flex flex-col gap-3 cursor-pointer"
+                onClick={() => {
+                  router.push(`/${params.dao}/${proposal.id}`);
+                }}
+              >
+                <Typography.Medium className="font-semibold">
+                  {proposal.title}
+                </Typography.Medium>
+                <Typography.P className="line-clamp-2 break-words text-md ">
+                  {stripMarkdown(proposal.description)}
+                </Typography.P>
+                <div className="flex flex-col gap-2">
+                  {/* votes progress bar */}
+                  <ProgressWrapper
+                    percentage={
+                      proposal.total_votes > 0
+                        ? proposal.votes_for / proposal.total_votes
+                        : 0
+                    }
+                  >
+                    <div className="flex justify-between w-full">
+                      <Typography.Medium>Yes</Typography.Medium>
+                      <Typography.Medium>
+                        {`${
+                          proposal.total_votes > 0
+                            ? (
+                                (proposal.votes_for / proposal.total_votes) *
+                                100
+                              ).toFixed(2)
+                            : 0
+                        }%`}
+                      </Typography.Medium>
+                    </div>
+                  </ProgressWrapper>
+                  <ProgressWrapper
+                    percentage={
+                      proposal.total_votes > 0
+                        ? proposal.votes_against / proposal.total_votes
+                        : 0
+                    }
+                  >
+                    <div className="flex justify-between w-full">
+                      <Typography.Medium>No</Typography.Medium>
+                      <Typography.Medium>
+                        {`${
+                          proposal.total_votes > 0
+                            ? (
+                                (proposal.votes_against /
+                                  proposal.total_votes) *
+                                100
+                              ).toFixed(2)
+                            : 0
+                        }%`}
+                      </Typography.Medium>
+                    </div>
+                  </ProgressWrapper>
+                  <ProgressWrapper
+                    percentage={
+                      proposal.total_votes > 0
+                        ? proposal.votes_abstain / proposal.total_votes
+                        : 0
+                    }
+                  >
+                    <div className="flex justify-between w-full">
+                      <Typography.Medium>Abstain</Typography.Medium>
+                      <Typography.Medium>
+                        {`${
+                          proposal.total_votes > 0
+                            ? (
+                                (proposal.votes_abstain /
+                                  proposal.total_votes) *
+                                100
+                              ).toFixed(2)
+                            : 0
+                        }%`}
+                      </Typography.Medium>
+                    </div>
+                  </ProgressWrapper>
+                </div>
+                <Typography.Tiny className="text-snapLink">
+                  {/* X days remaining / ended X days ago  */}{" "}
+                  {getRelativeProposalPeriod(
+                    proposalStatus,
+                    proposal.vote_start,
+                    proposal.vote_end,
+                    currentBlockNumber
+                  )}
+                </Typography.Tiny>
+              </div>
+            </Box>
+          );
+        })}
       </Container>
     </Container>
   );

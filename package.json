@@ -11,6 +11,7 @@
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^0.5.0",
     "@headlessui/react": "^1.7.18",
+    "@script3/soroban-governor-sdk": "^0.5.0",
     "@snapshot-labs/pineapple": "^1.1.0",
     "@tanstack/react-query": "^5.22.2",
     "@types/remarkable": "^2.0.8",

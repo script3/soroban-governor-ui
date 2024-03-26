@@ -51,12 +51,7 @@ export interface Proposal {
  * Interface for the Governor contract
  */
 export interface Governor {
- 
-  /**
-   * The list of proposals
-   *
-   * TODO: Is this a map or an array?
-   */
+
 
   name: string;
   memberCount: number;
@@ -64,7 +59,9 @@ export interface Governor {
   address: string;
   voteTokenAddress: string;
   settings: GovernorSettings;
-
+  decimals : number;
+  isWrappedAsset: boolean;
+  underlyingTokenAddress?: string;
  
 }
 

@@ -229,7 +229,7 @@ export function useVoteTokenBalance(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getVoteTokenBalance, connected } = useWallet();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     ...options,
     staleTime: DEFAULT_STALE_TIME,
     queryKey: ["voteTokenBalance", voteTokenAddress, connected],
@@ -242,6 +242,7 @@ export function useVoteTokenBalance(
     balance: data as bigint,
     isLoading,
     error,
+    refetch,
   };
 }
 
@@ -309,6 +310,28 @@ export function useUserVoteByProposalId(
     userVote: data === null ? undefined : (data as VoteSupport),
     isLoading,
     error,
+  };
+}
+
+export function useUnderlyingTokenBalance(
+  underlyingTokenAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getTokenBalance, connected } = useWallet();
+  const { data, isLoading, error, refetch } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["underlyingTokenBalance", underlyingTokenAddress, connected],
+    queryFn: async () => {
+      const result = await getTokenBalance(underlyingTokenAddress);
+      return result || BigInt(0);
+    },
+  });
+  return {
+    balance: data as bigint,
+    isLoading,
+    error,
+    refetch,
   };
 }
 

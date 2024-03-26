@@ -23,7 +23,8 @@ import {
   TokenVotesContract,
   StakingVotesContract,
 } from "soroban-governor-js-sdk";
-import { SorobanRpc, scValToNative, xdr } from "stellar-sdk";
+import { Address, SorobanRpc, xdr } from "stellar-sdk";
+import { getTokenBalance as getBalance } from "@/utils/token";
 export class Resources {
   fee: number;
   refundableFee: number;
@@ -98,6 +99,7 @@ export interface IWalletContext {
     voteTokenAddress: string,
     sim: boolean
   ) => Promise<bigint>;
+  getTokenBalance: (tokenAddress: string) => Promise<bigint>;
   getVotingPowerByProposal: (
     voteTokenAddress: string,
     proposalStart: number,
@@ -110,6 +112,11 @@ export interface IWalletContext {
     sim?: boolean
   ) => Promise<VoteCount | ContractError | undefined>;
   wrapToken: (
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) => Promise<bigint>;
+  unwrapToken: (
     voteTokenAddress: string,
     amount: bigint,
     sim: boolean
@@ -666,6 +673,26 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
+  async function getTokenBalance(tokenAddress: string) {
+    try {
+      if (connected) {
+        const balance = await getBalance(
+          rpcServer(),
+          network.passphrase,
+          tokenAddress,
+          new Address(walletAddress)
+        );
+        return balance;
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error getting token balance: ", e);
+      throw e;
+    }
+  }
+
   async function getVotingPowerByProposal(
     voteTokenAddress: string,
     proposalStart: number,
@@ -750,8 +777,6 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         let votesClient = new StakingVotesContract(voteTokenAddress);
-        console.log({ walletAddress });
-
         let proposeOperation = votesClient.deposit({
           from: walletAddress,
           amount,
@@ -785,6 +810,66 @@ export const WalletProvider = ({ children = null as any }) => {
       }
     } catch (e) {
       console.log("Error wrapping token: ", e);
+      throw e;
+    }
+  }
+
+  async function unwrapToken(
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) {
+    try {
+      if (connected && walletAddress) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new StakingVotesContract(voteTokenAddress);
+
+        let withdrawOperation = votesClient.withdraw({
+          from: walletAddress,
+          amount,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          StakingVotesContract.parsers.withdraw,
+          withdrawOperation
+        );
+        if (sim) {
+          const sub = await submission;
+
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return (
+            submitTransaction<bigint>(submission, {
+              notificationMode: "flash",
+              notificationTitle: "Tokens succesfully unwrapped",
+              // failureMessage: "Tokens succesfully unwrapped",
+              successMessage: "Tokens succesfully unwrapped",
+            }) || BigInt(0)
+          );
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error unwrapping token: ", e);
       throw e;
     }
   }
@@ -929,9 +1014,12 @@ export const WalletProvider = ({ children = null as any }) => {
         closeNotification,
         getVoteTokenBalance,
         getVotingPowerByProposal,
+        getTokenBalance,
         wrapToken,
+        unwrapToken,
         getUserVoteByProposalId,
         getTotalVotesByProposal,
+
         notificationMode,
         showNotification,
         notificationTitle,

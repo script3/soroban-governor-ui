@@ -335,7 +335,8 @@ export default function Proposal() {
                     </Typography.Medium>
                     {connected && votingPower > BigInt(0) && (
                       <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                        Voting token balance: {toBalance(votingPower, 7)}
+                        Voting token balance:{" "}
+                        {toBalance(votingPower, currentGovernor?.decimals)}
                       </Typography.Medium>
                     )}
                   </Container>

@@ -16,6 +16,7 @@ import {
   useCurrentBlockNumber,
   useGovernor,
   useProposals,
+  useUnderlyingTokenBalance,
   useVoteTokenBalance,
 } from "@/hooks/api";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
@@ -28,19 +29,30 @@ import { getStatusByProposalState } from "@/utils/proposal";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [toWrap, setToWrap] = useState<string>("");
-  const { wrapToken, connect, connected, isLoading } = useWallet();
+  const [toUnwrap, setToUnwrap] = useState<string>("");
+  const { wrapToken, unwrapToken, connect, connected, isLoading } = useWallet();
   const router = useRouter();
   const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
 
   const params = router.query;
-  const decimals = 7;
+
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
   });
-  const { balance } = useVoteTokenBalance(governor?.voteTokenAddress, {
-    placeholderData: BigInt(0),
-    enabled: connected && !!governor?.voteTokenAddress,
-  });
+  const { balance, refetch: refetchBalance } = useVoteTokenBalance(
+    governor?.voteTokenAddress,
+    {
+      placeholderData: BigInt(0),
+      enabled: connected && !!governor?.voteTokenAddress,
+    }
+  );
+
+  const { balance: underlyingTokenBalance, refetch: refetchunderlying } =
+    useUnderlyingTokenBalance(governor?.underlyingTokenAddress || "", {
+      enabled: connected && !!governor?.underlyingTokenAddress,
+      placeholderData: BigInt(0),
+    });
+
   const { proposals } = useProposals(
     governor?.address,
     governor?.settings?.vote_delay,
@@ -60,16 +72,34 @@ function Proposals() {
       connect();
       return;
     } else {
-      const amount = scaleNumberToBigInt(toWrap, decimals);
+      const amount = scaleNumberToBigInt(toWrap, governor.decimals);
       wrapToken(governor.voteTokenAddress, amount, false).then((res) => {
-        console.log({ res });
+        refetchBalance();
+        refetchunderlying();
+        setToUnwrap("");
+        setToWrap("");
+      });
+    }
+  }
+
+  function handleUnwrapClick() {
+    if (!connected) {
+      connect();
+      return;
+    } else {
+      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
+      unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+        refetchunderlying();
+        refetchBalance();
+        setToUnwrap("");
+        setToWrap("");
       });
     }
   }
 
   return (
     <Container slim className="flex flex-col gap-4">
-      <Container className="gap-4 ">
+      <Container className="gap-4 flex flex-col ">
         <Box className="p-3 flex gap-3 flex-col ">
           <Container slim className="flex flex-col justify-center p-1 ">
             <Typography.P>
@@ -77,7 +107,8 @@ function Proposals() {
             </Typography.P>
             {connected && (
               <Typography.Small className="text-snapLink">
-                Current voting tokens: {toBalance(balance, 7)}{" "}
+                Current Underlying token balance:{" "}
+                {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
                 {/* {governor.name || "$VOTE"} */}
               </Typography.Small>
             )}
@@ -105,6 +136,44 @@ function Proposals() {
             </Button>
           </Container>
         </Box>
+        {balance > BigInt(0) && (
+          <Box className="p-3 flex gap-3 flex-col ">
+            <Container slim className="flex flex-col justify-center p-1 ">
+              <Typography.P>
+                Unwrap your voting tokens to get back your underlying tokens
+              </Typography.P>
+              {connected && (
+                <Typography.Small className="text-snapLink">
+                  Current Vote token balance:{" "}
+                  {toBalance(balance, governor.decimals)}{" "}
+                  {/* {governor.name || "$VOTE"} */}
+                </Typography.Small>
+              )}
+            </Container>
+            <Container slim className="w-full flex flex-row  gap-3">
+              <Input
+                className="!w-1/3 flex"
+                placeholder="Amount to unwrap"
+                onChange={setToUnwrap}
+                value={toUnwrap}
+                type="number"
+              />
+              <Button
+                className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+                onClick={handleUnwrapClick}
+                disabled={isLoading || (connected && !toUnwrap)}
+              >
+                {isLoading ? (
+                  <Loader />
+                ) : connected ? (
+                  "Unwrap Tokens"
+                ) : (
+                  "Connect wallet"
+                )}
+              </Button>
+            </Container>
+          </Box>
+        )}
       </Container>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
         <Typography.Huge className="hidden lg:block text-white w-full mb-4">

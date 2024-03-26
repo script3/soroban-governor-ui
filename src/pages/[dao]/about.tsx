@@ -29,30 +29,50 @@ function About() {
           />
 
         </div> */}
-       <Typography.P>Name</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.name}</Typography.Small>
+        <Typography.P>Name</Typography.P>
+        <Typography.Small className="text-snapLink pl-2">
+          {currentGovernor.name}
+        </Typography.Small>
         <Typography.Medium>Settings</Typography.Medium>
-       <Container className="pl-2 flex flex-col gap-3">
-        <Typography.P>Council</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.council}</Typography.Small>
-        <Typography.P>Counting Type</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.counting_type}</Typography.Small>
+        <Container className="pl-2 flex flex-col gap-3">
+          <Typography.P>Council</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.council}
+          </Typography.Small>
+          <Typography.P>Counting Type</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.counting_type}
+          </Typography.Small>
 
-        <Typography.P>Grace Period</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.grace_period}</Typography.Small>
-        <Typography.P>Proposal Threshold</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{Number(currentGovernor.settings.proposal_threshold)}</Typography.Small>
-        <Typography.P>Quorum</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.quorum}</Typography.Small>
-        <Typography.P>Timelock</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.timelock}</Typography.Small>
-        <Typography.P>Vote Delay</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_delay}</Typography.Small>
-        <Typography.P>Vote Period</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_period}</Typography.Small>
-        <Typography.P>Vote Threshold</Typography.P>
-        <Typography.Small className="text-snapLink pl-2">{currentGovernor.settings.vote_threshold}</Typography.Small>
-       </Container>
+          <Typography.P>Grace Period</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.grace_period}
+          </Typography.Small>
+          <Typography.P>Proposal Threshold</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {Number(currentGovernor.settings.proposal_threshold)}
+          </Typography.Small>
+          <Typography.P>Quorum</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.quorum}
+          </Typography.Small>
+          <Typography.P>Timelock</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.timelock}
+          </Typography.Small>
+          <Typography.P>Vote Delay</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.vote_delay}
+          </Typography.Small>
+          <Typography.P>Vote Period</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.vote_period}
+          </Typography.Small>
+          <Typography.P>Vote Threshold</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.settings.vote_threshold}
+          </Typography.Small>
+        </Container>
       </Box>
       {/* <Box className="p-2">
         <Typography.Big>Social</Typography.Big>

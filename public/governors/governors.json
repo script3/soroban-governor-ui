@@ -1,92 +1,38 @@
 [
   {
     "settings": {
-      "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "counting_type": 2,
-      "grace_period": 120960,
-      "proposal_threshold": 1000000000,
-      "quorum": 500,
-      "timelock": 1440,
-      "vote_delay": 720,
-      "vote_period": 5760,
+      "council": "GAQ7ZN225YFNYMXGKBSMVI726VTYT7ZFEVU432HMEXOHPVHKVDLNVC72",
+      "counting_type": 3,
+      "grace_period": 34560,
+      "proposal_threshold": 200000000,
+      "quorum": 800,
+      "timelock": 180,
+      "vote_delay": 180,
+      "vote_period": 360,
       "vote_threshold": 5100
     },
-    "name": "Decentralized DAO",
+    "name": "Soroban Token DAO",
     "memberCount": 828,
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CCAZAZEQNCSJ52NDT6D7UEV3SOFNGXFTNPTPSGYY5CGJ2QLPIOBHLT32",
-    "voteTokenAddress": "CCOBPJ6V3M4HI3HAAM3ZV7FFYN6HHEZRXG6ILWGPOEDQFIQCEOLLVZYP"
+    "address": "CBGZFBCHOYDGBSYNHPAETPE7TLISZXN5E6Q3VIDUVUWV74NODINIZKLV",
+    "voteTokenAddress": "CCZFATFQOJS2DYOAXXUBEKQIHZAPZPR2SO32BVSUW7GOZQF3LSTWJTK4"
   },
   {
     "settings": {
-      "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
+      "council": "GAQ7ZN225YFNYMXGKBSMVI726VTYT7ZFEVU432HMEXOHPVHKVDLNVC72",
       "counting_type": 2,
       "grace_period": 120960,
-      "proposal_threshold": 1000000000,
-      "quorum": 500,
+      "proposal_threshold": 10000000000,
+      "quorum": 400,
       "timelock": 1440,
       "vote_delay": 720,
       "vote_period": 5760,
-      "vote_threshold": 5100
+      "vote_threshold": 5500
     },
-    "name": "Cryptogovernance DAO",
+    "name": "Staking XLM DAO",
     "memberCount": 828,
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CCAZAZEQNCSJ52NDT6D7UEV3SOFNGXFTNPTPSGYY5CGJ2QLPIOBHLT32",
-    "voteTokenAddress": "CCOBPJ6V3M4HI3HAAM3ZV7FFYN6HHEZRXG6ILWGPOEDQFIQCEOLLVZYP"
-  },
-  {
-    "settings": {
-      "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "counting_type": 2,
-      "grace_period": 120960,
-      "proposal_threshold": 1000000000,
-      "quorum": 500,
-      "timelock": 1440,
-      "vote_delay": 720,
-      "vote_period": 5760,
-      "vote_threshold": 5100
-    },
-    "name": "Cryptogovernance DAO",
-    "memberCount": 828,
-    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CCAZAZEQNCSJ52NDT6D7UEV3SOFNGXFTNPTPSGYY5CGJ2QLPIOBHLT32",
-    "voteTokenAddress": "CCOBPJ6V3M4HI3HAAM3ZV7FFYN6HHEZRXG6ILWGPOEDQFIQCEOLLVZYP"
-  },
-  {
-    "settings": {
-      "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "counting_type": 2,
-      "grace_period": 120960,
-      "proposal_threshold": 1000000000,
-      "quorum": 500,
-      "timelock": 1440,
-      "vote_delay": 720,
-      "vote_period": 5760,
-      "vote_threshold": 5100
-    },
-    "name": "Cryptogovernance DAO",
-    "memberCount": 828,
-    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CCAZAZEQNCSJ52NDT6D7UEV3SOFNGXFTNPTPSGYY5CGJ2QLPIOBHLT32",
-    "voteTokenAddress": "CCOBPJ6V3M4HI3HAAM3ZV7FFYN6HHEZRXG6ILWGPOEDQFIQCEOLLVZYP"
-  },
-  {
-    "settings": {
-      "council": "GBSXDX3C3X7TT2E23AAMYRAIWSY2MRDX73V5X2CKUZ44H2KJQQV2AHMB",
-      "counting_type": 2,
-      "grace_period": 120960,
-      "proposal_threshold": 1000000000,
-      "quorum": 500,
-      "timelock": 1440,
-      "vote_delay": 720,
-      "vote_period": 5760,
-      "vote_threshold": 5100
-    },
-    "name": "Cryptogovernance DAO",
-    "memberCount": 828,
-    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CCAZAZEQNCSJ52NDT6D7UEV3SOFNGXFTNPTPSGYY5CGJ2QLPIOBHLT32",
-    "voteTokenAddress": "CCOBPJ6V3M4HI3HAAM3ZV7FFYN6HHEZRXG6ILWGPOEDQFIQCEOLLVZYP"
+    "address": "CCIAMLHDTH3MUZR2KCXRK5JWDBLZL6MBD5AVITLPL73PZIMNOX7SKDSV",
+    "voteTokenAddress": "CA4KSAONQE6LD67GJZ5SM6MKYUKBU4KM2PJYLYRXZYU26Q4COHXEG6RT"
   }
 ]

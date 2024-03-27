@@ -37,40 +37,40 @@ function About() {
         <Container className="pl-2 flex flex-col gap-3">
           <Typography.P>Council</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.council}
+            {currentGovernor?.settings?.council}
           </Typography.Small>
           <Typography.P>Counting Type</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.counting_type}
+            {currentGovernor?.settings?.counting_type}
           </Typography.Small>
 
           <Typography.P>Grace Period</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.grace_period}
+            {currentGovernor?.settings?.grace_period}
           </Typography.Small>
           <Typography.P>Proposal Threshold</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {Number(currentGovernor.settings.proposal_threshold)}
+            {Number(currentGovernor?.settings?.proposal_threshold)}
           </Typography.Small>
           <Typography.P>Quorum</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.quorum}
+            {currentGovernor?.settings?.quorum}
           </Typography.Small>
           <Typography.P>Timelock</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.timelock}
+            {currentGovernor?.settings?.timelock}
           </Typography.Small>
           <Typography.P>Vote Delay</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.vote_delay}
+            {currentGovernor?.settings?.vote_delay}
           </Typography.Small>
           <Typography.P>Vote Period</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.vote_period}
+            {currentGovernor?.settings?.vote_period}
           </Typography.Small>
           <Typography.P>Vote Threshold</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.settings.vote_threshold}
+            {currentGovernor?.settings?.vote_threshold}
           </Typography.Small>
         </Container>
       </Box>

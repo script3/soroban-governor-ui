@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
+    "./src/constants/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,7 +15,7 @@ const config: Config = {
         snapLink: "#8b949e",
         bg: "#1c1b20",
         primary: "#ee2529",
-        secondary: "#73e6ff",
+        secondary: "#2599FF",
         accent: "#ffcccc",
         error: "#ff0000",
         success: "#21b66f",

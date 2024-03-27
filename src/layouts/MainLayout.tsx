@@ -7,6 +7,7 @@ import { Modal } from "@/components/Modal";
 import { TxStatus, useWallet } from "@/hooks/wallet";
 import { useState } from "react";
 import { Container } from "@/components/common/BaseContainer";
+
 export interface MainLayoutProps {
   children: React.ReactNode;
 }
@@ -18,8 +19,8 @@ export function MainLayout({ children }: MainLayoutProps) {
     lastTxMessage: txMessage,
     notificationTitle,
     showNotification,
-  } = useWallet();
 
+  } = useWallet();
   function getNotificationTitle() {
     if (!!notificationTitle) {
       return notificationTitle;

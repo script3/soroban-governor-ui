@@ -42,7 +42,7 @@ export function FlashNotification({
       {isOpen && (
         <Container
           slim
-          className={` flex rounded-full fixed bottom-10 min-w-[350px] !flex-row justify-between left-[calc(50%-175px)] p-3 ${
+          className={` z-50 flex rounded-full fixed bottom-10 min-w-[350px] !flex-row justify-between left-[calc(50%-175px)] p-3 ${
             status === TxStatus.SUCCESS ? "bg-success" : "bg-error"
           } `}
         >

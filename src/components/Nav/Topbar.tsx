@@ -4,10 +4,24 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/wallet";
 import { shortenAddress } from "@/utils/shortenAddress";
 import Image from "next/image";
-
+import { Dropdown, Item } from "../common/Dropdown";
+const options: Item[] = [
+  {
+    text: "Disconnect",
+    action: "disconnect",
+  },
+];
 export function TopBar() {
   const router = useRouter();
-  const { connect, walletAddress } = useWallet();
+  const { connect, connected, walletAddress, disconnect } = useWallet();
+
+  function handleAction(action: string) {
+    switch (action) {
+      case "disconnect":
+        disconnect();
+        break;
+    }
+  }
   return (
     <div className="flex w-full justify-between items-center sticky top-0 mb-4  z-50 py-2 px-6 border-b border-snapBorder bg-bg">
       <Typography.Medium
@@ -28,16 +42,24 @@ export function TopBar() {
         >
           {walletAddress ? shortenAddress(walletAddress) : "Connect Wallet"}
         </Button>
-        <Button onClick={() => {}}>
-          {
-            <Image
-              src="/icons/three-dots.svg"
-              alt="threeDots"
-              height={22}
-              width={22}
-            />
-          }
-        </Button>
+        {connected && (
+          <Dropdown
+            chevron={false}
+            noBorder
+            buttonText={
+              <Image
+                src="/icons/three-dots.svg"
+                width={20}
+                height={20}
+                alt="threedots"
+              />
+            }
+            items={options}
+            onSelect={(action) => {
+              handleAction(action);
+            }}
+          />
+        )}
       </div>
     </div>
   );

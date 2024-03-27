@@ -9,6 +9,7 @@ import {
   Asset,
   Horizon,
   Operation,
+  scValToNative,
   SorobanRpc,
   Transaction,
   TransactionBuilder,
@@ -129,16 +130,19 @@ export async function invokeOperation<T>(
     response = await rpc.getTransaction(tx_hash);
     status = response.status;
   }
-  console.log({
-    response,
-    type: typeof response,
-  });
+
   const result = ContractResult.fromTransactionResponse(
     response as SorobanRpc.Api.GetTransactionResponse,
     tx_hash,
     resources,
     parse
   );
-  console.log({ result });
+
   return result;
+}
+
+
+export function parseResultFromXDRString(result: string) {
+  const val = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
+  return val;
 }

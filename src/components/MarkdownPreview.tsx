@@ -3,11 +3,11 @@ import { copyToClipboard } from "@/utils/string";
 import { useEffect, useMemo } from "react";
 import { Remarkable } from "remarkable";
 import { linkify } from "remarkable/linkify";
-import copy from "../../public/icons/copy.svg";
+import copy from "../../public/icons/copy.svg"
 import "viewerjs/dist/viewer.css";
 import Viewer from "viewerjs";
 
-const remarkable = new Remarkable({
+export const remarkable = new Remarkable({
   html: false,
   breaks: true,
   typographer: false,

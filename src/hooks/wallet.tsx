@@ -1,4 +1,9 @@
-import { TxOptions, invokeOperation } from "@/utils/operation";
+import { DUMMY_ADDRESS } from "@/constants";
+import {
+  TxOptions,
+  invokeOperation,
+  parseResultFromXDRString,
+} from "@/utils/operation";
 import {
   FreighterModule,
   ISupportedWallet,
@@ -10,14 +15,16 @@ import {
 
 import React, { useContext, useEffect, useState } from "react";
 import {
-  Calldata,
+  ContractError,
   ContractResult,
-  GovernorClient,
-  SubCalldata,
-  VotesClient,
-  i128,
+  ProposalAction,
+  VoteCount,
+  GovernorContract,
+  TokenVotesContract,
+  StakingVotesContract,
 } from "soroban-governor-js-sdk";
-import { SorobanRpc, scValToNative, xdr } from "stellar-sdk";
+import { Address, SorobanRpc, xdr } from "stellar-sdk";
+import { getTokenBalance as getBalance } from "@/utils/token";
 export class Resources {
   fee: number;
   refundableFee: number;
@@ -54,6 +61,7 @@ export interface IWalletContext {
   showNotification: boolean;
   notificationTitle: string;
   isLoading: boolean;
+  network: Network;
   connect: () => Promise<void>;
   disconnect: () => void;
   clearLastTx: () => void;
@@ -66,23 +74,49 @@ export interface IWalletContext {
     governorAddress: string
   ) => Promise<bigint | undefined>;
   createProposal: (
-    calldata: Calldata,
-    sub_calldata: Array<SubCalldata>,
     title: string,
     description: string,
+    action: ProposalAction,
     sim: boolean,
     governorAddress: string
+  ) => Promise<bigint | undefined>;
+  executeProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<bigint | undefined>;
+  closeProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<bigint | undefined>;
+  cancelProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
   ) => Promise<bigint | undefined>;
   getVoteTokenBalance: (
     voteTokenAddress: string,
     sim: boolean
   ) => Promise<bigint>;
+  getTokenBalance: (tokenAddress: string) => Promise<bigint>;
   getVotingPowerByProposal: (
     voteTokenAddress: string,
     proposalStart: number,
+    currentBlockNumber: number,
     sim: boolean
   ) => Promise<bigint>;
+  getTotalVotesByProposal: (
+    proposalId: number,
+    governorAddress: string,
+    sim?: boolean
+  ) => Promise<VoteCount | ContractError | undefined>;
   wrapToken: (
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) => Promise<bigint>;
+  unwrapToken: (
     voteTokenAddress: string,
     amount: bigint,
     sim: boolean
@@ -159,9 +193,14 @@ export const WalletProvider = ({ children = null as any }) => {
   function setCleanTxMessage(message: string | undefined) {
     if (message) {
       // some contract failures include diagnostic information. If so, try and remove it.
+
       let substrings = message.split("Event log (newest first):");
       if (substrings.length > 1) {
-        setTxMessage(substrings[0].trimEnd());
+        const cleanMessage = substrings[0].trim();
+
+        setTxMessage(cleanMessage);
+      } else {
+        setTxMessage(message);
       }
     }
   }
@@ -268,7 +307,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
         let voteOperation = governorClient.vote({
           voter: walletAddress,
           proposal_id: proposalId,
@@ -279,7 +318,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.vote,
+          GovernorContract.parsers.vote,
           voteOperation
         );
         if (sim) {
@@ -313,10 +352,9 @@ export const WalletProvider = ({ children = null as any }) => {
 
    */
   async function createProposal(
-    calldata_: Calldata,
-    sub_calldata_: Array<SubCalldata>,
     title: string,
     description: string,
+    action: ProposalAction,
     sim: boolean,
     governorAddress: string
   ) {
@@ -335,21 +373,20 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
 
         let proposeOperation = governorClient.propose({
           creator: walletAddress,
-          calldata_,
-          sub_calldata_,
           title,
           description,
+          action,
         });
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,
           network,
           txOptions,
-          governorClient.parsers.propose,
+          GovernorContract.parsers.propose,
           proposeOperation
         );
         if (sim) {
@@ -363,12 +400,227 @@ export const WalletProvider = ({ children = null as any }) => {
             notificationMode: "flash",
             notificationTitle: "Proposal created",
             successMessage: "Proposal created",
+            failureMessage: "Failed to create proposal",
           });
           return result || BigInt(0);
         }
       } else {
         return;
       }
+    } catch (e) {
+      console.log("Error creating proposal: ", e);
+      throw e;
+    }
+  }
+
+  async function executeProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorContract(governorAddress);
+
+        let executeOperation = governorClient.execute({
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          GovernorContract.parsers.execute,
+          executeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal executed",
+            successMessage: "Proposal executed",
+            failureMessage: "Failed to execute proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error executing proposal: ", e);
+      throw e;
+    }
+  }
+
+  async function closeProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorContract(governorAddress);
+
+        let closeOperation = governorClient.close({
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          GovernorContract.parsers.close,
+          closeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal closed",
+            successMessage: "Proposal closed",
+            failureMessage: "Failed to close proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error closing proposal: ", e);
+      throw e;
+    }
+  }
+
+  async function cancelProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = false
+  ) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let governorClient = new GovernorContract(governorAddress);
+        let cancelOperation = governorClient.cancel({
+          from: walletAddress,
+          proposal_id: proposalId,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          GovernorContract.parsers.cancel,
+          cancelOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          const result = await submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Proposal cancelled",
+            successMessage: "Proposal cancelled",
+            failureMessage: "Failed to cancel proposal",
+          });
+          return result || BigInt(0);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error cancelling proposal: ", e);
+      throw e;
+    }
+  }
+
+  async function getTotalVotesByProposal(
+    proposalId: number,
+    governorAddress: string,
+    sim = true
+  ) {
+    try {
+      let txOptions: TxOptions = {
+        sim,
+        pollingInterval: 1000,
+        timeout: 15000,
+        builderOptions: {
+          fee: "10000",
+          timebounds: {
+            minTime: 0,
+            maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+          },
+          networkPassphrase: network.passphrase,
+        },
+      };
+      let governorClient = new GovernorContract(governorAddress);
+
+      let proposeOperation = governorClient.getProposalVotes({
+        proposal_id: proposalId,
+      });
+      const submission = invokeOperation<xdr.ScVal>(
+        DUMMY_ADDRESS,
+        sign,
+        network,
+        txOptions,
+        parseResultFromXDRString,
+        proposeOperation
+      );
+      const sub = await submission;
+      if (sub instanceof ContractResult) {
+        return sub.result.unwrap() as VoteCount;
+      }
+      return sub;
     } catch (e) {
       console.log("Error creating proposal: ", e);
       throw e;
@@ -391,7 +643,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
+        let votesClient = new TokenVotesContract(voteTokenAddress);
 
         let votesOperation = votesClient.balance({
           id: walletAddress,
@@ -401,7 +653,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          votesClient.parsers.balance,
+          TokenVotesContract.parsers.balance,
           votesOperation
         );
         if (sim) {
@@ -421,14 +673,35 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
+  async function getTokenBalance(tokenAddress: string) {
+    try {
+      if (connected) {
+        const balance = await getBalance(
+          rpcServer(),
+          network.passphrase,
+          tokenAddress,
+          new Address(walletAddress)
+        );
+        return balance;
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error getting token balance: ", e);
+      throw e;
+    }
+  }
+
   async function getVotingPowerByProposal(
     voteTokenAddress: string,
     proposalStart: number,
+    currentBlockNumber: number,
     sim: boolean
   ) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
+        const txOptions: TxOptions = {
           sim,
           pollingInterval: 1000,
           timeout: 15000,
@@ -441,22 +714,32 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
-
-        let proposeOperation = votesClient.getPastVotes({
-          user: walletAddress,
-          sequence: proposalStart,
-        });
+        const votesClient = new TokenVotesContract(voteTokenAddress);
+        const proposalIsPast = currentBlockNumber > proposalStart;
+        let proposeOperation;
+        if (proposalIsPast) {
+          proposeOperation = votesClient.getPastVotes({
+            user: walletAddress,
+            sequence: proposalStart,
+          });
+        } else {
+          proposeOperation = votesClient.getVotes({
+            account: walletAddress,
+          });
+        }
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,
           network,
           txOptions,
-          votesClient.parsers.getVotes,
+          proposalIsPast
+            ? TokenVotesContract.parsers.getPastVotes
+            : TokenVotesContract.parsers.getVotes,
           proposeOperation
         );
         if (sim) {
           const sub = await submission;
+
           if (sub instanceof ContractResult) {
             return sub.result.unwrap();
           }
@@ -493,10 +776,8 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new VotesClient(voteTokenAddress);
-        console.log({ walletAddress });
-
-        let proposeOperation = votesClient.depositFor({
+        let votesClient = new StakingVotesContract(voteTokenAddress);
+        let proposeOperation = votesClient.deposit({
           from: walletAddress,
           amount,
         });
@@ -505,7 +786,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          votesClient.parsers.depositFor,
+          StakingVotesContract.parsers.deposit,
           proposeOperation
         );
         if (sim) {
@@ -533,6 +814,66 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
+  async function unwrapToken(
+    voteTokenAddress: string,
+    amount: bigint,
+    sim: boolean
+  ) {
+    try {
+      if (connected && walletAddress) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new StakingVotesContract(voteTokenAddress);
+
+        let withdrawOperation = votesClient.withdraw({
+          from: walletAddress,
+          amount,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          StakingVotesContract.parsers.withdraw,
+          withdrawOperation
+        );
+        if (sim) {
+          const sub = await submission;
+
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return (
+            submitTransaction<bigint>(submission, {
+              notificationMode: "flash",
+              notificationTitle: "Tokens succesfully unwrapped",
+              // failureMessage: "Tokens succesfully unwrapped",
+              successMessage: "Tokens succesfully unwrapped",
+            }) || BigInt(0)
+          );
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error unwrapping token: ", e);
+      throw e;
+    }
+  }
+
   async function getUserVoteByProposalId(
     proposalId: number,
     governorAddress: string,
@@ -553,7 +894,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let governorClient = new GovernorClient(governorAddress);
+        let governorClient = new GovernorContract(governorAddress);
         let voteOperation = governorClient.getVote({
           voter: walletAddress,
           proposal_id: proposalId,
@@ -563,7 +904,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          governorClient.parsers.getVote,
+          GovernorContract.parsers.getVote,
           voteOperation
         );
         if (sim) {
@@ -582,6 +923,7 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
+
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -612,11 +954,13 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         setTxStatus(TxStatus.SUCCESS);
       } else {
+        const error = result.result.error;
+        console.log({ error });
         console.log("Failed submitted transaction: ", result.hash);
-        setCleanTxMessage(options.failureMessage || result.error?.message);
+        setCleanTxMessage(options.failureMessage || error?.message);
         setNotificationTitle("Transaction Failed");
-        setShowNotification(true);
         setTxStatus(TxStatus.FAIL);
+        setShowNotification(true);
       }
       return result;
     } catch (e: any) {
@@ -655,19 +999,27 @@ export const WalletProvider = ({ children = null as any }) => {
           txStatus === TxStatus.BUILDING ||
           txStatus === TxStatus.SIGNING ||
           txStatus === TxStatus.SUBMITTING,
+        network,
         connect,
         disconnect,
         clearLastTx,
         vote,
         createProposal,
+        executeProposal,
+        closeProposal,
+        cancelProposal,
         rpcServer,
         submitTransaction,
         setNetwork,
         closeNotification,
         getVoteTokenBalance,
         getVotingPowerByProposal,
+        getTokenBalance,
         wrapToken,
+        unwrapToken,
         getUserVoteByProposalId,
+        getTotalVotesByProposal,
+
         notificationMode,
         showNotification,
         notificationTitle,

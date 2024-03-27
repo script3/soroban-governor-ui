@@ -2,7 +2,6 @@ import { formatCompactNumber } from "@/utils/date";
 import { Container } from "./common/BaseContainer";
 import Typography from "./common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { EighteenDecimals, SevenDecimals } from "@/constants";
 import { getSupportStringFromVote } from "@/utils/vote";
 import { Chip } from "./common/Chip";
 import { VoteSupport } from "@/types";
@@ -11,10 +10,12 @@ export function VoteListItem({
   vote,
   voteCount,
   index,
+  decimals,
 }: {
   vote: any;
   voteCount: any;
   index: number;
+  decimals: number;
 }) {
   function getColorClassByVote(voteSupport: number) {
     if (voteSupport === VoteSupport.For) {
@@ -47,7 +48,7 @@ export function VoteListItem({
         {getSupportStringFromVote(vote.support)}
       </Chip>
       <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-        {formatCompactNumber(Number(vote.amount) / SevenDecimals)}
+        {formatCompactNumber(Number(vote.amount) / decimals)}
       </Typography.P>
     </Container>
   );

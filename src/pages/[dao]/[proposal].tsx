@@ -134,7 +134,11 @@ export default function Proposal() {
   function handleLinkClick(link: string) {
     window.open(link, "_blank");
   }
-
+  console.log({
+    voteEnd: proposal?.vote_end,
+    currentBlockNumber,
+    proposalStatus,
+  });
   function handleVote() {
     if (selectedSupport !== null) {
       vote(
@@ -193,7 +197,7 @@ export default function Proposal() {
           {proposal?.title}
         </Typography.Small>
       </Container>
-      {!!proposal?.id && (
+      {proposal?.id !== undefined && (
         <Container
           slim
           className="flex flex-col px-0 md:px-4 gap-4 mx-auto max-w-[1012px] mt-[20px] w-auto m-auto lg:flex-row "
@@ -239,7 +243,8 @@ export default function Proposal() {
                       {isLoading ? <Loader /> : "Execute"}
                     </Button>
                   )}
-                  {proposalStatus === ProposalStatusEnum.Closed &&
+                  {proposalStatus === ProposalStatusEnum.Open &&
+                    proposal.vote_end < currentBlockNumber &&
                     connected && (
                       <Button
                         className={`w-32 !bg-secondary ${

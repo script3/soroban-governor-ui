@@ -9,9 +9,6 @@ export function getStatusByProposalState(statusFromContract:ProposalStatusEnum,v
         if(voteStart<currentBlock && voteEnd>currentBlock){
             return ProposalStatusEnum.Active
         }
-        if(voteEnd < currentBlock){
-            return ProposalStatusEnum.Closed
-        }
         if(voteStart > currentBlock){
             return ProposalStatusEnum.Pending
         }

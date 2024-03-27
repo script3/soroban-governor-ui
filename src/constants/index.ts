@@ -29,7 +29,7 @@ export enum ProposalStatusEnum {
     Pending = 6,
     /// The proposal is active and can be voted on
     Active = 7,
-  Closed=8
+    Closed=8
 }
 
 export type ProposalStatus =
@@ -72,7 +72,7 @@ export type ObType = { [key: string]: string };
 export const classByStatus: ObType = {
   [ProposalStatusEnum.Successful]: "!bg-fuchsia-400",
   [ProposalStatusEnum.Active]: "!bg-green-500",
-  [ProposalStatusEnum.Open]: "!bg-green-500",
+  [ProposalStatusEnum.Open]: "!bg-blue-500",
   [ProposalStatusEnum.Defeated]: "!bg-red-500",
   [ProposalStatusEnum.Canceled]: "!bg-gray-500",
   [ProposalStatusEnum.Expired]: "!bg-gray-500",

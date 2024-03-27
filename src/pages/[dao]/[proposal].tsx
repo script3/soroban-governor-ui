@@ -134,11 +134,6 @@ export default function Proposal() {
   function handleLinkClick(link: string) {
     window.open(link, "_blank");
   }
-  console.log({
-    voteEnd: proposal?.vote_end,
-    currentBlockNumber,
-    proposalStatus,
-  });
   function handleVote() {
     if (selectedSupport !== null) {
       vote(

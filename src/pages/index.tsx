@@ -53,12 +53,12 @@ export default function Home() {
         </Container>
       </Container>
       <Container className="w-full grid sm:grid-cols-3 lg:grid-cols-4 gap-4 ">
-        {governors?.filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
+        {governors
+          ?.filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
           .map((dao, i) => (
             <DAOCard
               title={dao.name}
-              description={`${dao.memberCount} Members`}
-              buttonText="Join"
+              description={""}
               hoverable
               key={i}
               onButtonClick={() => console.log(`Join #${i} click`)}

@@ -14,7 +14,7 @@ import {
 import { shortenAddress } from "@/utils/shortenAddress";
 
 import { MarkdownPreview } from "@/components/MarkdownPreview";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/common/Button";
 import { ViewMore } from "@/components/ViewMore";
 import { formatDate, getProposalDate } from "@/utils/date";
@@ -39,21 +39,14 @@ import { toBalance } from "@/utils/formatNumber";
 import { Loader } from "@/components/common/Loader";
 import { getStatusByProposalState } from "@/utils/proposal";
 import { VoteSupport } from "@/types";
+import { useTemporaryState } from "@/hooks/useTemporaryState";
 
-const shareOptions: Item[] = [
-  {
-    text: "Share on Twitter",
-    action: "twitter",
-  },
-  {
-    text: "Copy link",
-    action: "copy",
-  },
-];
 export default function Proposal() {
   const router = useRouter();
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
+
+  const [copied, setCopied] = useTemporaryState(false, 1000, false);
   const { proposal, refetch } = useProposal(
     Number(params.proposal),
     currentGovernor?.address,
@@ -264,17 +257,35 @@ export default function Proposal() {
                         {isLoading ? <Loader /> : "Cancel"}
                       </Button>
                     )}
-                  <Dropdown
-                    placement="bottom-end"
-                    chevron={false}
-                    noBorder
-                    buttonText={<Typography.P>Share </Typography.P>}
-                    items={shareOptions}
-                    onSelect={(action) => {
-                      handleAction(action);
+                  <Button
+                    onClick={() => {
+                      copyToClipboard(
+                        `${window.location.origin}${router.pathname}`
+                      );
+                      setCopied(true);
                     }}
-                  />
-                  <Dropdown
+                    className={`${
+                      copied ? "!bg-success text-white" : ""
+                    } text-snapLink gap-1`}
+                  >
+                    {copied ? (
+                      <Image
+                        src="/icons/check.svg"
+                        width={18}
+                        height={18}
+                        alt="link"
+                      />
+                    ) : (
+                      <Image
+                        src="/icons/link.svg"
+                        width={18}
+                        height={18}
+                        alt="link"
+                      />
+                    )}
+                    {copied ? "Copied" : "Copy link"}
+                  </Button>
+                  {/* <Dropdown
                     chevron={false}
                     noBorder
                     buttonText={
@@ -289,7 +300,7 @@ export default function Proposal() {
                     onSelect={(action) => {
                       handleAction(action);
                     }}
-                  />
+                  /> */}
                 </Container>
               </Container>
             </Container>

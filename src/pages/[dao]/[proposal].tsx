@@ -79,7 +79,7 @@ export default function Proposal() {
     proposal?.id,
     currentGovernor?.address,
     {
-      enabled: !!proposal?.id,
+      enabled: proposal?.id > -1,
       placeholderData: [],
     }
   );
@@ -87,7 +87,7 @@ export default function Proposal() {
     Number(params.proposal),
     currentGovernor?.address,
     {
-      enabled: !!proposal?.id && !!currentGovernor?.address,
+      enabled: proposal?.id > -1 && !!currentGovernor?.address,
       placeholderData: undefined,
     }
   );
@@ -112,7 +112,7 @@ export default function Proposal() {
       placeholderData: BigInt(0),
       enabled:
         connected &&
-        !!proposal?.id &&
+        proposal?.id > -1 &&
         !!currentGovernor?.voteTokenAddress &&
         !!currentBlockNumber,
     }
@@ -407,6 +407,7 @@ export default function Proposal() {
                       key={index}
                       vote={vote}
                       index={index}
+                      decimals={currentGovernor?.decimals as number}
                       voteCount={proposal.total_votes}
                     />
                   ))}
@@ -570,6 +571,7 @@ export default function Proposal() {
         <Container slim className="h-max !p-4">
           {votes.map((vote, index) => (
             <VoteListItem
+              decimals={currentGovernor?.decimals as number}
               key={index}
               vote={vote}
               index={index}

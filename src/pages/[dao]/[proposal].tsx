@@ -455,11 +455,24 @@ export default function Proposal() {
                 </Container>
                 <Container className="flex justify-between mb-2">
                   <Typography.P className=" text-snapLink">
-                    End Date{" "}
+                    End date{" "}
                   </Typography.P>
                   <Typography.Small className="">
                     {formatDate(
                       getProposalDate(proposal?.vote_end, currentBlockNumber)
+                    )}
+                  </Typography.Small>
+                </Container>
+                <Container className="flex justify-between mb-2">
+                  <Typography.P className=" text-snapLink">
+                    Execution unlocked{" "}
+                  </Typography.P>
+                  <Typography.Small className="">
+                    {formatDate(
+                      getProposalDate(
+                        proposal?.executionETA,
+                        currentBlockNumber
+                      )
                     )}
                   </Typography.Small>
                 </Container>

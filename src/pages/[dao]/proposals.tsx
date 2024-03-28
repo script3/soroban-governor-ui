@@ -256,16 +256,26 @@ function Proposals() {
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Yes</Typography.Medium>
-                      <Typography.Medium>
-                        {`${
-                          proposal.total_votes > 0
-                            ? (
-                                (proposal.votes_for / proposal.total_votes) *
-                                100
-                              ).toFixed(2)
-                            : 0
-                        }%`}
-                      </Typography.Medium>
+                      <Container slim className="flex gap-2">
+                        <Typography.Medium>
+                          {proposal.votes_for > 0
+                            ? `${toBalance(
+                                proposal.votes_for,
+                                governor.decimals
+                              )} ${governor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.Medium>
+                        <Typography.Medium>
+                          {`${
+                            proposal.total_votes > 0
+                              ? (
+                                  (proposal.votes_for / proposal.total_votes) *
+                                  100
+                                ).toFixed(2)
+                              : 0
+                          }%`}
+                        </Typography.Medium>
+                      </Container>
                     </div>
                   </ProgressWrapper>
                   <ProgressWrapper
@@ -277,17 +287,27 @@ function Proposals() {
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>No</Typography.Medium>
-                      <Typography.Medium>
-                        {`${
-                          proposal.total_votes > 0
-                            ? (
-                                (proposal.votes_against /
-                                  proposal.total_votes) *
-                                100
-                              ).toFixed(2)
-                            : 0
-                        }%`}
-                      </Typography.Medium>
+                      <Container slim className="flex gap-2">
+                        <Typography.Medium>
+                          {proposal.votes_against > 0
+                            ? `${toBalance(
+                                proposal.votes_against,
+                                governor.decimals
+                              )} ${governor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.Medium>
+                        <Typography.Medium>
+                          {`${
+                            proposal.total_votes > 0
+                              ? (
+                                  (proposal.votes_against /
+                                    proposal.total_votes) *
+                                  100
+                                ).toFixed(2)
+                              : 0
+                          }%`}
+                        </Typography.Medium>
+                      </Container>
                     </div>
                   </ProgressWrapper>
                   <ProgressWrapper
@@ -299,17 +319,27 @@ function Proposals() {
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Abstain</Typography.Medium>
-                      <Typography.Medium>
-                        {`${
-                          proposal.total_votes > 0
-                            ? (
-                                (proposal.votes_abstain /
-                                  proposal.total_votes) *
-                                100
-                              ).toFixed(2)
-                            : 0
-                        }%`}
-                      </Typography.Medium>
+                      <Container slim className="flex gap-2">
+                        <Typography.Medium>
+                          {proposal.votes_abstain > 0
+                            ? `${toBalance(
+                                proposal.votes_abstain,
+                                governor.decimals
+                              )} ${governor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.Medium>
+                        <Typography.Medium>
+                          {`${
+                            proposal.total_votes > 0
+                              ? (
+                                  (proposal.votes_abstain /
+                                    proposal.total_votes) *
+                                  100
+                                ).toFixed(2)
+                              : 0
+                          }%`}
+                        </Typography.Medium>
+                      </Container>
                     </div>
                   </ProgressWrapper>
                 </div>

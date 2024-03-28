@@ -12,11 +12,13 @@ export function VoteListItem({
   voteCount,
   index,
   decimals,
+  symbol,
 }: {
   vote: any;
   voteCount: any;
   index: number;
   decimals: number;
+  symbol?: string;
 }) {
   function getColorClassByVote(voteSupport: number) {
     if (voteSupport === VoteSupport.For) {
@@ -34,22 +36,24 @@ export function VoteListItem({
   return (
     <Container
       key={index}
-      className={`flex items-center gap-3 justify-between border-snapBorder px-4 py-[14px]  ${
+      className={`flex relative items-center gap-3 justify-between box-border border-snapBorder px-4 py-[14px]  ${
         index === voteCount - 1 ? "border-b-0 border-t" : "border-t"
       }`}
     >
-      <Typography.P className="w-[110px] min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
+      <Typography.P className="w-max min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
         {shortenAddress(vote.voter)}
       </Typography.P>
-      <Chip
-        className={` truncate px-2 text-center  ${getColorClassByVote(
-          vote.support
-        )} `}
-      >
-        {getSupportStringFromVote(vote.support)}
-      </Chip>
-      <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-        {toBalance(vote.amount, decimals)}
+      <Container slim className="flex w-full justify-center absolute inset-x-0">
+        <Chip
+          className={` truncate px-2 text-center  ${getColorClassByVote(
+            vote.support
+          )} `}
+        >
+          {getSupportStringFromVote(vote.support)}
+        </Chip>
+      </Container>
+      <Typography.P className="flex w-max min-w-[200px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
+        {toBalance(vote.amount, decimals)} {symbol}
       </Typography.P>
     </Container>
   );

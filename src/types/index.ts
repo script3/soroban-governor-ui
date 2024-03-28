@@ -44,6 +44,16 @@ export interface Proposal {
 
 }
 
+export interface TokenMetadata {
+  name: string;
+  symbol: string;
+  decimals: number;
+  logo: string;
+  icon: string;
+  issuer: string;
+  domain:string
+
+}
 
 
 
@@ -58,10 +68,14 @@ export interface Governor {
   logo: string;
   address: string;
   voteTokenAddress: string;
+  voteTokenMetadata: TokenMetadata;
   settings: GovernorSettings;
   decimals : number;
   isWrappedAsset: boolean;
+  
   underlyingTokenAddress?: string;
+  underlyingTokenMetadata?: TokenMetadata;
+
  
 }
 

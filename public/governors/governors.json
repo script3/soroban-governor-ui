@@ -18,7 +18,15 @@
     "voteTokenAddress": "CCZFATFQOJS2DYOAXXUBEKQIHZAPZPR2SO32BVSUW7GOZQF3LSTWJTK4",
     "decimals": 6,
     "isWrappedAsset": false,
-    "underlyingTokenAddress":null
+    "underlyingTokenAddress":null,
+    "voteTokenMetadata":{
+      "name":"VOTES",
+      "symbol":"VOTES",
+      "decimals":7,
+      "domain":null,
+      "issuer":null,
+      "icon":"/icons/token/soroban.svg"
+    }
   },
   {
     "settings": {
@@ -32,13 +40,29 @@
       "vote_period": 5760,
       "vote_threshold": 5500
     },
-    "name": "Staking XLM DAO",
+    "name": "XLM DAO",
     "memberCount": 828,
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
     "address": "CCIAMLHDTH3MUZR2KCXRK5JWDBLZL6MBD5AVITLPL73PZIMNOX7SKDSV",
     "voteTokenAddress": "CA4KSAONQE6LD67GJZ5SM6MKYUKBU4KM2PJYLYRXZYU26Q4COHXEG6RT",
     "decimals": 7,
     "isWrappedAsset": true,
-    "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+    "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    "underlyingTokenMetadata":{
+      "name":"XLM",
+      "symbol":"XLM",
+      "decimals":7,
+      "domain":"stellar.org",
+      "icon":"/icons/token/xlm.svg",
+      "issuer":"GANZ2BKT4LQD2ZAF3KHXWMVS6YMWOXD4GYZOYT3GWWZJ4OSFGNU4MN4X"
+    },
+    "voteTokenMetadata":{
+      "name":"voteXLM",
+      "symbol":"voteXLM",
+      "decimals":7,
+      "domain":null,
+      "issuer":null,
+      "icon":"/icons/token/soroban.svg"
+    }
   }
 ]

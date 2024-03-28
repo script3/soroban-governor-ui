@@ -409,6 +409,7 @@ export default function Proposal() {
                       index={index}
                       decimals={currentGovernor?.decimals as number}
                       voteCount={proposal.total_votes}
+                      symbol={currentGovernor?.voteTokenMetadata.symbol}
                     />
                   ))}
                   <div
@@ -496,7 +497,15 @@ export default function Proposal() {
                     className="flex flex-col gap-2 mb-4"
                     label="Yes"
                     endContent={
-                      <>
+                      <Container slim>
+                        <Typography.P>
+                          {proposal.votes_for > 0
+                            ? `${toBalance(
+                                proposal.votes_for,
+                                currentGovernor.decimals
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.P>
                         <Typography.P>
                           {" "}
                           {proposal.votes_for > 0
@@ -508,7 +517,7 @@ export default function Proposal() {
                             : 0}
                           %
                         </Typography.P>
-                      </>
+                      </Container>
                     }
                     progress={
                       Number(
@@ -520,7 +529,15 @@ export default function Proposal() {
                     className="flex flex-col gap-2 mb-4"
                     label="No"
                     endContent={
-                      <>
+                      <Container slim>
+                        <Typography.P>
+                          {proposal.votes_against > 0
+                            ? `${toBalance(
+                                proposal.votes_against,
+                                currentGovernor.decimals
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.P>
                         <Typography.P>
                           {" "}
                           {proposal.votes_against > 0
@@ -532,7 +549,7 @@ export default function Proposal() {
                             : 0}
                           %
                         </Typography.P>
-                      </>
+                      </Container>
                     }
                     progress={
                       Number(
@@ -546,7 +563,23 @@ export default function Proposal() {
                     className="flex flex-col gap-2 mb-4"
                     label="Abstain"
                     endContent={
-                      <>
+                      <Container slim>
+                        <Typography.P>
+                          {proposal.votes_abstain > 0
+                            ? `${toBalance(
+                                proposal.votes_abstain,
+                                currentGovernor.decimals
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.P>
+                        <Typography.Medium>
+                          {proposal.votes_abstain > 0
+                            ? `${toBalance(
+                                proposal.votes_abstain,
+                                currentGovernor.decimals
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                            : "   "}
+                        </Typography.Medium>
                         <Typography.P>
                           {" "}
                           {proposal.votes_abstain > 0
@@ -558,7 +591,7 @@ export default function Proposal() {
                             : 0}
                           %
                         </Typography.P>
-                      </>
+                      </Container>
                     }
                     progress={
                       Number(
@@ -589,6 +622,7 @@ export default function Proposal() {
               vote={vote}
               index={index}
               voteCount={proposal.total_votes}
+              symbol={currentGovernor?.voteTokenMetadata.symbol}
             />
           ))}
         </Container>

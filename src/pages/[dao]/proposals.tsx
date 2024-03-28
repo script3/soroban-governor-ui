@@ -6,7 +6,11 @@ import { Chip } from "@/components/common/Chip";
 import { Input } from "@/components/common/Input";
 import { ProgressWrapper } from "@/components/common/ProgressWrapper";
 import Typography from "@/components/common/Typography";
-import { ProposalStatusText, classByStatus } from "@/constants";
+import {
+  ProposalStatusText,
+  classByProposalAction,
+  classByStatus,
+} from "@/constants";
 
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
@@ -216,9 +220,18 @@ function Proposals() {
                 <Typography.Small className="font-bold">
                   {shortenAddress(proposal.proposer)}
                 </Typography.Small>
-                <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
-                  {ProposalStatusText[proposalStatus]}
-                </Chip>
+                <Container slim className="flex  gap-2 ">
+                  <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
+                    {ProposalStatusText[proposalStatus]}
+                  </Chip>
+                  <Chip
+                    className={`${
+                      classByProposalAction[proposal.action.tag]
+                    } mb-4`}
+                  >
+                    {proposal.action.tag}
+                  </Chip>
+                </Container>
               </div>
               <div
                 className="flex flex-col gap-3 cursor-pointer"

@@ -496,6 +496,11 @@ export default function Proposal() {
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
                     label="Yes"
+                    barClassName={
+                      proposalStatus === ProposalStatusEnum.Active
+                        ? "bg-secondary"
+                        : "bg-neutral-200"
+                    }
                     endContent={
                       <Container slim>
                         <Typography.P>
@@ -528,6 +533,11 @@ export default function Proposal() {
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
                     label="No"
+                    barClassName={
+                      proposalStatus === ProposalStatusEnum.Active
+                        ? "bg-secondary"
+                        : "bg-neutral-200"
+                    }
                     endContent={
                       <Container slim>
                         <Typography.P>
@@ -562,6 +572,11 @@ export default function Proposal() {
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
                     label="Abstain"
+                    barClassName={
+                      proposalStatus === ProposalStatusEnum.Active
+                        ? "bg-secondary"
+                        : "bg-neutral-200"
+                    }
                     endContent={
                       <Container slim>
                         <Typography.P>

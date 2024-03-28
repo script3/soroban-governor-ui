@@ -5,6 +5,7 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import { getSupportStringFromVote } from "@/utils/vote";
 import { Chip } from "./common/Chip";
 import { VoteSupport } from "@/types";
+import { toBalance } from "@/utils/formatNumber";
 
 export function VoteListItem({
   vote,
@@ -48,7 +49,7 @@ export function VoteListItem({
         {getSupportStringFromVote(vote.support)}
       </Chip>
       <Typography.P className="flex w-[110px] min-w-[110px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-        {formatCompactNumber(Number(vote.amount) / decimals)}
+        {toBalance(vote.amount, decimals)}
       </Typography.P>
     </Container>
   );

@@ -113,6 +113,7 @@ function Proposals() {
               <Typography.Small className="text-snapLink">
                 Current Underlying token balance:{" "}
                 {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
+                {governor.underlyingTokenMetadata?.symbol}
                 {/* {governor.name || "$VOTE"} */}
               </Typography.Small>
             )}
@@ -150,7 +151,7 @@ function Proposals() {
                 <Typography.Small className="text-snapLink">
                   Current Vote token balance:{" "}
                   {toBalance(balance, governor.decimals)}{" "}
-                  {/* {governor.name || "$VOTE"} */}
+                  {governor.voteTokenMetadata.symbol}
                 </Typography.Small>
               )}
             </Container>

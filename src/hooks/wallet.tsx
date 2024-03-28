@@ -27,6 +27,7 @@ import {
 } from "soroban-governor-js-sdk";
 import { Address, SorobanRpc, xdr } from "stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
+import { useLocalStorageState } from "./useLocalStorageState";
 export class Resources {
   fee: number;
   refundableFee: number;
@@ -157,7 +158,10 @@ const WalletContext = React.createContext<IWalletContext | undefined>(
 
 export const WalletProvider = ({ children = null as any }) => {
   const [connected, setConnected] = useState<boolean>(false);
-  const [autoConnect, setAutoConnect] = useState<string | undefined>(undefined);
+  const [autoConnect, setAutoConnect] = useLocalStorageState(
+    "autoConnect",
+    "false"
+  );
   const [txStatus, setTxStatus] = useState<TxStatus>(TxStatus.NONE);
   const [notificationMode, setNotificationMode] = useState<string>("");
   const [showNotification, setShowNotification] = useState<boolean>(false);
@@ -183,7 +187,7 @@ export const WalletProvider = ({ children = null as any }) => {
   });
 
   useEffect(() => {
-    if (!connected && autoConnect !== "false") {
+    if (!connected && !!autoConnect && autoConnect !== "false") {
       // @dev: timeout ensures chrome has the ability to load extensions
       setTimeout(() => {
         handleSetWalletAddress();

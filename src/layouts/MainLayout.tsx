@@ -19,7 +19,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     lastTxMessage: txMessage,
     notificationTitle,
     showNotification,
-
   } = useWallet();
   function getNotificationTitle() {
     if (!!notificationTitle) {
@@ -64,7 +63,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             message={txMessage || ""}
           />
         </Modal>
-        <Footer />
+        {/* <Footer /> */}
       </Container>
     </Container>
   );

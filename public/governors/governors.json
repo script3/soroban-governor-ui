@@ -23,8 +23,7 @@
       "name":"VOTES",
       "symbol":"VOTES",
       "decimals":7,
-      "domain":null,
-      "issuer":null,
+
       "icon":"/icons/token/soroban.svg"
     }
   },
@@ -60,8 +59,7 @@
       "name":"voteXLM",
       "symbol":"voteXLM",
       "decimals":7,
-      "domain":null,
-      "issuer":null,
+
       "icon":"/icons/token/soroban.svg"
     }
   }

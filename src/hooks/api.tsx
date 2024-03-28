@@ -7,7 +7,7 @@ import { SorobanRpc, StrKey, nativeToScVal, xdr } from "stellar-sdk";
 import { VoteCount } from "soroban-governor-js-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const mappedGovernors = governors.map(
-  ({ settings: { timelock, proposal_threshold, ...settings }, ...rest }) => {
+  ({ settings: { proposal_threshold, ...settings }, ...rest }) => {
     return {
       ...rest,
       settings: {

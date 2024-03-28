@@ -48,11 +48,9 @@ export interface TokenMetadata {
   name: string;
   symbol: string;
   decimals: number;
-  logo: string;
   icon: string;
-  issuer: string;
-  domain:string
-
+  issuer?: string;
+  domain?:string
 }
 
 

@@ -244,7 +244,7 @@ export default function CreateProposal() {
             {proposalAction === ProposalActionEnum.CALLDATA && (
               <>
                 <Typography.Small className="text-snapLink !my-2 ">
-                  Execution Calldata (optional)
+                  Execution Calldata
                 </Typography.Small>
                 <TextArea
                   isError={isCalldataDisabled}

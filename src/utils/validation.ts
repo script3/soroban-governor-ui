@@ -19,9 +19,7 @@ export function isVal(obj: any): obj is Val {
     obj !== null &&
     "value" in obj &&
     "type" in obj &&
-    typeof obj.value === "string" &&
-    /* Additional checks for type property based on your requirements */
-    true  // Adjust this line based on your actual checks for the 'type' property
+    typeof obj.type === "object"
   );
 }
 
@@ -53,49 +51,57 @@ export function isCalldataString(str: string): boolean {
 }
 
 export function parseCallData(calldataObj: any): Calldata | null {
-
   if (isCalldata(calldataObj)) {
     return new Calldata(
       calldataObj.contract_id,
       calldataObj.function,
-      calldataObj.args.map((arg:any) => new Val(arg.value, arg.type)),
-      calldataObj.auths.map((auth:any) => parseCallData(auth)).filter((auth:any) => auth !== null) as Calldata[]
-      )
+      calldataObj.args.map((arg: any) => new Val(arg.value, arg.type)),
+      calldataObj.auths
+        .map((auth: any) => parseCallData(auth))
+        .filter((auth: any) => auth !== null) as Calldata[]
+    );
   }
 
   return null;
 }
 
-
 export function isGovernorSettings(obj: any): obj is GovernorSettings {
   return (
-      typeof obj === "object" &&
-      obj !== null &&
-      "council" in obj && typeof obj.council === "string" &&
-      "counting_type" in obj && typeof obj.counting_type === "number" &&
-      "grace_period" in obj && typeof obj.grace_period === "number" &&
-      "proposal_threshold" in obj && typeof obj.proposal_threshold === "bigint" &&
-      "quorum" in obj && typeof obj.quorum === "number" &&
-      "timelock" in obj && typeof obj.timelock === "number" &&
-      "vote_delay" in obj && typeof obj.vote_delay === "number" &&
-      "vote_period" in obj && typeof obj.vote_period === "number" &&
-      "vote_threshold" in obj && typeof obj.vote_threshold === "number"
+    typeof obj === "object" &&
+    obj !== null &&
+    "council" in obj &&
+    typeof obj.council === "string" &&
+    "counting_type" in obj &&
+    typeof obj.counting_type === "number" &&
+    "grace_period" in obj &&
+    typeof obj.grace_period === "number" &&
+    "proposal_threshold" in obj &&
+    typeof obj.proposal_threshold === "bigint" &&
+    "quorum" in obj &&
+    typeof obj.quorum === "number" &&
+    "timelock" in obj &&
+    typeof obj.timelock === "number" &&
+    "vote_delay" in obj &&
+    typeof obj.vote_delay === "number" &&
+    "vote_period" in obj &&
+    typeof obj.vote_period === "number" &&
+    "vote_threshold" in obj &&
+    typeof obj.vote_threshold === "number"
   );
 }
 
 export function isGovernorSettingsString(str: string): boolean {
   try {
-      const data: GovernorSettings = JSON.parse(str);
-      return isGovernorSettings(data);
+    const data: GovernorSettings = JSON.parse(str);
+    return isGovernorSettings(data);
   } catch (error) {
-      return false;
+    return false;
   }
 }
-export function isUpgradeString(str: string,len:number): boolean {
-  const hexRegex = /^0x[0-9A-Fa-f]+$/
-  if (str.length === len && hexRegex.test(str) ){
-    return true
+export function isUpgradeString(str: string, len: number): boolean {
+  const hexRegex = /^[0-9A-Fa-f]{64}$/;
+  if (str.length === len && hexRegex.test(str)) {
+    return true;
   }
-  return false 
-
+  return false;
 }

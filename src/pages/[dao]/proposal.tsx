@@ -284,7 +284,7 @@ export default function CreateProposal() {
               </>
             )}
 
-            <Typography.Small className="text-snapLink !my-2 ">
+            {/* <Typography.Small className="text-snapLink !my-2 ">
               Discussion (optional)
             </Typography.Small>
             <Input
@@ -292,7 +292,7 @@ export default function CreateProposal() {
               type="url"
               value={link}
               onChange={setLink}
-            />
+            /> */}
           </>
         )}
         {isPreview && (

@@ -22,6 +22,8 @@ import {
   GovernorContract,
   TokenVotesContract,
   StakingVotesContract,
+  GovernorErrors,
+  VotesErrors,
 } from "soroban-governor-js-sdk";
 import { Address, SorobanRpc, xdr } from "stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
@@ -193,7 +195,6 @@ export const WalletProvider = ({ children = null as any }) => {
   function setCleanTxMessage(message: string | undefined) {
     if (message) {
       // some contract failures include diagnostic information. If so, try and remove it.
-
       let substrings = message.split("Event log (newest first):");
       if (substrings.length > 1) {
         const cleanMessage = substrings[0].trim();
@@ -860,7 +861,7 @@ export const WalletProvider = ({ children = null as any }) => {
             submitTransaction<bigint>(submission, {
               notificationMode: "flash",
               notificationTitle: "Tokens succesfully unwrapped",
-              // failureMessage: "Tokens succesfully unwrapped",
+              failureMessage: "Tokens succesfully unwrapped",
               successMessage: "Tokens succesfully unwrapped",
             }) || BigInt(0)
           );
@@ -955,9 +956,17 @@ export const WalletProvider = ({ children = null as any }) => {
         setTxStatus(TxStatus.SUCCESS);
       } else {
         const error = result.result.error;
-        console.log({ error });
+        const message =
+          (GovernorErrors as any)[error.type.toString()]?.message ||
+          (VotesErrors as any)[error.type.toString()]?.message ||
+          "";
+        console.log({ error, result, type: error.type, message });
         console.log("Failed submitted transaction: ", result.hash);
-        setCleanTxMessage(options.failureMessage || error?.message);
+        setCleanTxMessage(
+          options.failureMessage
+            ? `${`${options.failureMessage} | ${message}`} `
+            : error.message
+        );
         setNotificationTitle("Transaction Failed");
         setTxStatus(TxStatus.FAIL);
         setShowNotification(true);

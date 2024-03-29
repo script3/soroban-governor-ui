@@ -16,25 +16,14 @@ import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 
-import {
-  useCurrentBlockNumber,
-  useGovernor,
-  useProposals,
-  useUnderlyingTokenBalance,
-  useVoteTokenBalance,
-} from "@/hooks/api";
-import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
+import { useCurrentBlockNumber, useGovernor, useProposals } from "@/hooks/api";
+import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
-import { useWallet } from "@/hooks/wallet";
-
-import { Loader } from "@/components/common/Loader";
 import { stripMarkdown } from "@/utils/string";
 import { getStatusByProposalState } from "@/utils/proposal";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
-  const [toWrap, setToWrap] = useState<string>("");
-  const [toUnwrap, setToUnwrap] = useState<string>("");
-  const { wrapToken, unwrapToken, connect, connected, isLoading } = useWallet();
+
   const router = useRouter();
   const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
 
@@ -43,19 +32,6 @@ function Proposals() {
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
   });
-  const { balance, refetch: refetchBalance } = useVoteTokenBalance(
-    governor?.voteTokenAddress,
-    {
-      placeholderData: BigInt(0),
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
-  );
-
-  const { balance: underlyingTokenBalance, refetch: refetchunderlying } =
-    useUnderlyingTokenBalance(governor?.underlyingTokenAddress || "", {
-      enabled: connected && !!governor?.underlyingTokenAddress,
-      placeholderData: BigInt(0),
-    });
 
   const { proposals } = useProposals(
     governor?.address,
@@ -71,115 +47,8 @@ function Proposals() {
     }
   );
 
-  function handleWrapClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      const amount = scaleNumberToBigInt(toWrap, governor.decimals);
-      wrapToken(governor.voteTokenAddress, amount, false).then((res) => {
-        refetchBalance();
-        refetchunderlying();
-        setToUnwrap("");
-        setToWrap("");
-      });
-    }
-  }
-
-  function handleUnwrapClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-      unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
-        refetchunderlying();
-        refetchBalance();
-        setToUnwrap("");
-        setToWrap("");
-      });
-    }
-  }
-
   return (
     <Container slim className="flex flex-col gap-4">
-      <Container className="gap-4 flex flex-col ">
-        <Box className="p-3 flex gap-3 flex-col ">
-          <Container slim className="flex flex-col justify-center p-1 ">
-            <Typography.P>
-              Get voting tokens by wrapping your underlying tokens
-            </Typography.P>
-            {connected && (
-              <Typography.Small className="text-snapLink">
-                Current Underlying token balance:{" "}
-                {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
-                {governor.underlyingTokenMetadata?.symbol}
-                {/* {governor.name || "$VOTE"} */}
-              </Typography.Small>
-            )}
-          </Container>
-          <Container slim className="w-full flex flex-row  gap-3">
-            <Input
-              className="!w-1/3 flex"
-              placeholder="Amount to wrap"
-              onChange={setToWrap}
-              value={toWrap}
-              type="number"
-            />
-            <Button
-              className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
-              onClick={handleWrapClick}
-              disabled={isLoading || (connected && !toWrap)}
-            >
-              {isLoading ? (
-                <Loader />
-              ) : connected ? (
-                "Wrap Tokens"
-              ) : (
-                "Connect wallet"
-              )}
-            </Button>
-          </Container>
-        </Box>
-        {balance > BigInt(0) && (
-          <Box className="p-3 flex gap-3 flex-col ">
-            <Container slim className="flex flex-col justify-center p-1 ">
-              <Typography.P>
-                Unwrap your voting tokens to get back your underlying tokens
-              </Typography.P>
-              {connected && (
-                <Typography.Small className="text-snapLink">
-                  Current Vote token balance:{" "}
-                  {toBalance(balance, governor.decimals)}{" "}
-                  {governor.voteTokenMetadata.symbol}
-                </Typography.Small>
-              )}
-            </Container>
-            <Container slim className="w-full flex flex-row  gap-3">
-              <Input
-                className="!w-1/3 flex"
-                placeholder="Amount to unwrap"
-                onChange={setToUnwrap}
-                value={toUnwrap}
-                type="number"
-              />
-              <Button
-                className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
-                onClick={handleUnwrapClick}
-                disabled={isLoading || (connected && !toUnwrap)}
-              >
-                {isLoading ? (
-                  <Loader />
-                ) : connected ? (
-                  "Unwrap Tokens"
-                ) : (
-                  "Connect wallet"
-                )}
-              </Button>
-            </Container>
-          </Box>
-        )}
-      </Container>
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
         <Typography.Huge className="hidden lg:block text-white w-full mb-4">
           Proposals

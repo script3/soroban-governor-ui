@@ -335,6 +335,28 @@ export function useUnderlyingTokenBalance(
   };
 }
 
+export function useDelegate(
+  voteTokenAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getDelegate, connected, walletAddress } = useWallet();
+  const { data, isLoading, error, refetch } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["delegate", voteTokenAddress, connected],
+    queryFn: async () => {
+      const result = await getDelegate(voteTokenAddress, true);
+      return result || walletAddress;
+    },
+  });
+  return {
+    delegateAddress: data as string,
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
 async function getProposalsByGovernor(governorAddress: string) {
   try {
     const addressHash =

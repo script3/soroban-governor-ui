@@ -129,6 +129,15 @@ export interface IWalletContext {
     governorAddress: string,
     sim: boolean
   ) => Promise<number | undefined>;
+  getDelegate: (
+    voteTokenAddress: string,
+    sim: boolean
+  ) => Promise<string | undefined>;
+  delegate: (
+    voteTokenAddress: string,
+    addressToDelegate: string,
+    sim: boolean
+  ) => Promise<bigint | undefined>;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -929,6 +938,103 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
+  async function getDelegate(voteTokenAddress: string, sim: boolean = true) {
+    try {
+      if (connected) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let voteClient = new TokenVotesContract(voteTokenAddress);
+        let voteOperation = voteClient.getDelegate({
+          account: walletAddress,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          TokenVotesContract.parsers.getDelegate,
+          voteOperation
+        );
+
+        const sub = await submission;
+        if (sub instanceof ContractResult) {
+          return sub.result.unwrap();
+        }
+        return sub;
+      } else {
+        return;
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async function delegate(
+    voteTokenAddress: string,
+    addressToDelegate: string,
+    sim: boolean
+  ) {
+    try {
+      if (connected && walletAddress) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new TokenVotesContract(voteTokenAddress);
+        let proposeOperation = votesClient.delegate({
+          account: walletAddress,
+          delegatee: addressToDelegate,
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          TokenVotesContract.parsers.delegate,
+          proposeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return submitTransaction<bigint>(submission, {
+            notificationMode: "flash",
+            notificationTitle: "Succesfully delegated",
+            successMessage: "Succesfully delegated",
+          });
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.log("Error delegating token: ", e);
+      throw e;
+    }
+  }
+
   async function submitTransaction<T>(
     submission: Promise<any>,
     options: {
@@ -1032,7 +1138,8 @@ export const WalletProvider = ({ children = null as any }) => {
         unwrapToken,
         getUserVoteByProposalId,
         getTotalVotesByProposal,
-
+        getDelegate,
+        delegate,
         notificationMode,
         showNotification,
         notificationTitle,

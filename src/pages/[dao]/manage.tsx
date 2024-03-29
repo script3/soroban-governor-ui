@@ -137,8 +137,8 @@ function ManageVotes() {
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
-                {governor.underlyingTokenMetadata?.symbol}
+                {toBalance(balance, governor.decimals)}{" "}
+                {governor.voteTokenMetadata?.symbol}
               </Typography.P>
               {hasDelegate && (
                 <Chip className="!bg-transparent border border-secondary text-secondary">

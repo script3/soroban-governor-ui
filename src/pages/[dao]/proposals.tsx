@@ -16,11 +16,18 @@ import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { useState } from "react";
 
-import { useCurrentBlockNumber, useGovernor, useProposals } from "@/hooks/api";
+import {
+  useCurrentBlockNumber,
+  useDelegate,
+  useGovernor,
+  useProposals,
+  useVoteTokenBalance,
+} from "@/hooks/api";
 import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { stripMarkdown } from "@/utils/string";
 import { getStatusByProposalState } from "@/utils/proposal";
+import { useWallet } from "@/hooks/wallet";
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
 
@@ -28,10 +35,24 @@ function Proposals() {
   const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
 
   const params = router.query;
-
+  const { connected, walletAddress } = useWallet();
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
   });
+  const { delegateAddress, refetch: refetchDelegate } = useDelegate(
+    governor.voteTokenAddress,
+    {
+      enabled: connected && !!governor.voteTokenAddress,
+    }
+  );
+  const hasDelegate = delegateAddress !== walletAddress;
+  const { balance, refetch: refetchBalance } = useVoteTokenBalance(
+    governor?.voteTokenAddress,
+    {
+      placeholderData: BigInt(0),
+      enabled: connected && !!governor?.voteTokenAddress,
+    }
+  );
 
   const { proposals } = useProposals(
     governor?.address,
@@ -72,6 +93,38 @@ function Proposals() {
           New proposal
         </Button>
       </Container>
+      {connected && (
+        <Container>
+          <Box className="flex  flex-row justify-between !px-0">
+            <Container className="flex flex-col p-3 gap-2 border-b border-snapBorder w-full">
+              <Typography.Tiny className="text-snapLink">
+                Current Voting power
+              </Typography.Tiny>
+              <Container slim className="flex gap-2">
+                <Typography.P>
+                  {toBalance(balance, governor.decimals)}{" "}
+                  {governor.voteTokenMetadata?.symbol}
+                </Typography.P>
+                {hasDelegate && (
+                  <Chip className="!bg-transparent border border-secondary text-secondary">
+                    Delegated
+                  </Chip>
+                )}
+              </Container>
+            </Container>
+            <Container slim className=" flex flex-row  gap-3 px-6 py-4">
+              <Button
+                onClick={() => {
+                  router.push(`/${params.dao}/manage`);
+                }}
+                className="bg-white text-snapBorder active:opacity-50"
+              >
+                Manage
+              </Button>
+            </Container>
+          </Box>
+        </Container>
+      )}
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
         {proposals.map((proposal, ind) => {

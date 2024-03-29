@@ -40,9 +40,9 @@ function Proposals() {
     placeholderData: {},
   });
   const { delegateAddress, refetch: refetchDelegate } = useDelegate(
-    governor.voteTokenAddress,
+    governor?.voteTokenAddress,
     {
-      enabled: connected && !!governor.voteTokenAddress,
+      enabled: connected && !!governor?.voteTokenAddress,
     }
   );
   const hasDelegate = delegateAddress !== walletAddress;
@@ -102,8 +102,8 @@ function Proposals() {
               </Typography.Tiny>
               <Container slim className="flex gap-2">
                 <Typography.P>
-                  {toBalance(balance, governor.decimals)}{" "}
-                  {governor.voteTokenMetadata?.symbol}
+                  {toBalance(balance, governor?.decimals)}{" "}
+                  {governor?.voteTokenMetadata?.symbol}
                 </Typography.P>
                 {hasDelegate && (
                   <Chip className="!bg-transparent border border-secondary text-secondary">
@@ -184,8 +184,8 @@ function Proposals() {
                           {proposal.votes_for > 0
                             ? `${toBalance(
                                 proposal.votes_for,
-                                governor.decimals
-                              )} ${governor.voteTokenMetadata.symbol}`
+                                governor?.decimals
+                              )} ${governor?.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
@@ -215,8 +215,8 @@ function Proposals() {
                           {proposal.votes_against > 0
                             ? `${toBalance(
                                 proposal.votes_against,
-                                governor.decimals
-                              )} ${governor.voteTokenMetadata.symbol}`
+                                governor?.decimals
+                              )} ${governor?.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
@@ -247,8 +247,8 @@ function Proposals() {
                           {proposal.votes_abstain > 0
                             ? `${toBalance(
                                 proposal.votes_abstain,
-                                governor.decimals
-                              )} ${governor.voteTokenMetadata.symbol}`
+                                governor?.decimals
+                              )} ${governor?.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>

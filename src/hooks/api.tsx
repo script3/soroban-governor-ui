@@ -346,7 +346,7 @@ export function useDelegate(
     queryKey: ["delegate", voteTokenAddress, connected],
     queryFn: async () => {
       const result = await getDelegate(voteTokenAddress, true);
-      return result || walletAddress;
+      return result;
     },
   });
   return {

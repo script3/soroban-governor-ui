@@ -39,12 +39,12 @@ function ManageVotes() {
     placeholderData: {},
   });
   const { delegateAddress, refetch: refetchDelegate } = useDelegate(
-    governor.voteTokenAddress,
+    governor?.voteTokenAddress,
     {
-      enabled: connected && !!governor.voteTokenAddress,
+      enabled: connected && !!governor?.voteTokenAddress,
     }
   );
-  const hasDelegate = delegateAddress !== walletAddress;
+  const hasDelegate = connected && delegateAddress !== walletAddress;
   const { balance, refetch: refetchBalance } = useVoteTokenBalance(
     governor?.voteTokenAddress,
     {
@@ -63,8 +63,8 @@ function ManageVotes() {
       connect();
       return;
     } else {
-      const amount = scaleNumberToBigInt(toWrap, governor.decimals);
-      wrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+      const amount = scaleNumberToBigInt(toWrap, governor?.decimals);
+      wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchBalance();
         refetchunderlying();
         setToUnwrap("");
@@ -78,8 +78,8 @@ function ManageVotes() {
       connect();
       return;
     } else {
-      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-      unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+      const amount = scaleNumberToBigInt(toUnwrap, governor?.decimals);
+      unwrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchunderlying();
         refetchBalance();
         setToUnwrap("");
@@ -93,7 +93,7 @@ function ManageVotes() {
       connect();
       return;
     } else {
-      delegate(governor.voteTokenAddress, newDelegate, false).then(() => {
+      delegate(governor?.voteTokenAddress, newDelegate, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
       });
@@ -105,7 +105,7 @@ function ManageVotes() {
       connect();
       return;
     } else {
-      delegate(governor.voteTokenAddress, walletAddress, false).then(() => {
+      delegate(governor?.voteTokenAddress, walletAddress, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
       });
@@ -137,8 +137,8 @@ function ManageVotes() {
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
-                {toBalance(balance, governor.decimals)}{" "}
-                {governor.voteTokenMetadata?.symbol}
+                {toBalance(balance, governor?.decimals)}{" "}
+                {governor?.voteTokenMetadata?.symbol}
               </Typography.P>
               {hasDelegate && (
                 <Chip className="!bg-transparent border border-secondary text-secondary">
@@ -149,15 +149,15 @@ function ManageVotes() {
           </Container>
           <Container className="flex flex-col justify-center p-2 ">
             <Typography.P>
-              Deposit {governor.underlyingTokenMetadata?.symbol} to get voting
+              Deposit {governor?.underlyingTokenMetadata?.symbol} to get voting
               tokens{" "}
             </Typography.P>
             {connected && (
               <Typography.Small className="text-snapLink">
                 Wallet balance:{" "}
-                {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
-                {governor.underlyingTokenMetadata?.symbol}
-                {/* {governor.name || "$VOTE"} */}
+                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
+                {governor?.underlyingTokenMetadata?.symbol}
+                {/* {governor?.name || "$VOTE"} */}
               </Typography.Small>
             )}
           </Container>
@@ -191,12 +191,12 @@ function ManageVotes() {
           <Box className="p-3 flex gap-3 flex-col ">
             <Container slim className="flex flex-col justify-center p-1 ">
               <Typography.P>
-                Withdraw {governor.voteTokenMetadata.symbol} from the space
+                Withdraw {governor?.voteTokenMetadata.symbol} from the space
               </Typography.P>
               {connected && (
                 <Typography.Small className="text-snapLink">
-                  Voting token balance: {toBalance(balance, governor.decimals)}{" "}
-                  {governor.voteTokenMetadata.symbol}
+                  Voting token balance: {toBalance(balance, governor?.decimals)}{" "}
+                  {governor?.voteTokenMetadata.symbol}
                 </Typography.Small>
               )}
             </Container>
@@ -224,8 +224,8 @@ function ManageVotes() {
             </Container>
           </Box>
         )}
-        <Typography.Big>Delegate</Typography.Big>
-        {!hasDelegate && (
+        {connected && <Typography.Big>Delegate</Typography.Big>}
+        {connected && !hasDelegate && (
           <Box className="!p-0 flex gap-3 flex-col ">
             <Container className="flex flex-col justify-center p-3 pb-0 ">
               <Typography.Small className="text-snapLink">To</Typography.Small>
@@ -257,7 +257,7 @@ function ManageVotes() {
             </Button>
           </Box>
         )}
-        {!!hasDelegate && (
+        {connected && !!hasDelegate && (
           <Box className="!p-0 flex gap-3 flex-col ">
             <Container className="flex flex-col justify-center p-4 border-b border-snapBorder">
               <Typography.Small>Your delegate</Typography.Small>
@@ -265,8 +265,8 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor.decimals)}{" "}
-                {governor.underlyingTokenMetadata?.symbol}
+                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
+                {governor?.underlyingTokenMetadata?.symbol}
               </Typography.P>
             </Container>
             <Button

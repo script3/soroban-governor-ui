@@ -21,11 +21,11 @@ import {
   VoteCount,
   GovernorContract,
   TokenVotesContract,
-  StakingVotesContract,
+  BondingVotesContract,
   GovernorErrors,
   VotesErrors,
-} from "soroban-governor-js-sdk";
-import { Address, SorobanRpc, xdr } from "stellar-sdk";
+} from "@script3/soroban-governor-sdk";
+import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
 import { useLocalStorageState } from "./useLocalStorageState";
 export class Resources {
@@ -790,7 +790,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new StakingVotesContract(voteTokenAddress);
+        let votesClient = new BondingVotesContract(voteTokenAddress);
         let proposeOperation = votesClient.deposit({
           from: walletAddress,
           amount,
@@ -800,7 +800,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          StakingVotesContract.parsers.deposit,
+          BondingVotesContract.parsers.deposit,
           proposeOperation
         );
         if (sim) {
@@ -848,7 +848,7 @@ export const WalletProvider = ({ children = null as any }) => {
             networkPassphrase: network.passphrase,
           },
         };
-        let votesClient = new StakingVotesContract(voteTokenAddress);
+        let votesClient = new BondingVotesContract(voteTokenAddress);
 
         let withdrawOperation = votesClient.withdraw({
           from: walletAddress,
@@ -859,7 +859,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          StakingVotesContract.parsers.withdraw,
+          BondingVotesContract.parsers.withdraw,
           withdrawOperation
         );
         if (sim) {

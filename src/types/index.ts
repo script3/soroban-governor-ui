@@ -1,5 +1,8 @@
 import { ProposalStatusEnum } from "@/constants";
-import { GovernorSettings, ProposalAction } from "soroban-governor-js-sdk";
+import {
+  GovernorSettings,
+  ProposalAction,
+} from "@script3/soroban-governor-sdk";
 
 /**
  * Interface for a governace proposal
@@ -39,9 +42,8 @@ export interface Proposal {
   votes_abstain: number;
   total_votes: number;
   governor: string;
-  action:ProposalAction
+  action: ProposalAction;
   executionETA: number;
-
 }
 
 export interface TokenMetadata {
@@ -50,35 +52,25 @@ export interface TokenMetadata {
   decimals: number;
   icon: string;
   issuer?: string;
-  domain?:string
+  domain?: string;
 }
-
-
 
 /**
  * Interface for the Governor contract
  */
 export interface Governor {
-
-
   name: string;
   logo: string;
   address: string;
   voteTokenAddress: string;
   voteTokenMetadata: TokenMetadata;
   settings: GovernorSettings;
-  decimals : number;
+  decimals: number;
   isWrappedAsset: boolean;
-  
+
   underlyingTokenAddress?: string;
   underlyingTokenMetadata?: TokenMetadata;
-
- 
 }
-
-
-
-
 
 export interface Vote {
   proposal_id: string;
@@ -89,14 +81,13 @@ export interface Vote {
   ledger: string;
 }
 
-
 export enum VoteSupport {
   For = 1,
   Against = 0,
   Abstain = 2,
 }
 
-export interface XDRProposal  {
+export interface XDRProposal {
   contract: string;
   propNum: string;
   title: string;
@@ -107,14 +98,14 @@ export interface XDRProposal  {
   vStart: string;
   vEnd: string;
   votes?: string;
-  eta?:string
+  eta?: string;
 }
 
 export interface XDRVote {
-   contract: string
-   propNum: string
-   voter: string
-   support: string
-   amount: string
-   ledger: string
+  contract: string;
+  propNum: string;
+  voter: string;
+  support: string;
+  amount: string;
+  ledger: string;
 }

@@ -57,6 +57,7 @@ export default function Proposal() {
       placeholderData: {},
     }
   );
+  
   const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
   const proposalStatus = getStatusByProposalState(
     proposal?.status,

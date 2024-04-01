@@ -1,4 +1,4 @@
-import { Calldata, GovernorSettings, Val } from "soroban-governor-js-sdk";
+import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
 export function safeJSONParse(value: any) {

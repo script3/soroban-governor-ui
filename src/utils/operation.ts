@@ -1,20 +1,18 @@
 import {
-  ContractResult,
-  Resources,
   ContractError,
   ContractErrorType,
-} from "soroban-governor-js-sdk";
+  ContractResult,
+  Resources,
+} from "@script3/soroban-governor-sdk";
 import {
   Account,
-  Asset,
   Horizon,
-  Operation,
-  scValToNative,
   SorobanRpc,
   Transaction,
   TransactionBuilder,
+  scValToNative,
   xdr,
-} from "stellar-sdk";
+} from "@stellar/stellar-sdk";
 export type SorobanResponse =
   | SorobanRpc.Api.GetTransactionResponse
   | SorobanRpc.Api.SimulateTransactionResponse
@@ -140,7 +138,6 @@ export async function invokeOperation<T>(
 
   return result;
 }
-
 
 export function parseResultFromXDRString(result: string) {
   const val = scValToNative(xdr.ScVal.fromXDR(result, "base64"));

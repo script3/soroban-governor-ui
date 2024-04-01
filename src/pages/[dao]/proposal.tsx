@@ -27,7 +27,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Calldata, GovernorSettings, Val } from "soroban-governor-js-sdk";
+import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
 
 export default function CreateProposal() {
   const router = useRouter();

@@ -3,8 +3,8 @@ import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
 import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
-import { SorobanRpc, StrKey, nativeToScVal, xdr } from "stellar-sdk";
-import { VoteCount } from "soroban-governor-js-sdk";
+import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
+import { VoteCount } from "@script3/soroban-governor-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const mappedGovernors = governors.map(
   ({ settings: { proposal_threshold, ...settings }, ...rest }) => {

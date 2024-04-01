@@ -24,7 +24,7 @@ export function ModalNotification({
       <Container slim className="px-4 py-4">
         <Button
           onClick={handleClose}
-          className="!w-full !bg-primary active:opacity-65"
+          className="!w-full "
         >
           Close
         </Button>

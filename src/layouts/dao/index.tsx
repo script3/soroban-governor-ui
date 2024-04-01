@@ -18,12 +18,12 @@ const Tabs: TabItem[] = [
     route: "/proposals",
   },
   {
-    name: "About",
-    route: "/about",
+    name: "Manage",
+    route: "/manage",
   },
   {
-    name: "Overview",
-    route: "/settings",
+    name: "About",
+    route: "/about",
   },
 ];
 
@@ -44,6 +44,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
       setActiveTab(capitalizeFirstLetter(routeTab));
     }
   }, [routeTab]);
+
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">
       <Container className="flex flex-col  lg:w-72 lg:min-w-72 ">
@@ -61,12 +62,9 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
             <Typography.Huge>{governor?.name}</Typography.Huge>
           </div>
           <div className="flex w-full justify-between flex-col md:max-lg:flex-row  gap-4 px-3">
-            <Typography.Medium className="text-snapLink">
-              {` ${governor?.memberCount} members `}
-            </Typography.Medium>
-            <div className="flex gap-2 items-center  flex-col w-full md:max-lg:flex-row md:max-lg:w-auto">
+            {/* <div className="flex gap-2 items-center  flex-col w-full md:max-lg:flex-row md:max-lg:w-auto">
               <Button
-                className="px-8 !bg-primary  active:!opacity-90  !w-full md:max-lg:!w-auto"
+                className="px-8 !bg-secondary  active:!opacity-90  !w-full md:max-lg:!w-auto"
                 onClick={() => {
                   console.log("clicked join button");
                 }}
@@ -81,7 +79,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
               >
                 <FlagIcon className="group-hover:stroke-white" /> Report
               </Button>
-            </div>
+            </div> */}
           </div>
           <div className="flex ">
             <TabBar

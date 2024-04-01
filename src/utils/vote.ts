@@ -1,11 +1,13 @@
-export function getSupportStringFromVote(voteSupport: number) {
-  if (voteSupport === 2) {
+import { VoteSupport } from "@/types";
+
+export function getSupportStringFromVote(voteSupport: VoteSupport) {
+  if (voteSupport === VoteSupport.For) {
     return "For";
   }
-  if (voteSupport === 1) {
+  if (voteSupport === VoteSupport.Against) {
     return "Against";
   }
-  if (voteSupport === 0) {
+  if (voteSupport === VoteSupport.Abstain) {
     return "Abstain";
   }
   return "Unknown";

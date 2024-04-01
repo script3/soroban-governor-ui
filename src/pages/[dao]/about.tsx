@@ -1,24 +1,14 @@
 import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
-
-import { Input } from "@/components/common/Input";
-import { Toggle } from "@/components/common/Switch";
 import Typography from "@/components/common/Typography";
-
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useGovernor } from "@/hooks/api";
 
 function About() {
   const router = useRouter();
   const params = router.query;
-  const [newName, setNewName] = useState<string>();
-  const [newAbout, setNewAbout] = useState<string>();
-  const [newWebsite, setNewWebsite] = useState<string>();
-  const [newTerms, setNewTerms] = useState<string>();
-  const [newHide, setNewHide] = useState<boolean>(false);
   const { governor: currentGovernor } = useGovernor(params.dao as string, {
     placeholderData: {},
     enabled: !!params.dao,
@@ -28,8 +18,8 @@ function About() {
     <Container slim className=" mt-3 flex flex-col gap-6 w-full">
       <Box className="flex flex-col gap-3 p-4 w-full">
         <Typography.Big>Profile</Typography.Big>
-        <Typography.Small>Avatar</Typography.Small>
-        <div className="flex w-full">
+        {/*<Typography.P>Avatar</Typography.P>
+         <div className="flex w-full">
           <Image
             className="rounded-full object-cover"
             src={currentGovernor?.logo || "/icons/dao.svg"}
@@ -37,48 +27,54 @@ function About() {
             width={64}
             height={64}
           />
-          {/* upload new image input  */}
-        </div>
-        <Typography.Small>Name</Typography.Small>
-        <Input placeholder="" value={newName} onChange={setNewName} />
-        <Typography.Small>About</Typography.Small>
-        <Input placeholder="" value={newAbout} onChange={setNewAbout} />
-        <Typography.Small>Website</Typography.Small>
-        <Input
-          icon={
-            <Image
-              alt="Url"
-              src="/icons/world.svg"
-              width={18}
-              height={18}
-              className="stroke-snapLink"
-            />
-          }
-          type="url"
-          placeholder="your website url"
-          value={newWebsite}
-          onChange={setNewWebsite}
-        />
-        <Typography.Small>Terms of Service</Typography.Small>
-        <Input
-          icon={
-            <Image
-              alt="Url"
-              src="/icons/world.svg"
-              width={18}
-              height={18}
-              className="stroke-snapLink"
-            />
-          }
-          type="url"
-          placeholder="Terms of Service url"
-          value={newTerms}
-          onChange={setNewTerms}
-        />
-        <Typography.Small>Hide from home page</Typography.Small>
-        <Toggle value={newHide} onChange={setNewHide} />
+
+        </div> */}
+        <Typography.P>Name</Typography.P>
+        <Typography.Small className="text-snapLink pl-2">
+          {currentGovernor.name}
+        </Typography.Small>
+        <Typography.Medium>Settings</Typography.Medium>
+        <Container className="pl-2 flex flex-col gap-3">
+          <Typography.P>Council</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.council}
+          </Typography.Small>
+          <Typography.P>Counting Type</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.counting_type}
+          </Typography.Small>
+
+          <Typography.P>Grace Period</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.grace_period}
+          </Typography.Small>
+          <Typography.P>Proposal Threshold</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {Number(currentGovernor?.settings?.proposal_threshold)}
+          </Typography.Small>
+          <Typography.P>Quorum</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.quorum}
+          </Typography.Small>
+          <Typography.P>Timelock</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.timelock}
+          </Typography.Small>
+          <Typography.P>Vote Delay</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.vote_delay}
+          </Typography.Small>
+          <Typography.P>Vote Period</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.vote_period}
+          </Typography.Small>
+          <Typography.P>Vote Threshold</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor?.settings?.vote_threshold}
+          </Typography.Small>
+        </Container>
       </Box>
-      <Box>
+      {/* <Box className="p-2">
         <Typography.Big>Social</Typography.Big>
         <div className="flex gap-3 justify-between p-4 ">
           <div className="flex flex-col justify-left">
@@ -93,7 +89,7 @@ function About() {
             </Typography.Tiny>
           </div>
         </div>
-      </Box>
+      </Box> */}
     </Container>
   );
 }

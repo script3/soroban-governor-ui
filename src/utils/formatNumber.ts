@@ -34,7 +34,7 @@ export function toBalance(
     return "--";
   }
   let numValue: number;
-  if (typeof amount === "bigint" && decimals !== undefined) {
+  if (decimals !== undefined) {
     numValue = Number(amount) / 10 ** decimals;
   } else if (typeof amount === "number") {
     numValue = amount;

@@ -42,7 +42,7 @@ export function Input({
   return (
     <div
       className={`flex h-[44px] gap-2 items-center flex-auto bg-transparent rounded-full border pl-4 pr-0 invalid:border-error focus-within:border-snapLink ${
-        error ? "border-error" : " border-snapBorder "
+        error ? "!border-error focus-within:!border-red-800" : "border-snapBorder focus-within:border-snapLink"
       }  ${className || ""}`}
     >
       {!!icon && icon}

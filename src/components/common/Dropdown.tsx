@@ -67,11 +67,11 @@ export function Dropdown({
                   className={` ${
                     active ? "bg-neutral-700 text-white" : "text-snapLink"
                   } group flex w-full items-center ${
-                    index === 0
-                      ? "rounded-t-2xl"
-                      : index === items.length - 1
+                    index === 0 ? "rounded-t-2xl" : "rounded-t-none"
+                  } ${
+                    index === items.length - 1
                       ? "rounded-b-2xl"
-                      : "rounded-none"
+                      : "rounded-b-none"
                   } px-3 py-2 text-sm !text-snapLink  hover:bg-neutral-700 hover:!text-white font-bold cursor-pointer whitespace-nowrap `}
                   onClick={() => onSelect(item.action)}
                 >

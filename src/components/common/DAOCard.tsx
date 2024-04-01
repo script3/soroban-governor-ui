@@ -9,7 +9,7 @@ export interface DAOCardProps {
   hoverable?: boolean;
   title: string;
   description: string;
-  buttonText: string;
+  buttonText?: string;
   onButtonClick: () => void;
   onCardClick: () => void;
 }
@@ -47,9 +47,11 @@ export function DAOCard({
           <Typography.Small className="mb-[12px] text-snapLink">
             {description}
           </Typography.Small>
-          <Button className="px-10" onClick={handleButtonClick}>
-            {buttonText}
-          </Button>
+          {buttonText && (
+            <Button className="px-10" onClick={handleButtonClick}>
+              {buttonText}
+            </Button>
+          )}
         </div>
       </div>
     </CardContainer>

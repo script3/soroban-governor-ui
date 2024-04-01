@@ -30,6 +30,7 @@ export function ProgressBar({
     progress > 1
       ? progress.toFixed(2)
       : (Number(progress.toFixed(2)) * 100).toFixed(2);
+  const fullWidth = progress > 1 ? progress === 100 : progress === 1;
   return (
     <div
       className={`flex flex-col justify-center items-center w-full ${className}`}
@@ -43,7 +44,9 @@ export function ProgressBar({
       <div className="flex w-full bg-snapBorder h-[8px] rounded-md">
         <div
           style={{ width: `${width}%`, height: "100%" }}
-          className={`h-full rounded-l-md bg-blue-700 ${barClassName}`}
+          className={`h-full rounded-l-md ${fullWidth ? "rounded-r-md" : ""}  ${
+            barClassName || "bg-blue-700"
+          }`}
         ></div>
       </div>
     </div>

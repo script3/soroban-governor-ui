@@ -636,7 +636,7 @@ export const WalletProvider = ({ children = null as any }) => {
       }
       return sub;
     } catch (e) {
-      console.log("Error creating proposal: ", e);
+      console.log("Error getting votes by proposal: ", e);
       throw e;
     }
   }

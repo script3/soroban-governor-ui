@@ -20,7 +20,7 @@ import { ViewMore } from "@/components/ViewMore";
 import { formatDate, getProposalDate } from "@/utils/date";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
-import { VoteListItem } from "@/components/VoteListItem";
+import { VoteListItem } from "@/components/proposal/VoteListItem";
 import { copyToClipboard } from "@/utils/string";
 import Image from "next/image";
 
@@ -40,9 +40,12 @@ import { Loader } from "@/components/common/Loader";
 import { getStatusByProposalState } from "@/utils/proposal";
 import { VoteSupport } from "@/types";
 import { useTemporaryState } from "@/hooks/useTemporaryState";
+import { TabBar } from "@/components/common/Tab/TabBar";
+import { ProposalAction } from "@/components/proposal/action/ProposalAction";
 
 export default function Proposal() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<string>("Description");
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
 
@@ -57,7 +60,7 @@ export default function Proposal() {
       placeholderData: {},
     }
   );
-  
+
   const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
   const proposalStatus = getStatusByProposalState(
     proposal?.status,
@@ -186,6 +189,7 @@ export default function Proposal() {
           {proposal?.title}
         </Typography.Small>
       </Container>
+
       {proposal?.id !== undefined && (
         <Container
           slim
@@ -193,7 +197,7 @@ export default function Proposal() {
         >
           <Container
             slim
-            className="relative  lg:w-8/12 lg:pr-5 flex flex-col gap-4 "
+            className="relative py-4 lg:w-8/12 lg:pr-5 flex flex-col gap-4 md:min-w-[40rem] "
           >
             <Container slim className="flex flex-col mb-2">
               <Container slim className="flex flex-row gap-2">
@@ -286,154 +290,163 @@ export default function Proposal() {
                     )}
                     {copied ? "Copied" : "Copy link"}
                   </Button>
-                  {/* <Dropdown
-                    chevron={false}
-                    noBorder
-                    buttonText={
-                      <Image
-                        src="/icons/three-dots.svg"
-                        width={20}
-                        height={20}
-                        alt="threedots"
-                      />
-                    }
-                    items={shareOptions}
-                    onSelect={(action) => {
-                      handleAction(action);
-                    }}
-                  /> */}
                 </Container>
               </Container>
-            </Container>
-            <Container slim>
-              <ViewMore onChange={setIsFullView} isFull={isFullView}>
-                <Container
-                  slim
-                  className={`${
-                    isFullView
-                      ? "overflow-hidden mb-[92px]"
-                      : "overflow-hidden h-[500px] mb-[56px]"
-                  }`}
-                >
-                  <MarkdownPreview body={proposal.description} />
-                </Container>
-              </ViewMore>
-            </Container>
-            <Container slim>
-              {!!proposal.link && (
-                <Box
-                  className="flex min-h-20 items-center cursor-pointer hover:border hover:border-snapLink active:opacity-50 my-2 justify-center gap-2"
-                  onClick={() => {
-                    setIsLinkModalOpen(true);
+              <Container
+                slim
+                className="flex flex-row gap-1  justify-start px-0 md:px-2  max-w-[1012px] mt-[20px] w-auto"
+              >
+                <TabBar
+                  tabs={[{ name: "Action" }, { name: "Description" }]}
+                  onClick={({ name }) => {
+                    setActiveTab(name);
                   }}
-                >
-                  <Typography.P className="flex  text-lg items-center gap-2">
-                    Discussion link{" "}
-                  </Typography.P>
-                  <Typography.Small className="text-snapLink flex ">
-                    ({proposal.link})
-                  </Typography.Small>
-                </Box>
-              )}
-            </Container>
-            {proposalStatus === ProposalStatusEnum.Active && (
-              <Container slim>
-                <Box>
-                  <Container className="border-b border-snapBorder flex !flex-row justify-between ">
-                    <Typography.Medium className=" !p-4 flex w-max">
-                      {userVote !== undefined
-                        ? "Your vote is in"
-                        : "Cast your vote"}
-                    </Typography.Medium>
-                    {connected && votingPower > BigInt(0) && (
-                      <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                        Voting token balance:{" "}
-                        {toBalance(votingPower, currentGovernor?.decimals)}
-                      </Typography.Medium>
-                    )}
-                  </Container>
-                  <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
-                    <SelectableList
-                      disabled={
-                        isLoading ||
-                        userVote !== undefined ||
-                        votingPower === BigInt(0) ||
-                        !connected
-                      }
-                      onSelect={setSelectedSupport}
-                      items={[
-                        { value: VoteSupport.For, label: "For" },
-                        { value: VoteSupport.Against, label: "Against" },
-                        { value: VoteSupport.Abstain, label: "Abstain" },
-                      ]}
-                      selected={userVote ?? selectedSupport}
-                    />
-                    <Button
-                      onClick={() => {
-                        if (connected && userVote === undefined) {
-                          if (votingPower > BigInt(0)) {
-                            handleVote();
-                          } else {
-                            router.replace(
-                              `/${params.dao}/proposals?wrap=true`
-                            );
-                          }
-                        } else {
-                          connect();
-                        }
-                      }}
-                      className="!bg-secondary px-16 !w-full"
-                      disabled={
-                        isLoading ||
-                        userVote !== undefined ||
-                        proposalStatus !== ProposalStatusEnum.Active
-                      }
-                    >
-                      {isLoading ? (
-                        <Loader />
-                      ) : connected ? (
-                        votingPower > BigInt(0) ? (
-                          "Vote"
-                        ) : (
-                          "Get vote tokens"
-                        )
-                      ) : (
-                        "Connect Wallet to Vote"
-                      )}
-                    </Button>
-                  </Container>
-                </Box>
+                  activeTabName={activeTab}
+                />
               </Container>
-            )}
-            {votes.length > 0 && (
-              <Container slim>
-                <Box className="!px-0">
-                  <Container className="py-4 border-b flex gap-1 border-snapBorder">
-                    <Typography.P className="inline">Votes </Typography.P>
-                    <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
-                      {votes.length}
-                    </Chip>
+            </Container>
+
+            {activeTab === "Description" && (
+              <>
+                <Container slim>
+                  <ViewMore onChange={setIsFullView} isFull={isFullView}>
+                    <Container
+                      slim
+                      className={`${
+                        isFullView
+                          ? "overflow-hidden mb-[92px]"
+                          : "overflow-hidden h-[500px] mb-[56px]"
+                      }`}
+                    >
+                      <MarkdownPreview body={proposal.description} />
+                    </Container>
+                  </ViewMore>
+                </Container>
+                <Container slim>
+                  {!!proposal.link && (
+                    <Box
+                      className="flex min-h-20 items-center cursor-pointer hover:border hover:border-snapLink active:opacity-50 my-2 justify-center gap-2"
+                      onClick={() => {
+                        setIsLinkModalOpen(true);
+                      }}
+                    >
+                      <Typography.P className="flex  text-lg items-center gap-2">
+                        Discussion link{" "}
+                      </Typography.P>
+                      <Typography.Small className="text-snapLink flex ">
+                        ({proposal.link})
+                      </Typography.Small>
+                    </Box>
+                  )}
+                </Container>
+                {proposalStatus === ProposalStatusEnum.Active && (
+                  <Container slim>
+                    <Box>
+                      <Container className="border-b border-snapBorder flex !flex-row justify-between ">
+                        <Typography.Medium className=" !p-4 flex w-max">
+                          {userVote !== undefined
+                            ? "Your vote is in"
+                            : "Cast your vote"}
+                        </Typography.Medium>
+                        {connected && votingPower > BigInt(0) && (
+                          <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
+                            Voting token balance:{" "}
+                            {toBalance(votingPower, currentGovernor?.decimals)}
+                          </Typography.Medium>
+                        )}
+                      </Container>
+                      <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
+                        <SelectableList
+                          disabled={
+                            isLoading ||
+                            userVote !== undefined ||
+                            votingPower === BigInt(0) ||
+                            !connected
+                          }
+                          onSelect={setSelectedSupport}
+                          items={[
+                            { value: VoteSupport.For, label: "For" },
+                            { value: VoteSupport.Against, label: "Against" },
+                            { value: VoteSupport.Abstain, label: "Abstain" },
+                          ]}
+                          selected={userVote ?? selectedSupport}
+                        />
+                        <Button
+                          onClick={() => {
+                            if (connected && userVote === undefined) {
+                              if (votingPower > BigInt(0)) {
+                                handleVote();
+                              } else {
+                                router.replace(
+                                  `/${params.dao}/proposals?wrap=true`
+                                );
+                              }
+                            } else {
+                              connect();
+                            }
+                          }}
+                          className="!bg-secondary px-16 !w-full"
+                          disabled={
+                            isLoading ||
+                            userVote !== undefined ||
+                            proposalStatus !== ProposalStatusEnum.Active
+                          }
+                        >
+                          {isLoading ? (
+                            <Loader />
+                          ) : connected ? (
+                            votingPower > BigInt(0) ? (
+                              "Vote"
+                            ) : (
+                              "Get vote tokens"
+                            )
+                          ) : (
+                            "Connect Wallet to Vote"
+                          )}
+                        </Button>
+                      </Container>
+                    </Box>
                   </Container>
-                  {votes.slice(0, 10).map((vote, index) => (
-                    <VoteListItem
-                      key={index}
-                      vote={vote}
-                      index={index}
-                      decimals={currentGovernor?.decimals as number}
-                      voteCount={proposal.total_votes}
-                      symbol={currentGovernor?.voteTokenMetadata.symbol}
-                    />
-                  ))}
-                  <div
-                    className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
-                    onClick={() => {
-                      setIsVotesModalOpen(true);
-                    }}
-                  >
-                    {" "}
-                    See more
-                  </div>
-                </Box>
+                )}
+                {votes.length > 0 && (
+                  <Container slim>
+                    <Box className="!px-0">
+                      <Container className="py-4 border-b flex gap-1 border-snapBorder">
+                        <Typography.P className="inline">Votes </Typography.P>
+                        <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
+                          {votes.length}
+                        </Chip>
+                      </Container>
+                      {votes.slice(0, 10).map((vote, index) => (
+                        <VoteListItem
+                          key={index}
+                          vote={vote}
+                          index={index}
+                          decimals={currentGovernor?.decimals as number}
+                          voteCount={proposal.total_votes}
+                          symbol={currentGovernor?.voteTokenMetadata.symbol}
+                        />
+                      ))}
+                      <div
+                        className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
+                        onClick={() => {
+                          setIsVotesModalOpen(true);
+                        }}
+                      >
+                        {" "}
+                        See more
+                      </div>
+                    </Box>
+                  </Container>
+                )}
+              </>
+            )}
+            {activeTab === "Action" && (
+              <Container>
+                <ProposalAction
+                  governor={currentGovernor}
+                  proposal={proposal}
+                />
               </Container>
             )}
           </Container>
@@ -634,6 +647,7 @@ export default function Proposal() {
           </Container>
         </Container>
       )}
+
       <Modal
         isOpen={isVotesModalOpen}
         onClose={() => {

@@ -76,7 +76,7 @@ export function isGovernorSettings(obj: any): obj is GovernorSettings {
     "grace_period" in obj &&
     typeof obj.grace_period === "number" &&
     "proposal_threshold" in obj &&
-    typeof obj.proposal_threshold === "bigint" &&
+    (typeof obj.proposal_threshold === "bigint"||typeof obj.proposal_threshold === "number") &&
     "quorum" in obj &&
     typeof obj.quorum === "number" &&
     "timelock" in obj &&
@@ -92,7 +92,10 @@ export function isGovernorSettings(obj: any): obj is GovernorSettings {
 
 export function isGovernorSettingsString(str: string): boolean {
   try {
-    const data: GovernorSettings = JSON.parse(str);
+    const {data , isValid} = safeJSONParse(str);
+    if (!isValid) {
+      return false;
+    }
     return isGovernorSettings(data);
   } catch (error) {
     return false;

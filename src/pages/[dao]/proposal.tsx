@@ -54,7 +54,7 @@ export default function CreateProposal() {
       (!!governorSettings && !isGovernorSettingsString(governorSettings)));
   const isUpgradeDisabled =
     proposalAction === ProposalActionEnum.UPGRADE &&
-    (!upgradeString || !isUpgradeString(upgradeString, 32));
+    (!upgradeString || !isUpgradeString(upgradeString, 64));
 
   function handleProposal(action: string) {
     switch (action) {
@@ -91,7 +91,7 @@ export default function CreateProposal() {
             description,
             {
               tag: action,
-              values: [Buffer.from(upgradeString)],
+              values: [Buffer.from(upgradeString, "hex")],
             },
             false,
             params.dao as string

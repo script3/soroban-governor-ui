@@ -1,9 +1,9 @@
 import { formatCompactNumber } from "@/utils/date";
-import { Container } from "./common/BaseContainer";
-import Typography from "./common/Typography";
+import { Container } from "../common/BaseContainer";
+import Typography from "../common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { getSupportStringFromVote } from "@/utils/vote";
-import { Chip } from "./common/Chip";
+import { Chip } from "../common/Chip";
 import { VoteSupport } from "@/types";
 import { toBalance } from "@/utils/formatNumber";
 

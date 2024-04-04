@@ -94,7 +94,7 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
           </div>
         </Box>
       </Container>
-      <Container className="flex flex-col w-auto min-w-[50%] ">
+      <Container className="flex flex-col w-auto min-w-[50%]  lg:!max-w-[70%]">
         {children}
       </Container>
     </Container>

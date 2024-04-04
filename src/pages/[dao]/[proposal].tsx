@@ -193,11 +193,11 @@ export default function Proposal() {
       {proposal?.id !== undefined && (
         <Container
           slim
-          className="flex flex-col px-0 md:px-4 gap-4 mx-auto  mt-[20px] w-auto m-auto lg:flex-row "
+          className="flex flex-col px-0 md:px-4 gap-4 mx-auto lg:w-[1012px]  2xl:w-[1400px] mt-[20px] w-auto m-auto lg:flex-row "
         >
           <Container
             slim
-            className="relative py-4  lg:pr-5 flex flex-col gap-4 md:min-w-[40rem] "
+            className="relative py-4 lg:w-8/12 lg:pr-5 flex flex-col gap-4 md:min-w-[40rem] "
           >
             <Container slim className="flex flex-col mb-2">
               <Container slim className="flex flex-row gap-2">
@@ -294,7 +294,7 @@ export default function Proposal() {
               </Container>
               <Container
                 slim
-                className="flex flex-row gap-1  justify-start px-0 md:px-2   mt-[20px] w-auto"
+                className="flex flex-row gap-1  justify-start px-0 md:px-2  mt-[20px] w-auto"
               >
                 <TabBar
                   tabs={[{ name: "Action" }, { name: "Description" }]}
@@ -452,7 +452,7 @@ export default function Proposal() {
           </Container>
           <Container
             slim
-            className="w-full flex flex-col gap-4 lg:w-1/6 lg:min-w-[321px] "
+            className="w-full flex flex-col gap-4 lg:w-4/12 lg:min-w-[321px] "
           >
             <Box className="!p-0">
               <Container slim className="border-b mb-2 border-snapBorder">

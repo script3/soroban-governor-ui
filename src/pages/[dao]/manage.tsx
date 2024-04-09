@@ -137,7 +137,7 @@ function ManageVotes() {
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
-                {toBalance(balance, governor?.decimals)}{" "}
+                {toBalance(balance, governor?.decimals || 7)}{" "}
                 {governor?.voteTokenMetadata?.symbol}
               </Typography.P>
               {hasDelegate && (
@@ -155,7 +155,7 @@ function ManageVotes() {
             {connected && (
               <Typography.Small className="text-snapLink">
                 Wallet balance:{" "}
-                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
+                {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
                 {governor?.underlyingTokenMetadata?.symbol}
                 {/* {governor?.name || "$VOTE"} */}
               </Typography.Small>
@@ -195,7 +195,8 @@ function ManageVotes() {
               </Typography.P>
               {connected && (
                 <Typography.Small className="text-snapLink">
-                  Voting token balance: {toBalance(balance, governor?.decimals)}{" "}
+                  Voting token balance:{" "}
+                  {toBalance(balance, governor?.decimals || 7)}{" "}
                   {governor?.voteTokenMetadata.symbol}
                 </Typography.Small>
               )}
@@ -265,7 +266,7 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
+                {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
                 {governor?.underlyingTokenMetadata?.symbol}
               </Typography.P>
             </Container>
@@ -292,3 +293,23 @@ function ManageVotes() {
 ManageVotes.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default ManageVotes;
+
+import governors from "../../../public/governors/governors.json";
+import { GetStaticPaths, GetStaticProps } from "next";
+export const getStaticProps = ((context) => {
+  return { props: { dao: context.params?.dao?.toString() || "" } };
+}) satisfies GetStaticProps<{
+  dao: string;
+}>;
+export const getStaticPaths = (async () => {
+  return {
+    paths: governors.map((governor) => {
+      return {
+        params: {
+          dao: governor.address,
+        },
+      };
+    }),
+    fallback: false, // false or "blocking"
+  };
+}) satisfies GetStaticPaths;

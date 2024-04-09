@@ -12,6 +12,7 @@ const nextConfig = {
   //     },
   //   ];
   // },
+  trailingSlash: true,
   images: {
     unoptimized: true,
     domains: ["cdn.stamp.fyi"],

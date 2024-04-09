@@ -97,3 +97,23 @@ function About() {
 About.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default About;
+
+import governors from "../../../public/governors/governors.json";
+import { GetStaticPaths, GetStaticProps } from "next";
+export const getStaticProps = ((context) => {
+  return { props: { dao: context.params?.dao?.toString() || "" } };
+}) satisfies GetStaticProps<{
+  dao: string;
+}>;
+export const getStaticPaths = (async () => {
+  return {
+    paths: governors.map((governor) => {
+      return {
+        params: {
+          dao: governor.address,
+        },
+      };
+    }),
+    fallback: false, // false or "blocking"
+  };
+}) satisfies GetStaticPaths;

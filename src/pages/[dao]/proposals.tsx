@@ -113,16 +113,18 @@ function Proposals() {
                 )}
               </Container>
             </Container>
-            <Container slim className=" flex flex-row  gap-3 px-6 py-4">
-              <Button
-                onClick={() => {
-                  router.push(`/${params.dao}/manage`);
-                }}
-                className="bg-white text-snapBorder active:opacity-50"
-              >
-                Manage
-              </Button>
-            </Container>
+            {!!governor.isWrappedAsset && (
+              <Container slim className=" flex flex-row  gap-3 px-6 py-4">
+                <Button
+                  onClick={() => {
+                    router.push(`/${params.dao}/manage`);
+                  }}
+                  className="bg-white text-snapBorder active:opacity-50"
+                >
+                  Manage
+                </Button>
+              </Container>
+            )}
           </Box>
         </Container>
       )}

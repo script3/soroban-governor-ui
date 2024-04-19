@@ -121,7 +121,7 @@ function Proposals() {
                   }}
                   className="bg-white text-snapBorder active:opacity-50"
                 >
-                  Manage
+                  Your votes
                 </Button>
               </Container>
             )}

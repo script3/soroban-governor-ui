@@ -129,7 +129,29 @@ function ManageVotes() {
           />{" "}
           Back
         </Typography.P>
-        <Typography.Huge>Voting Power Management</Typography.Huge>
+        <Typography.Huge>Your Votes</Typography.Huge>
+        <Container>
+          <Typography.P>
+            This space uses a bonded token for voting. You can get bonded tokens
+            by bonding the corresponding Stellar asset. A bonded token can be
+            returned back to a Stellar asset at any time.
+          </Typography.P>
+          <Container slim className="py-2 gap-1 flex flex-col">
+            <Typography.P>
+              Stellar asset:{" "}
+              <Typography.P className="text-snapLink">
+                {governor?.underlyingTokenMetadata?.symbol}
+              </Typography.P>
+            </Typography.P>
+
+            <Typography.P>
+              Bonded token contract:{" "}
+              <Typography.P className="text-snapLink">
+                {governor?.voteTokenAddress}
+              </Typography.P>
+            </Typography.P>
+          </Container>
+        </Container>
         <Box className="flex gap-3 flex-col !px-0">
           <Container className="flex flex-col p-3 gap-2 border-b border-snapBorder w-full">
             <Typography.Tiny className="text-snapLink">
@@ -150,7 +172,7 @@ function ManageVotes() {
           <Container className="flex flex-col justify-center p-2 ">
             <Typography.P>
               Deposit {governor?.underlyingTokenMetadata?.symbol} to get voting
-              tokens{" "}
+              power{" "}
             </Typography.P>
             {connected && (
               <Typography.Small className="text-snapLink">

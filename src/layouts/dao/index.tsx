@@ -12,21 +12,6 @@ import Image from "next/image";
 import { useGovernor } from "@/hooks/api";
 import { useRouter } from "next/router";
 
-const Tabs: TabItem[] = [
-  {
-    name: "Proposals",
-    route: "/proposals",
-  },
-  {
-    name: "Your Votes",
-    route: "/manage",
-  },
-  {
-    name: "About",
-    route: "/about",
-  },
-];
-
 export default function DAOLayout({ children }: { children: React.ReactNode }) {
   const {
     breakpoints: { lg: isLg },
@@ -39,6 +24,24 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
     enabled: !!params?.dao,
     placeholderData: {},
   });
+  const Tabs: TabItem[] = [
+    {
+      name: "Proposals",
+      route: "/proposals",
+    },
+    ...(governor.isWrappedAsset
+      ? [
+          {
+            name: "Your Votes",
+            route: "/manage",
+          },
+        ]
+      : []),
+    {
+      name: "About",
+      route: "/about",
+    },
+  ];
   useEffect(() => {
     if (routeTab) {
       setActiveTab(capitalizeFirstLetter(routeTab));

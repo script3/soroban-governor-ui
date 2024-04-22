@@ -139,14 +139,33 @@ function ManageVotes() {
           <Container slim className="py-2 gap-1 flex flex-col">
             <Typography.P>
               Stellar asset:{" "}
-              <Typography.P className="text-snapLink">
+              <Typography.P
+                onClick={() => {
+                  window.open(
+                    getTokenExplorerUrl(
+                      governor.underlyingTokenAddress || "",
+                      governor?.underlyingTokenMetadata?.symbol || ""
+                    ),
+                    "_blank"
+                  );
+                }}
+                className="text-snapLink cursor-pointer hover:underline"
+              >
                 {governor?.underlyingTokenMetadata?.symbol}
               </Typography.P>
             </Typography.P>
 
             <Typography.P>
               Bonded token contract:{" "}
-              <Typography.P className="text-snapLink">
+              <Typography.P
+                onClick={() => {
+                  window.open(
+                    `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/contract/${governor.voteTokenAddress}`,
+                    "_blank"
+                  );
+                }}
+                className="text-snapLink cursor-pointer hover:underline"
+              >
                 {governor?.voteTokenAddress}
               </Typography.P>
             </Typography.P>
@@ -309,6 +328,7 @@ export default ManageVotes;
 
 import governors from "../../../public/governors/governors.json";
 import { GetStaticPaths, GetStaticProps } from "next";
+import { getTokenExplorerUrl } from "@/utils/token";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

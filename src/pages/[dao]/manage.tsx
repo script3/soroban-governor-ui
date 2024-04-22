@@ -152,7 +152,7 @@ function ManageVotes() {
             </Typography.P>
           </Container>
         </Container>
-        <Box className="flex gap-3 flex-col !px-0">
+        <Box className="p-3 flex gap-3 flex-col !px-0">
           <Container className="flex flex-col p-3 gap-2 border-b border-snapBorder w-full">
             <Typography.Tiny className="text-snapLink">
               Current Voting power
@@ -183,10 +183,7 @@ function ManageVotes() {
               </Typography.Small>
             )}
           </Container>
-          <Container
-            slim
-            className="w-full flex flex-row  gap-3 px-1 pt-2 pb-3"
-          >
+          <Container slim className="w-full flex flex-row  gap-3 px-4 ">
             <Input
               className="!w-1/3 flex"
               placeholder="Amount to deposit"
@@ -195,17 +192,11 @@ function ManageVotes() {
               type="number"
             />
             <Button
-              className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+              className="min-w-[100px]  w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
               onClick={handleWrapClick}
               disabled={isLoading || (connected && !toWrap)}
             >
-              {isLoading ? (
-                <Loader />
-              ) : connected ? (
-                "Deposit"
-              ) : (
-                "Connect wallet"
-              )}
+              {isLoading ? <Loader /> : connected ? "Bond" : "Connect wallet"}
             </Button>
           </Container>
         </Box>
@@ -232,14 +223,14 @@ function ManageVotes() {
                 type="number"
               />
               <Button
-                className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+                className="w-1/2 min-w-[100px] flex !bg-white text-snapBorder active:opacity-50 "
                 onClick={handleUnwrapClick}
                 disabled={isLoading || (connected && !toUnwrap)}
               >
                 {isLoading ? (
                   <Loader />
                 ) : connected ? (
-                  "Withdraw"
+                  "Unbond"
                 ) : (
                   "Connect wallet"
                 )}

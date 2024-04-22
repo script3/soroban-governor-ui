@@ -18,7 +18,7 @@ const Tabs: TabItem[] = [
     route: "/proposals",
   },
   {
-    name: "Manage",
+    name: "Your Votes",
     route: "/manage",
   },
   {

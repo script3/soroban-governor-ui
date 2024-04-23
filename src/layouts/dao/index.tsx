@@ -29,14 +29,11 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
       name: "Proposals",
       route: "/proposals",
     },
-    ...(governor.isWrappedAsset
-      ? [
-          {
-            name: "Your Votes",
-            route: "/manage",
-          },
-        ]
-      : []),
+    {
+      name: "Your Votes",
+      route: "/manage",
+    },
+
     {
       name: "About",
       route: "/about",
@@ -44,9 +41,13 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
   ];
   useEffect(() => {
     if (routeTab) {
-      setActiveTab(capitalizeFirstLetter(routeTab));
+      const foundTab = Tabs.find((tab) => tab.route?.includes(routeTab));
+      if (foundTab) {
+        setActiveTab(foundTab.name);
+      }
     }
   }, [routeTab]);
+  console.log({ activeTab });
 
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">

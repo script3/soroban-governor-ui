@@ -193,7 +193,7 @@ export default function Proposal() {
       {proposal?.id !== undefined && (
         <Container
           slim
-          className="flex flex-col px-0 md:px-4 gap-4 mx-auto max-w-[1012px] mt-[20px] w-auto m-auto lg:flex-row "
+          className="flex flex-col px-0 md:px-4 gap-4 mx-auto lg:w-[1012px]  2xl:w-[1400px] mt-[20px] w-auto m-auto lg:flex-row "
         >
           <Container
             slim
@@ -294,7 +294,7 @@ export default function Proposal() {
               </Container>
               <Container
                 slim
-                className="flex flex-row gap-1  justify-start px-0 md:px-2  max-w-[1012px] mt-[20px] w-auto"
+                className="flex flex-row gap-1  justify-start px-0 md:px-2  mt-[20px] w-auto"
               >
                 <TabBar
                   tabs={[{ name: "Action" }, { name: "Description" }]}

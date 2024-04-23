@@ -19,11 +19,11 @@ export function Modal({
       {isOpen && (
         <Container slim className="modal z-50 mx-auto w-screen">
           <Container className="backdrop flex items-center">
-            <Container className="shell  relative overflow-hidden rounded-none md:rounded-3xl">
+            <Container className="shell !bg-bg  relative overflow-hidden rounded-none md:rounded-3xl">
               <Container className="p-4 text-center ">
                 <Typography.Medium>{title}</Typography.Medium>
               </Container>
-              <Container slim className="modal-body">
+              <Container slim className="modal-body bg-bg">
                 {children}
               </Container>
               <Button

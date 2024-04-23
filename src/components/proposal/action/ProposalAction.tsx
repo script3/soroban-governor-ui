@@ -20,30 +20,33 @@ export function ProposalAction({
   switch (proposalType) {
     case ProposalActionEnum.CALLDATA:
       const calldata = proposal.action.values as any as Calldata;
+
       return (
         <Container className="flex flex-col gap-3">
-          <Typography.P className="mb-2">Arguments:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap !p-0 leading-7 text-left justify-start ">
-              {calldata.args.join("\n")}
-            </code>
-          </Box>
-          <Typography.P className="mb-2">Auths:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap !p-0 ">
-              {"[" + calldata.auths.join(",\n") + "]"}
-            </code>
-          </Box>
           <Typography.P className="mb-2">Contract ID:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap p-1 ">
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
               {calldata.contract_id}
             </code>
           </Box>
           <Typography.P className="mb-2">Function:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap p-1 ">
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
               {calldata.function}
+            </code>
+          </Box>
+          <Typography.P className="mb-2">Arguments:</Typography.P>
+          {calldata.args.map((arg, index) => (
+            <Box key={"arg" + index} className="p-4 box-border">
+              <code className="whitespace-pre-wrap word-break !p-0 leading-7 text-left justify-start ">
+                {arg.toString()}
+              </code>
+            </Box>
+          ))}
+          <Typography.P className="mb-2">Auths:</Typography.P>
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break !p-0 ">
+              {"[" + calldata.auths.join(",\n") + "]"}
             </code>
           </Box>
         </Container>
@@ -52,8 +55,8 @@ export function ProposalAction({
       return (
         <Container className="flex flex-col gap-3">
           <Typography.P className="mb-2">Proposed WASM hash:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap p-1 ">
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
               {(proposal.action.values as any).toString("hex")}
             </code>
           </Box>
@@ -75,16 +78,16 @@ export function ProposalAction({
       return (
         <Container className="flex flex-col gap-3">
           <Typography.P className="mb-2">Current settings object:</Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap p-1 ">
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
               {stringify(governor?.settings, null, 8)}
             </code>
           </Box>
           <Typography.P className="mb-2">
             Proposed settings object:
           </Typography.P>
-          <Box className="p-4">
-            <code className="whitespace-pre-wrap p-1 ">
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
               {stringify(proposal.action?.values, null, 8)}
             </code>
           </Box>

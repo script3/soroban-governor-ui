@@ -178,7 +178,8 @@ export const WalletProvider = ({ children = null as any }) => {
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [txMessage, setTxMessage] = useState<string | undefined>(undefined);
   const [network, setStateNetwork] = useState<Network>({
-    rpc: "https://soroban-testnet.stellar.org",
+    rpc:
+      process.env.NEXT_PUBLIC_RPC_URL || "https://soroban-testnet.stellar.org",
     passphrase: "Test SDF Network ; September 2015",
     opts: undefined,
   });

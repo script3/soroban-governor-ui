@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:mainnet": "TARGET_ENV=production node loadEnv.mjs && next build",
+    "build:testnet": "TARGET_ENV=testnet node loadEnv.mjs && next build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

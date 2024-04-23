@@ -4,20 +4,7 @@
 @import "tailwindcss/utilities";
 
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --primary-color: #384aff;
-  --bg-color: #1c1b20;
-  --text-color: #8b949e;
-  --link-color: #ffffff;
-  --heading-color: #ffffff;
-  --border-color: #2d2d2d;
-  --header-bg: #1c1b20;
-  --block-bg: transparent;
-  --shadow-color: rgba(255, 255, 255, .036);
-}
+
 
 textarea,
 select,
@@ -60,16 +47,9 @@ input[type='number'] {
 
 
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: #fff;
   background-color: #1c1b20;
   font-family: Calibre, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
@@ -107,6 +87,7 @@ span {
 }
 
 .modal .shell .modal-body {
+  background:  #1c1b20;
   max-height: var(--5f7ca367);
   flex: auto;
   text-align: initial;
@@ -678,4 +659,8 @@ span {
 .iconcopy::before {
   content: "\e638";
 
+}
+
+.word-break {
+  word-break: break-word;
 }

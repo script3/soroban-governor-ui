@@ -28,6 +28,7 @@ import { useRouter } from "next/router";
 import { stripMarkdown } from "@/utils/string";
 import { getStatusByProposalState } from "@/utils/proposal";
 import { useWallet } from "@/hooks/wallet";
+
 function Proposals() {
   const [searchValue, setSearchValue] = useState<string>("");
 
@@ -84,7 +85,7 @@ function Proposals() {
 
         <Button
           onClick={() => {
-            router.push(`/${params.dao}/proposal`, undefined, {
+            router.push(`/${params.dao}/propose`, undefined, {
               scroll: false,
             });
           }}
@@ -112,6 +113,7 @@ function Proposals() {
                 )}
               </Container>
             </Container>
+
             <Container slim className=" flex flex-row  gap-3 px-6 py-4">
               <Button
                 onClick={() => {
@@ -119,7 +121,7 @@ function Proposals() {
                 }}
                 className="bg-white text-snapBorder active:opacity-50"
               >
-                Manage
+                Your votes
               </Button>
             </Container>
           </Box>
@@ -159,7 +161,7 @@ function Proposals() {
               <div
                 className="flex flex-col gap-3 cursor-pointer"
                 onClick={() => {
-                  router.push(`/${params.dao}/${proposal.id}`);
+                  router.push(`/${params.dao}/proposal?id=${proposal.id}`);
                 }}
               >
                 <Typography.Medium className="font-semibold">
@@ -287,3 +289,22 @@ function Proposals() {
 Proposals.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default Proposals;
+import governors from "../../../public/governors/governors.json";
+import { GetStaticPaths, GetStaticProps } from "next";
+export const getStaticProps = ((context) => {
+  return { props: { dao: context.params?.dao?.toString() || "" } };
+}) satisfies GetStaticProps<{
+  dao: string;
+}>;
+export const getStaticPaths = (async () => {
+  return {
+    paths: governors.map((governor) => {
+      return {
+        params: {
+          dao: governor.address,
+        },
+      };
+    }),
+    fallback: false, // false or "blocking"
+  };
+}) satisfies GetStaticPaths;

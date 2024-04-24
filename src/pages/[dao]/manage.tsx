@@ -15,10 +15,12 @@ import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
 import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { shortenAddress } from "@/utils/shortenAddress";
+import { getTokenExplorerUrl } from "@/utils/token";
 import Image from "next/image";
 import { useRouter } from "next/router";
-
 import { useState } from "react";
+import governors from "../../../public/governors/governors.json";
+import { GetStaticPaths, GetStaticProps } from "next";
 
 function ManageVotes() {
   const [toWrap, setToWrap] = useState<string>("");
@@ -129,15 +131,80 @@ function ManageVotes() {
           />{" "}
           Back
         </Typography.P>
-        <Typography.Huge>Voting Power Management</Typography.Huge>
-        <Box className="flex gap-3 flex-col !px-0">
+        <Typography.Huge>Your Votes</Typography.Huge>
+        {!!governor.isWrappedAsset && (
+          <Container>
+            <Typography.P>
+              This space uses a bonded token for voting. You can get bonded
+              tokens by bonding the corresponding Stellar asset. A bonded token
+              can be returned back to a Stellar asset at any time.
+            </Typography.P>
+            <Container slim className="py-2 gap-1 flex flex-col">
+              <Typography.P>
+                Stellar asset:{" "}
+                <Typography.P
+                  onClick={() => {
+                    window.open(
+                      getTokenExplorerUrl(
+                        governor.underlyingTokenAddress || "",
+                        governor?.underlyingTokenMetadata?.symbol || ""
+                      ),
+                      "_blank"
+                    );
+                  }}
+                  className="text-snapLink cursor-pointer hover:underline"
+                >
+                  {governor?.underlyingTokenMetadata?.symbol}
+                </Typography.P>
+              </Typography.P>
+
+              <Typography.P>
+                Bonded token contract:{" "}
+                <Typography.P
+                  onClick={() => {
+                    window.open(
+                      `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/contract/${governor.voteTokenAddress}`,
+                      "_blank"
+                    );
+                  }}
+                  className="text-snapLink cursor-pointer hover:underline"
+                >
+                  {governor?.voteTokenAddress}
+                </Typography.P>
+              </Typography.P>
+            </Container>
+          </Container>
+        )}
+
+        {!governor.isWrappedAsset && (
+          <Container slim className="py-2 gap-1 flex flex-col">
+            <Typography.P>
+              Contract address:{" "}
+              <Typography.P
+                onClick={() => {
+                  window.open(
+                    getTokenExplorerUrl(
+                      governor.voteTokenAddress || "",
+                      governor?.voteTokenMetadata?.symbol || ""
+                    ),
+                    "_blank"
+                  );
+                }}
+                className="text-snapLink cursor-pointer hover:underline"
+              >
+                {governor?.voteTokenAddress}
+              </Typography.P>
+            </Typography.P>
+          </Container>
+        )}
+        <Box className="p-3 flex gap-3 flex-col !px-0">
           <Container className="flex flex-col p-3 gap-2 border-b border-snapBorder w-full">
             <Typography.Tiny className="text-snapLink">
               Current Voting power
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
-                {toBalance(balance, governor?.decimals)}{" "}
+                {toBalance(balance, governor?.decimals || 7)}{" "}
                 {governor?.voteTokenMetadata?.symbol}
               </Typography.P>
               {hasDelegate && (
@@ -147,47 +214,48 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
-          <Container className="flex flex-col justify-center p-2 ">
-            <Typography.P>
-              Deposit {governor?.underlyingTokenMetadata?.symbol} to get voting
-              tokens{" "}
-            </Typography.P>
-            {connected && (
-              <Typography.Small className="text-snapLink">
-                Wallet balance:{" "}
-                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
-                {governor?.underlyingTokenMetadata?.symbol}
-                {/* {governor?.name || "$VOTE"} */}
-              </Typography.Small>
-            )}
-          </Container>
-          <Container
-            slim
-            className="w-full flex flex-row  gap-3 px-1 pt-2 pb-3"
-          >
-            <Input
-              className="!w-1/3 flex"
-              placeholder="Amount to deposit"
-              onChange={setToWrap}
-              value={toWrap}
-              type="number"
-            />
-            <Button
-              className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
-              onClick={handleWrapClick}
-              disabled={isLoading || (connected && !toWrap)}
-            >
-              {isLoading ? (
-                <Loader />
-              ) : connected ? (
-                "Deposit"
-              ) : (
-                "Connect wallet"
-              )}
-            </Button>
-          </Container>
+          {governor.isWrappedAsset && (
+            <>
+              <Container className="flex flex-col justify-center p-2 ">
+                <Typography.P>
+                  Deposit {governor?.underlyingTokenMetadata?.symbol} to get
+                  voting power{" "}
+                </Typography.P>
+                {connected && (
+                  <Typography.Small className="text-snapLink">
+                    Wallet balance:{" "}
+                    {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
+                    {governor?.underlyingTokenMetadata?.symbol}
+                    {/* {governor?.name || "$VOTE"} */}
+                  </Typography.Small>
+                )}
+              </Container>
+              <Container slim className="w-full flex flex-row  gap-3 px-4 ">
+                <Input
+                  className="!w-1/3 flex"
+                  placeholder="Amount to deposit"
+                  onChange={setToWrap}
+                  value={toWrap}
+                  type="number"
+                />
+                <Button
+                  className="min-w-[100px]  w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+                  onClick={handleWrapClick}
+                  disabled={isLoading || (connected && !toWrap)}
+                >
+                  {isLoading ? (
+                    <Loader />
+                  ) : connected ? (
+                    "Bond"
+                  ) : (
+                    "Connect wallet"
+                  )}
+                </Button>
+              </Container>
+            </>
+          )}
         </Box>
-        {balance > BigInt(0) && (
+        {balance > BigInt(0) && governor?.isWrappedAsset && (
           <Box className="p-3 flex gap-3 flex-col ">
             <Container slim className="flex flex-col justify-center p-1 ">
               <Typography.P>
@@ -195,7 +263,8 @@ function ManageVotes() {
               </Typography.P>
               {connected && (
                 <Typography.Small className="text-snapLink">
-                  Voting token balance: {toBalance(balance, governor?.decimals)}{" "}
+                  Voting token balance:{" "}
+                  {toBalance(balance, governor?.decimals || 7)}{" "}
                   {governor?.voteTokenMetadata.symbol}
                 </Typography.Small>
               )}
@@ -209,14 +278,14 @@ function ManageVotes() {
                 type="number"
               />
               <Button
-                className="w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+                className="w-1/2 min-w-[100px] flex !bg-white text-snapBorder active:opacity-50 "
                 onClick={handleUnwrapClick}
                 disabled={isLoading || (connected && !toUnwrap)}
               >
                 {isLoading ? (
                   <Loader />
                 ) : connected ? (
-                  "Withdraw"
+                  "Unbond"
                 ) : (
                   "Connect wallet"
                 )}
@@ -265,7 +334,7 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor?.decimals)}{" "}
+                {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
                 {governor?.underlyingTokenMetadata?.symbol}
               </Typography.P>
             </Container>
@@ -292,3 +361,21 @@ function ManageVotes() {
 ManageVotes.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default ManageVotes;
+
+export const getStaticProps = ((context) => {
+  return { props: { dao: context.params?.dao?.toString() || "" } };
+}) satisfies GetStaticProps<{
+  dao: string;
+}>;
+export const getStaticPaths = (async () => {
+  return {
+    paths: governors.map((governor) => {
+      return {
+        params: {
+          dao: governor.address,
+        },
+      };
+    }),
+    fallback: false, // false or "blocking"
+  };
+}) satisfies GetStaticPaths;

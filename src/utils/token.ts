@@ -47,3 +47,9 @@ export async function getTokenBalance(
     return BigInt(0);
   }
 }
+
+
+export function getTokenExplorerUrl(assetId: string, symbol: string) {
+  const isNative = symbol === "XLM"
+  return `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/asset/${symbol}${isNative ? "" : `-${assetId}`}`
+}

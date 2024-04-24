@@ -45,7 +45,7 @@ import { ProposalAction } from "@/components/proposal/action/ProposalAction";
 
 export default function Proposal() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<string>("Description");
+  const [activeTab, setActiveTab] = useState<string>("Action");
   const params = router.query;
   const { governor: currentGovernor } = useGovernor(params.dao as string);
 
@@ -350,7 +350,7 @@ export default function Proposal() {
                         </Typography.Medium>
                         {connected && votingPower > BigInt(0) && (
                           <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                            Voting token balance:{" "}
+                            Voting power:{" "}
                             {toBalance(votingPower, currentGovernor?.decimals)}
                           </Typography.Medium>
                         )}

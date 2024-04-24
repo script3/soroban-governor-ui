@@ -68,7 +68,7 @@ export const classByProposalAction = {
 
 export type ObType = { [key: string]: string };
 export const classByStatus: ObType = {
-  [ProposalStatusEnum.Successful]: "!bg-fuchsia-400",
+  [ProposalStatusEnum.Successful]: "!bg-green-400",
   [ProposalStatusEnum.Active]: "!bg-green-500",
   [ProposalStatusEnum.Open]: "!bg-blue-500",
   [ProposalStatusEnum.Defeated]: "!bg-red-500",

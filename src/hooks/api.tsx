@@ -245,7 +245,28 @@ export function useVoteTokenBalance(
     refetch,
   };
 }
+export function useVotingPower(
+  voteTokenAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getVotingPower, connected } = useWallet();
+  const { data, isLoading, error, refetch } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["votingPower", connected],
+    queryFn: async () => {
+      const result = await getVotingPower(voteTokenAddress);
 
+      return result || BigInt(0);
+    },
+  });
+  return {
+    votingPower: data as bigint,
+    isLoading,
+    error,
+    refetch,
+  };
+}
 export function useVotingPowerByProposal(
   voteTokenAddress: string,
   proposalStartTime: number,
@@ -254,7 +275,7 @@ export function useVotingPowerByProposal(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getVotingPowerByProposal, connected } = useWallet();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     ...options,
     staleTime: DEFAULT_STALE_TIME,
     queryKey: [
@@ -278,6 +299,7 @@ export function useVotingPowerByProposal(
     votingPower: data as bigint,
     isLoading,
     error,
+    refetch,
   };
 }
 

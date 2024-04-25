@@ -732,20 +732,18 @@ export const WalletProvider = ({ children = null as any }) => {
         };
         const votesClient = new TokenVotesContract(voteTokenAddress);
         let proposeOperation;
-        let proposalIsPast;
-        if (proposalStart && currentBlockNumber) {
-          proposalIsPast = currentBlockNumber > proposalStart;
-          if (proposalIsPast) {
-            proposeOperation = votesClient.getPastVotes({
-              user: walletAddress,
-              sequence: proposalStart,
-            });
-          }
+        let proposalIsPast = false;
+        if (proposalStart && currentBlockNumber && currentBlockNumber > proposalStart) {
+          proposalIsPast = true;
+          proposeOperation = votesClient.getPastVotes({
+            user: walletAddress,
+            sequence: proposalStart,
+          });
+        } else {
+          proposeOperation = votesClient.getVotes({
+            account: walletAddress,
+          });
         }
-        proposeOperation = votesClient.getVotes({
-          account: walletAddress,
-        });
-
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,

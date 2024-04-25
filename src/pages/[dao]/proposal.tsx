@@ -348,7 +348,7 @@ export default function Proposal() {
                             ? "Your vote is in"
                             : "Cast your vote"}
                         </Typography.Medium>
-                        {connected && votingPower > BigInt(0) && (
+                        {connected && (
                           <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
                             Voting power:{" "}
                             {toBalance(votingPower, currentGovernor?.decimals)}
@@ -374,13 +374,7 @@ export default function Proposal() {
                         <Button
                           onClick={() => {
                             if (connected && userVote === undefined) {
-                              if (votingPower > BigInt(0)) {
-                                handleVote();
-                              } else {
-                                router.replace(
-                                  `/${params.dao}/proposals?wrap=true`
-                                );
-                              }
+                              handleVote();
                             } else {
                               connect();
                             }
@@ -389,17 +383,14 @@ export default function Proposal() {
                           disabled={
                             isLoading ||
                             userVote !== undefined ||
-                            proposalStatus !== ProposalStatusEnum.Active
+                            proposalStatus !== ProposalStatusEnum.Active ||
+                            votingPower === BigInt(0)
                           }
                         >
                           {isLoading ? (
                             <Loader />
                           ) : connected ? (
-                            votingPower > BigInt(0) ? (
-                              "Vote"
-                            ) : (
-                              "Get vote tokens"
-                            )
+                            "Vote"
                           ) : (
                             "Connect Wallet to Vote"
                           )}

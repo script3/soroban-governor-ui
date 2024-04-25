@@ -12,6 +12,11 @@ const env = {
     testnet: 'testnet',
 };
 
+const gov = {
+    production: 'mainnet',
+    testnet: 'testnet',
+};
+
 function copyEnvFile() {
     console.log({ envToBuild: process.env.TARGET_ENV });
     const target = env[process.env.TARGET_ENV] || env.testnet;
@@ -33,4 +38,25 @@ function copyEnvFile() {
     return;
 }
 
+function copyGovFile() {
+    console.log({ envToBuild: process.env.TARGET_ENV });
+    const target = gov[process.env.TARGET_ENV] || gov.testnet;
+    const dotenvPath = process.cwd() + `/public/governors/governors-${target}.json`;
+    const fileStats = fs.statSync(dotenvPath);
+
+    if (!fileStats.isFile()) {
+        console.error(`[copyGovFile] ${dotenvPath} is not a valid file`);
+    }
+
+    const buildgovFile = 'governors.json';
+    try {
+        fs.copyFileSync(dotenvPath, `${process.cwd()}/public/governors/${buildgovFile}`);
+        console.log(`${buildgovFile} successfully copied with TARGET_ENV=${target}`);
+    } catch (error) {
+        console.error(`[copyGovFile] there was an error copying ${buildgovFile} file`);
+        console.error(error);
+    }
+    return;
+}
 copyEnvFile();
+copyGovFile();

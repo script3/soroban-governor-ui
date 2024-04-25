@@ -69,14 +69,13 @@ export function useGovernor(
     governorId: string,
     governors: NoSettingsGovernor[]
   ): Promise<Governor | null> {
-    console.log({ governors });
     const foundGovernor = governors.find((p) => p.address === governorId);
-    console.log({ foundGovernor });
+
     if (!foundGovernor) {
       return null;
     }
     const governorSettings = await getGovernorSettings(foundGovernor?.address);
-    console.log({ governorSettings });
+
     if (!governorSettings) {
       return null;
     }

@@ -752,8 +752,8 @@ export const WalletProvider = ({ children = null as any }) => {
           network,
           txOptions,
           proposalIsPast
-            ? TokenVotesContract.parsers.getPastVotes
-            : TokenVotesContract.parsers.getVotes,
+            ? TokenVotesContract.votes_parsers.getPastVotes
+            : TokenVotesContract.votes_parsers.getVotes,
           proposeOperation
         );
         if (sim) {
@@ -1016,7 +1016,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          TokenVotesContract.parsers.getDelegate,
+          TokenVotesContract.votes_parsers.getDelegate,
           voteOperation
         );
 
@@ -1063,7 +1063,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          TokenVotesContract.parsers.delegate,
+          TokenVotesContract.votes_parsers.delegate,
           proposeOperation
         );
         if (sim) {

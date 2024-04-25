@@ -47,7 +47,6 @@ export default function DAOLayout({ children }: { children: React.ReactNode }) {
       }
     }
   }, [routeTab]);
-  console.log({ activeTab });
 
   return (
     <Container className="pt-4 px-12 flex flex-col lg:flex-row gap-4">

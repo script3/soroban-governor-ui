@@ -37,7 +37,6 @@ export function useImageUpload() {
     formData.append("file", file);
     try {
       const receipt = await pin(formData, process.env.PINEAPPLE_URL);
-      console.log({ receipt });
       const newImageUrl = `ipfs://${receipt.cid}`;
       setImageUrl(newImageUrl);
       setImageName(file.name);

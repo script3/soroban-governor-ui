@@ -24,6 +24,7 @@ import {
   BondingVotesContract,
   GovernorErrors,
   VotesErrors,
+  GovernorSettings,
 } from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
@@ -76,6 +77,9 @@ export interface IWalletContext {
     sim: boolean,
     governorAddress: string
   ) => Promise<bigint | undefined>;
+  getGovernorSettings: (
+    governorAddress: string
+  ) => Promise<GovernorSettings | undefined>;
   createProposal: (
     title: string,
     description: string,
@@ -354,6 +358,42 @@ export const WalletProvider = ({ children = null as any }) => {
         return;
       }
     } catch (e) {
+      throw e;
+    }
+  }
+
+  async function getGovernorSettings(governorAddress: string) {
+    try {
+      let txOptions: TxOptions = {
+        sim: true,
+        pollingInterval: 1000,
+        timeout: 15000,
+        builderOptions: {
+          fee: "10000",
+          timebounds: {
+            minTime: 0,
+            maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+          },
+          networkPassphrase: network.passphrase,
+        },
+      };
+      let governorClient = new GovernorContract(governorAddress);
+      let voteOperation = governorClient.settings();
+      const submission = invokeOperation<xdr.ScVal>(
+        DUMMY_ADDRESS,
+        sign,
+        network,
+        txOptions,
+        GovernorContract.parsers.settings,
+        voteOperation
+      );
+      const sub = await submission;
+      if (sub instanceof ContractResult) {
+        return sub.result.unwrap();
+      }
+      return sub;
+    } catch (e) {
+      console.log("Error getting governor settings: ", e);
       throw e;
     }
   }
@@ -1174,6 +1214,7 @@ export const WalletProvider = ({ children = null as any }) => {
         disconnect,
         clearLastTx,
         vote,
+        getGovernorSettings,
         createProposal,
         executeProposal,
         closeProposal,

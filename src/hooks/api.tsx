@@ -7,19 +7,8 @@ import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
 import { VoteCount } from "@script3/soroban-governor-sdk";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
-const mappedGovernors = governors.map(
-  ({ settings: { proposal_threshold, ...settings }, ...rest }) => {
-    return {
-      ...rest,
-      settings: {
-        ...settings,
-        proposal_threshold: BigInt(proposal_threshold),
-      },
-    };
-  }
-);
 const DEFAULT_STALE_TIME = 20 * 1000;
-
+export type NoSettingsGovernor = Omit<Governor, "settings">;
 export function useCurrentBlockNumber(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
@@ -52,11 +41,11 @@ export function useGovernors(
     queryKey: ["governors"],
     queryFn: loadGovernors,
   });
-  async function loadGovernors(): Promise<Governor[]> {
-    return mappedGovernors as Governor[];
+  async function loadGovernors(): Promise<NoSettingsGovernor[]> {
+    return governors as NoSettingsGovernor[];
   }
   return {
-    governors: data as Governor[],
+    governors: data as NoSettingsGovernor[],
     isLoading,
     error,
   };
@@ -66,15 +55,36 @@ export function useGovernor(
   governorId: string,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
+  const { governors } = useGovernors({
+    placeholderData: [],
+  });
+  const { getGovernorSettings } = useWallet();
   const { data, isLoading, error } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["governor", governorId],
-    queryFn: () => getGovernorById(governorId),
+    queryFn: () => getGovernorById(governorId, governors),
+    enabled: governors.length > 1,
   });
-  function getGovernorById(governorId: string) {
-    const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
-    return foundGovernor || null;
+  async function getGovernorById(
+    governorId: string,
+    governors: NoSettingsGovernor[]
+  ): Promise<Governor | null> {
+    const foundGovernor = governors.find((p) => p.address === governorId);
+
+    if (!foundGovernor) {
+      return null;
+    }
+    const governorSettings = await getGovernorSettings(foundGovernor?.address);
+
+    if (!governorSettings) {
+      return null;
+    }
+    const data: Governor = {
+      ...foundGovernor,
+      settings: governorSettings,
+    };
+    return data;
   }
 
   return {
@@ -389,7 +399,7 @@ async function getProposalsByGovernor(governorAddress: string) {
 
     const data = await runGraphQLQuery(
       `query getProposalsByGovernor { 
-    zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract(hash: "${addressHash}") {
+        ${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}(hash: "${addressHash}") {
       nodes {
         contract
       propNum
@@ -410,8 +420,7 @@ async function getProposalsByGovernor(governorAddress: string) {
     if (!data) {
       return null;
     }
-    const proposals =
-      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract"]?.nodes;
+    const proposals = data[`${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}`]?.nodes;
     return proposals;
   } catch (e) {
     console.error(e);
@@ -434,7 +443,7 @@ async function getProposalById(
 
     const data = await runGraphQLQuery(
       `query getProposalsById { 
-     zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+     ${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
       title
@@ -455,8 +464,7 @@ async function getProposalById(
       return null;
     }
     const proposal =
-      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum"]
-        ?.nodes[0];
+      data[`${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}`]?.nodes[0];
     return parseProposalFromXDR(proposal, voteDelay, votePeriod);
   } catch (e) {
     console.error(e);
@@ -477,7 +485,7 @@ async function getVotesByProposalId(
 
     const data = await runGraphQLQuery(
       `query getVotesByProposalId { 
-    zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+    ${process.env.NEXT_PUBLIC_VOTES_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
       voter
@@ -492,9 +500,7 @@ async function getVotesByProposalId(
     if (!data) {
       return null;
     }
-    const votes =
-      data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]
-        ?.nodes;
+    const votes = data[`${process.env.NEXT_PUBLIC_VOTES_TABLE}`]?.nodes;
     const parsedVotes = votes.map((vote: XDRVote) => {
       return parseVoteFromXDR(vote);
     });

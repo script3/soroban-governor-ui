@@ -21,7 +21,7 @@ import {
   useDelegate,
   useGovernor,
   useProposals,
-  useVoteTokenBalance,
+  useVotingPower,
 } from "@/hooks/api";
 import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
@@ -40,20 +40,14 @@ function Proposals() {
   const { governor } = useGovernor(params.dao as string, {
     placeholderData: {},
   });
-  const { delegateAddress, refetch: refetchDelegate } = useDelegate(
-    governor?.voteTokenAddress,
-    {
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
-  );
+  const { delegateAddress } = useDelegate(governor?.voteTokenAddress, {
+    enabled: connected && !!governor?.voteTokenAddress,
+  });
   const hasDelegate = delegateAddress !== walletAddress;
-  const { balance, refetch: refetchBalance } = useVoteTokenBalance(
-    governor?.voteTokenAddress,
-    {
-      placeholderData: BigInt(0),
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
-  );
+  const { votingPower } = useVotingPower(governor?.voteTokenAddress, {
+    placeholderData: BigInt(0),
+    enabled: connected && !!governor?.voteTokenAddress && !!currentBlockNumber,
+  });
 
   const { proposals } = useProposals(
     governor?.address,
@@ -77,6 +71,14 @@ function Proposals() {
         </Typography.Huge>
         <div className="flex w-full  md:w-60">
           <Input
+            icon={
+              <Image
+                src="/icons/search.svg"
+                width={20}
+                height={20}
+                alt="search"
+              />
+            }
             value={searchValue}
             placeholder="Search proposals"
             onChange={setSearchValue}
@@ -89,9 +91,15 @@ function Proposals() {
               scroll: false,
             });
           }}
-          className="px-6 !w-full  md:!w-40 active:!opacity-90  "
+          className="px-6 !w-full  md:!w-48 active:!opacity-90 flex gap-2 items-center "
         >
           New proposal
+          <Image
+            src="/icons/add-circle.svg"
+            width={20}
+            height={20}
+            alt="plus"
+          />
         </Button>
       </Container>
       {connected && (
@@ -103,8 +111,7 @@ function Proposals() {
               </Typography.Tiny>
               <Container slim className="flex gap-2">
                 <Typography.P>
-                  {toBalance(balance, governor?.decimals)}{" "}
-                  {governor?.voteTokenMetadata?.symbol}
+                  {toBalance(votingPower, governor?.decimals)} votes
                 </Typography.P>
                 {hasDelegate && (
                   <Chip className="!bg-transparent border border-secondary text-secondary">
@@ -291,6 +298,7 @@ Proposals.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 export default Proposals;
 import governors from "../../../public/governors/governors.json";
 import { GetStaticPaths, GetStaticProps } from "next";
+import Image from "next/image";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

@@ -15,13 +15,6 @@ export function TopBar() {
   const router = useRouter();
   const { connect, connected, walletAddress, disconnect } = useWallet();
 
-  function handleAction(action: string) {
-    switch (action) {
-      case "disconnect":
-        disconnect();
-        break;
-    }
-  }
   return (
     <div className="flex w-full justify-between items-center sticky top-0 mb-4  z-50 py-2 px-6 border-b border-snapBorder bg-bg">
       <Typography.Medium
@@ -43,22 +36,18 @@ export function TopBar() {
           {walletAddress ? shortenAddress(walletAddress) : "Connect Wallet"}
         </Button>
         {connected && (
-          <Dropdown
-            chevron={false}
-            noBorder
-            buttonText={
-              <Image
-                src="/icons/three-dots.svg"
-                width={20}
-                height={20}
-                alt="threedots"
-              />
-            }
-            items={options}
-            onSelect={(action) => {
-              handleAction(action);
+          <Button
+            onClick={() => {
+              disconnect();
             }}
-          />
+          >
+            <Image
+              src="/icons/logout.svg"
+              width={20}
+              height={20}
+              alt="threedots"
+            />
+          </Button>
         )}
       </div>
     </div>

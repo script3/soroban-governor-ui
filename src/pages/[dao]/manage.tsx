@@ -10,6 +10,7 @@ import {
   useGovernor,
   useUnderlyingTokenBalance,
   useVoteTokenBalance,
+  useVotingPower,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
@@ -55,11 +56,17 @@ function ManageVotes() {
     }
   );
 
+  const { votingPower, refetch: refetchVotingPower } = useVotingPower(governor?.voteTokenAddress, {
+    placeholderData: BigInt(0),
+    enabled: connected && !!governor?.voteTokenAddress,
+  });
+
   const { balance: underlyingTokenBalance, refetch: refetchunderlying } =
     useUnderlyingTokenBalance(governor?.underlyingTokenAddress || "", {
       enabled: connected && !!governor?.underlyingTokenAddress,
       placeholderData: BigInt(0),
     });
+  
   function handleWrapClick() {
     if (!connected) {
       connect();
@@ -69,6 +76,7 @@ function ManageVotes() {
       wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchBalance();
         refetchunderlying();
+        refetchVotingPower();
         setToUnwrap("");
         setToWrap("");
       });
@@ -84,6 +92,7 @@ function ManageVotes() {
       unwrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchunderlying();
         refetchBalance();
+        refetchVotingPower();
         setToUnwrap("");
         setToWrap("");
       });
@@ -98,6 +107,7 @@ function ManageVotes() {
       delegate(governor?.voteTokenAddress, newDelegate, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
+        refetchVotingPower();
       });
     }
   }
@@ -110,6 +120,7 @@ function ManageVotes() {
       delegate(governor?.voteTokenAddress, walletAddress, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
+        refetchVotingPower();
       });
     }
   }
@@ -204,6 +215,21 @@ function ManageVotes() {
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
+                {toBalance(votingPower, governor?.decimals || 7)} votes
+              </Typography.P>
+              {hasDelegate && (
+                <Chip className="!bg-transparent border border-secondary text-secondary">
+                  Delegated
+                </Chip>
+              )}
+            </Container>
+          </Container>
+          <Container className="flex flex-col p-3 gap-2  w-full">
+            <Typography.Tiny className="text-snapLink">
+              Current Voting tokens balance
+            </Typography.Tiny>
+            <Container slim className="flex gap-2">
+              <Typography.P>
                 {toBalance(balance, governor?.decimals || 7)}{" "}
                 {governor?.voteTokenMetadata?.symbol}
               </Typography.P>
@@ -214,12 +240,14 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
+        </Box>
+        <Box className="p-3 flex gap-3 flex-col !px-0">
           {governor.isWrappedAsset && (
             <>
               <Container className="flex flex-col justify-center p-2 ">
                 <Typography.P>
-                  Deposit {governor?.underlyingTokenMetadata?.symbol} to get
-                  voting power{" "}
+                  Bond {governor?.underlyingTokenMetadata?.symbol} to get{" "}
+                  {governor?.voteTokenMetadata.symbol}
                 </Typography.P>
                 {connected && (
                   <Typography.Small className="text-snapLink">
@@ -230,16 +258,16 @@ function ManageVotes() {
                   </Typography.Small>
                 )}
               </Container>
-              <Container slim className="w-full flex flex-row  gap-3 px-4 ">
+              <Container slim className="w-full flex flex-col  gap-3 px-4 ">
                 <Input
                   className="!w-1/3 flex"
-                  placeholder="Amount to deposit"
+                  placeholder="Amount to bond"
                   onChange={setToWrap}
                   value={toWrap}
                   type="number"
                 />
                 <Button
-                  className="min-w-[100px]  w-1/2 flex !bg-white text-snapBorder active:opacity-50 "
+                  className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
                   onClick={handleWrapClick}
                   disabled={isLoading || (connected && !toWrap)}
                 >
@@ -259,7 +287,8 @@ function ManageVotes() {
           <Box className="p-3 flex gap-3 flex-col ">
             <Container slim className="flex flex-col justify-center p-1 ">
               <Typography.P>
-                Withdraw {governor?.voteTokenMetadata.symbol} from the space
+                Unbond {governor?.voteTokenMetadata.symbol} to get{" "}
+                {governor?.underlyingTokenMetadata?.symbol}
               </Typography.P>
               {connected && (
                 <Typography.Small className="text-snapLink">
@@ -269,16 +298,16 @@ function ManageVotes() {
                 </Typography.Small>
               )}
             </Container>
-            <Container slim className="w-full flex flex-row  gap-3">
+            <Container slim className="w-full flex flex-col  gap-3">
               <Input
                 className="!w-1/3 flex"
-                placeholder="Amount to withdraw"
+                placeholder="Amount to unbond"
                 onChange={setToUnwrap}
                 value={toUnwrap}
                 type="number"
               />
               <Button
-                className="w-1/2 min-w-[100px] flex !bg-white text-snapBorder active:opacity-50 "
+                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
                 onClick={handleUnwrapClick}
                 disabled={isLoading || (connected && !toUnwrap)}
               >
@@ -334,8 +363,8 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
-                {governor?.underlyingTokenMetadata?.symbol}
+                {toBalance(balance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
+                {"delegated votes"}
               </Typography.P>
             </Container>
             <Button

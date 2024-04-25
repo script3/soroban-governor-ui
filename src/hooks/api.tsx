@@ -5,6 +5,7 @@ import governors from "../../public/governors/governors.json";
 import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
 import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
 import { VoteCount } from "@script3/soroban-governor-sdk";
+
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const mappedGovernors = governors.map(
   ({ settings: { proposal_threshold, ...settings }, ...rest }) => {
@@ -246,6 +247,29 @@ export function useVoteTokenBalance(
   };
 }
 
+export function useVotingPower(
+  voteTokenAddress: string,
+  options: Partial<DefinedInitialDataOptions> = {} as any
+) {
+  const { getVotingPower, connected } = useWallet();
+  const { data, isLoading, error, refetch } = useQuery({
+    ...options,
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["votingPower", connected],
+    queryFn: async () => {
+      const result = await getVotingPower(voteTokenAddress);
+
+      return result || BigInt(0);
+    },
+  });
+  return {
+    votingPower: data as bigint,
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
 export function useVotingPowerByProposal(
   voteTokenAddress: string,
   proposalStartTime: number,
@@ -254,7 +278,7 @@ export function useVotingPowerByProposal(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
   const { getVotingPowerByProposal, connected } = useWallet();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     ...options,
     staleTime: DEFAULT_STALE_TIME,
     queryKey: [
@@ -278,6 +302,7 @@ export function useVotingPowerByProposal(
     votingPower: data as bigint,
     isLoading,
     error,
+    refetch,
   };
 }
 

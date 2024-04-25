@@ -38,7 +38,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <Container slim className="flex flex-row">
       <SideBar />
-      <Container slim className="w-full">
+      <Container slim className="w-full py-4">
         <TopBar />
         {children}
         <FlashNotification

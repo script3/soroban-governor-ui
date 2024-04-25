@@ -109,6 +109,7 @@ export interface IWalletContext {
     currentBlockNumber: number,
     sim: boolean
   ) => Promise<bigint>;
+  getVotingPower: (voteTokenAddress: string) => Promise<bigint>;
   getTotalVotesByProposal: (
     proposalId: number,
     governorAddress: string,
@@ -710,9 +711,9 @@ export const WalletProvider = ({ children = null as any }) => {
 
   async function getVotingPowerByProposal(
     voteTokenAddress: string,
-    proposalStart: number,
-    currentBlockNumber: number,
-    sim: boolean
+    proposalStart?: number,
+    currentBlockNumber?: number,
+    sim: boolean = true
   ) {
     try {
       if (connected) {
@@ -730,18 +731,21 @@ export const WalletProvider = ({ children = null as any }) => {
           },
         };
         const votesClient = new TokenVotesContract(voteTokenAddress);
-        const proposalIsPast = currentBlockNumber > proposalStart;
         let proposeOperation;
-        if (proposalIsPast) {
-          proposeOperation = votesClient.getPastVotes({
-            user: walletAddress,
-            sequence: proposalStart,
-          });
-        } else {
-          proposeOperation = votesClient.getVotes({
-            account: walletAddress,
-          });
+        let proposalIsPast;
+        if (proposalStart && currentBlockNumber) {
+          proposalIsPast = currentBlockNumber > proposalStart;
+          if (proposalIsPast) {
+            proposeOperation = votesClient.getPastVotes({
+              user: walletAddress,
+              sequence: proposalStart,
+            });
+          }
         }
+        proposeOperation = votesClient.getVotes({
+          account: walletAddress,
+        });
+
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
           sign,
@@ -750,6 +754,54 @@ export const WalletProvider = ({ children = null as any }) => {
           proposalIsPast
             ? TokenVotesContract.votes_parsers.getPastVotes
             : TokenVotesContract.votes_parsers.getVotes,
+          proposeOperation
+        );
+        if (sim) {
+          const sub = await submission;
+
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return submitTransaction<bigint>(submission) || BigInt(0);
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error getting voting power : ", e);
+      throw e;
+    }
+  }
+
+  async function getVotingPower(voteTokenAddress: string, sim: boolean = true) {
+    try {
+      if (connected) {
+        const txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        const votesClient = new TokenVotesContract(voteTokenAddress);
+        const proposeOperation = votesClient.getVotes({
+          account: walletAddress,
+        });
+
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          TokenVotesContract.votes_parsers.getVotes,
           proposeOperation
         );
         if (sim) {
@@ -1133,6 +1185,7 @@ export const WalletProvider = ({ children = null as any }) => {
         setNetwork,
         closeNotification,
         getVoteTokenBalance,
+        getVotingPower,
         getVotingPowerByProposal,
         getTokenBalance,
         wrapToken,

@@ -56,7 +56,7 @@ function ManageVotes() {
     }
   );
 
-  const { votingPower } = useVotingPower(governor?.voteTokenAddress, {
+  const { votingPower, refetch: refetchVotingPower } = useVotingPower(governor?.voteTokenAddress, {
     placeholderData: BigInt(0),
     enabled: connected && !!governor?.voteTokenAddress,
   });
@@ -66,6 +66,7 @@ function ManageVotes() {
       enabled: connected && !!governor?.underlyingTokenAddress,
       placeholderData: BigInt(0),
     });
+  
   function handleWrapClick() {
     if (!connected) {
       connect();
@@ -75,6 +76,7 @@ function ManageVotes() {
       wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchBalance();
         refetchunderlying();
+        refetchVotingPower();
         setToUnwrap("");
         setToWrap("");
       });
@@ -90,6 +92,7 @@ function ManageVotes() {
       unwrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
         refetchunderlying();
         refetchBalance();
+        refetchVotingPower();
         setToUnwrap("");
         setToWrap("");
       });
@@ -104,6 +107,7 @@ function ManageVotes() {
       delegate(governor?.voteTokenAddress, newDelegate, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
+        refetchVotingPower();
       });
     }
   }
@@ -116,6 +120,7 @@ function ManageVotes() {
       delegate(governor?.voteTokenAddress, walletAddress, false).then(() => {
         setNewDelegate("");
         refetchDelegate();
+        refetchVotingPower();
       });
     }
   }
@@ -358,8 +363,8 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(underlyingTokenBalance, governor?.decimals || 7)}{" "}
-                {governor?.underlyingTokenMetadata?.symbol}
+                {toBalance(balance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
+                {"delegated votes"}
               </Typography.P>
             </Container>
             <Button

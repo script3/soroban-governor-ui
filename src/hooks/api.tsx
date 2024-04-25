@@ -5,6 +5,7 @@ import governors from "../../public/governors/governors.json";
 import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
 import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
 import { VoteCount } from "@script3/soroban-governor-sdk";
+
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const mappedGovernors = governors.map(
   ({ settings: { proposal_threshold, ...settings }, ...rest }) => {
@@ -245,6 +246,7 @@ export function useVoteTokenBalance(
     refetch,
   };
 }
+
 export function useVotingPower(
   voteTokenAddress: string,
   options: Partial<DefinedInitialDataOptions> = {} as any
@@ -267,6 +269,7 @@ export function useVotingPower(
     refetch,
   };
 }
+
 export function useVotingPowerByProposal(
   voteTokenAddress: string,
   proposalStartTime: number,

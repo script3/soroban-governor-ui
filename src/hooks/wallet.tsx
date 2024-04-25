@@ -801,7 +801,7 @@ export const WalletProvider = ({ children = null as any }) => {
           sign,
           network,
           txOptions,
-          TokenVotesContract.parsers.getVotes,
+          TokenVotesContract.votes_parsers.getVotes,
           proposeOperation
         );
         if (sim) {

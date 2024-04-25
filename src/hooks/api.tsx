@@ -364,7 +364,7 @@ async function getProposalsByGovernor(governorAddress: string) {
 
     const data = await runGraphQLQuery(
       `query getProposalsByGovernor { 
-    zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract(hash: "${addressHash}") {
+        ${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}(hash: "${addressHash}") {
       nodes {
         contract
       propNum
@@ -385,8 +385,7 @@ async function getProposalsByGovernor(governorAddress: string) {
     if (!data) {
       return null;
     }
-    const proposals =
-      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontract"]?.nodes;
+    const proposals = data[`${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}`]?.nodes;
     return proposals;
   } catch (e) {
     console.error(e);
@@ -409,7 +408,7 @@ async function getProposalById(
 
     const data = await runGraphQLQuery(
       `query getProposalsById { 
-     zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+     ${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
       title
@@ -430,8 +429,7 @@ async function getProposalById(
       return null;
     }
     const proposal =
-      data["zephyrb5B33De8C982C180B4Cdf4F46E288686Sbycontractandproposalnum"]
-        ?.nodes[0];
+      data[`${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}`]?.nodes[0];
     return parseProposalFromXDR(proposal, voteDelay, votePeriod);
   } catch (e) {
     console.error(e);
@@ -452,7 +450,7 @@ async function getVotesByProposalId(
 
     const data = await runGraphQLQuery(
       `query getVotesByProposalId { 
-    zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum(hash: "${addressHash}", num: "${proposalNum}") { nodes {
+    ${process.env.NEXT_PUBLIC_VOTES_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
       contract
       propNum
       voter
@@ -467,9 +465,7 @@ async function getVotesByProposalId(
     if (!data) {
       return null;
     }
-    const votes =
-      data["zephyr75B73A571B250Fdea42B9C273A5D96Ecsbycontractandproposalnum"]
-        ?.nodes;
+    const votes = data[`${process.env.NEXT_PUBLIC_VOTES_TABLE}`]?.nodes;
     const parsedVotes = votes.map((vote: XDRVote) => {
       return parseVoteFromXDR(vote);
     });

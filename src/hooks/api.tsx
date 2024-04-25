@@ -6,19 +6,8 @@ import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
 import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
 import { VoteCount } from "@script3/soroban-governor-sdk";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
-const mappedGovernors = governors.map(
-  ({ settings: { proposal_threshold, ...settings }, ...rest }) => {
-    return {
-      ...rest,
-      settings: {
-        ...settings,
-        proposal_threshold: BigInt(proposal_threshold),
-      },
-    };
-  }
-);
 const DEFAULT_STALE_TIME = 20 * 1000;
-
+export type NoSettingsGovernor = Omit<Governor, "settings">;
 export function useCurrentBlockNumber(
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
@@ -51,11 +40,11 @@ export function useGovernors(
     queryKey: ["governors"],
     queryFn: loadGovernors,
   });
-  async function loadGovernors(): Promise<Governor[]> {
-    return mappedGovernors as Governor[];
+  async function loadGovernors(): Promise<NoSettingsGovernor[]> {
+    return governors as NoSettingsGovernor[];
   }
   return {
-    governors: data as Governor[],
+    governors: data as NoSettingsGovernor[],
     isLoading,
     error,
   };
@@ -65,15 +54,37 @@ export function useGovernor(
   governorId: string,
   options: Partial<DefinedInitialDataOptions> = {} as any
 ) {
+  const { governors } = useGovernors({
+    placeholderData: [],
+  });
+  const { getGovernorSettings } = useWallet();
   const { data, isLoading, error } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["governor", governorId],
-    queryFn: () => getGovernorById(governorId),
+    queryFn: () => getGovernorById(governorId, governors),
+    enabled: governors.length > 1,
   });
-  function getGovernorById(governorId: string) {
-    const foundGovernor = mappedGovernors.find((p) => p.address === governorId);
-    return foundGovernor || null;
+  async function getGovernorById(
+    governorId: string,
+    governors: NoSettingsGovernor[]
+  ): Promise<Governor | null> {
+    console.log({ governors });
+    const foundGovernor = governors.find((p) => p.address === governorId);
+    console.log({ foundGovernor });
+    if (!foundGovernor) {
+      return null;
+    }
+    const governorSettings = await getGovernorSettings(foundGovernor?.address);
+    console.log({ governorSettings });
+    if (!governorSettings) {
+      return null;
+    }
+    const data: Governor = {
+      ...foundGovernor,
+      settings: governorSettings,
+    };
+    return data;
   }
 
   return {

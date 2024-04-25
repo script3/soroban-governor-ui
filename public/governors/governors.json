@@ -1,16 +1,6 @@
 [
     {
-      "settings": {
-        "council": "GAQ7ZN225YFNYMXGKBSMVI726VTYT7ZFEVU432HMEXOHPVHKVDLNVC72",
-        "counting_type": 3,
-        "grace_period": 34560,
-        "proposal_threshold": 200000000,
-        "quorum": 800,
-        "timelock": 180,
-        "vote_delay": 180,
-        "vote_period": 360,
-        "vote_threshold": 5100
-      },
+
       "name": "Soroban Token DAO",
       "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
       "address": "CBGZFBCHOYDGBSYNHPAETPE7TLISZXN5E6Q3VIDUVUWV74NODINIZKLV",
@@ -27,17 +17,6 @@
       }
     },
     {
-      "settings": {
-        "council": "GAQ7ZN225YFNYMXGKBSMVI726VTYT7ZFEVU432HMEXOHPVHKVDLNVC72",
-        "counting_type": 2,
-        "grace_period": 120960,
-        "proposal_threshold": 10000000000,
-        "quorum": 400,
-        "timelock": 1440,
-        "vote_delay": 720,
-        "vote_period": 5760,
-        "vote_threshold": 5500
-      },
       "name": "XLM DAO",
       "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
       "address": "CCIAMLHDTH3MUZR2KCXRK5JWDBLZL6MBD5AVITLPL73PZIMNOX7SKDSV",

@@ -157,7 +157,7 @@ function ManageVotes() {
                   onClick={() => {
                     window.open(
                       getTokenExplorerUrl(
-                        governor.underlyingTokenAddress || "",
+                        governor.underlyingTokenMetadata?.issuer || "",
                         governor?.underlyingTokenMetadata?.symbol || ""
                       ),
                       "_blank"
@@ -192,15 +192,12 @@ function ManageVotes() {
             <Typography.P>
               Contract address:{" "}
               <Typography.P
-                onClick={() => {
-                  window.open(
-                    getTokenExplorerUrl(
-                      governor.voteTokenAddress || "",
-                      governor?.voteTokenMetadata?.symbol || ""
-                    ),
-                    "_blank"
-                  );
-                }}
+                  onClick={() => {
+                    window.open(
+                      `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/contract/${governor.voteTokenAddress}`,
+                      "_blank"
+                    );
+                  }}
                 className="text-snapLink cursor-pointer hover:underline"
               >
                 {governor?.voteTokenAddress}

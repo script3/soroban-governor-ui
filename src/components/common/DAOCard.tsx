@@ -9,6 +9,7 @@ export interface DAOCardProps {
   hoverable?: boolean;
   title: string;
   description: string;
+  logo: string;
   buttonText?: string;
   onButtonClick: () => void;
   onCardClick: () => void;
@@ -18,6 +19,7 @@ export function DAOCard({
   hoverable = true,
   title,
   description,
+  logo,
   buttonText,
   onButtonClick,
   onCardClick,
@@ -35,7 +37,7 @@ export function DAOCard({
       <div className="p-4  leading-5 sm:leading-6 flex w-full h-full flex-col gap-4 justify-center items-center">
         <Image
           className="rounded-full object-cover"
-          src="https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7"
+          src={logo}
           alt="project image"
           width={82}
           height={82}

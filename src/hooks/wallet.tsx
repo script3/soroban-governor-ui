@@ -185,7 +185,7 @@ export const WalletProvider = ({ children = null as any }) => {
   const [network, setStateNetwork] = useState<Network>({
     rpc:
       process.env.NEXT_PUBLIC_RPC_URL || "https://soroban-testnet.stellar.org",
-    passphrase: "Test SDF Network ; September 2015",
+    passphrase: process.env.NEXT_PUBLIC_PASSPHRASE || "Test SDF Network ; September 2015",
     opts: undefined,
   });
 

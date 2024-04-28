@@ -59,24 +59,24 @@ export function useGovernor(
     placeholderData: [],
   });
   const { getGovernorSettings } = useWallet();
+
   const { data, isLoading, error } = useQuery({
     staleTime: DEFAULT_STALE_TIME,
     ...options,
     queryKey: ["governor", governorId],
     queryFn: () => getGovernorById(governorId, governors),
-    enabled: governors.length > 1,
+    enabled: governors.length >= 1,
   });
+
   async function getGovernorById(
     governorId: string,
     governors: NoSettingsGovernor[]
   ): Promise<Governor | null> {
     const foundGovernor = governors.find((p) => p.address === governorId);
-
     if (!foundGovernor) {
       return null;
     }
     const governorSettings = await getGovernorSettings(foundGovernor?.address);
-
     if (!governorSettings) {
       return null;
     }

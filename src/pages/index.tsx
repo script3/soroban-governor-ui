@@ -59,6 +59,7 @@ export default function Home() {
             <DAOCard
               title={dao.name}
               description={""}
+              logo={dao.logo}
               hoverable
               key={i}
               onButtonClick={() => console.log(`Join #${i} click`)}

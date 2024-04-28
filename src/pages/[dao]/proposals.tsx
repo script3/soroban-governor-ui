@@ -14,7 +14,7 @@ import {
 
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import {
   useCurrentBlockNumber,
@@ -63,6 +63,14 @@ function Proposals() {
     }
   );
 
+  const filteredProposals = useMemo(() => {
+    const searchLower = searchValue.toLowerCase();
+    return proposals.filter(proposal =>
+        `${proposal.title} ${proposal.description} ${proposal.proposer}`.toLowerCase().includes(searchLower)
+    );
+}, [searchValue, proposals]);
+
+
   return (
     <Container slim className="flex flex-col gap-4">
       <Container className="flex justify-between items-center  flex-wrap py-6 gap-3">
@@ -81,7 +89,7 @@ function Proposals() {
             }
             value={searchValue}
             placeholder="Search proposals"
-            onChange={setSearchValue}
+            onChange={e => setSearchValue(e.target.value)}
           />
         </div>
 
@@ -136,7 +144,7 @@ function Proposals() {
       )}
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
-        {proposals.map((proposal, ind) => {
+        {filteredProposals.map((proposal, ind) => {
           const proposalStatus = getStatusByProposalState(
             proposal.status,
             proposal.vote_start,

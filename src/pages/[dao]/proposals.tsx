@@ -89,7 +89,7 @@ function Proposals() {
             }
             value={searchValue}
             placeholder="Search proposals"
-            onChange={e => setSearchValue(e.target.value)}
+            onChange={e => setSearchValue(e)}
           />
         </div>
 

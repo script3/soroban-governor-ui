@@ -2,7 +2,7 @@ import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import Typography from "@/components/common/Typography";
-import { useState } from "react";
+import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { useGovernor } from "@/hooks/api";
 
@@ -14,21 +14,40 @@ function About() {
     enabled: !!params.dao,
   });
 
+  let settings = currentGovernor?.settings;
+  if (settings == undefined) {
+    return (
+      <Container slim className=" mt-3 flex flex-col gap-6 w-full">
+        <Box className="flex flex-col gap-3 p-4 w-full">
+          <Typography.Big>Profile</Typography.Big>
+          <Typography.P>Name</Typography.P>
+          <Typography.Small className="text-snapLink pl-2">
+            {currentGovernor.name}
+          </Typography.Small>
+          <Typography.Medium>Settings</Typography.Medium>
+          <Container className="pl-2 flex flex-col gap-3">
+            <Loader />
+          </Container>
+        </Box>
+      </Container>
+    );
+  }
+
+  let quorum_vote_types: string[] = [];
+  if (settings?.counting_type & 0b100) {
+    quorum_vote_types.push("against");
+  }
+  if (settings?.counting_type & 0b010) {
+    quorum_vote_types.push("for");
+  }
+  if (settings?.counting_type & 0b001) {
+    quorum_vote_types.push("abstain");
+  }
+
   return (
     <Container slim className=" mt-3 flex flex-col gap-6 w-full">
       <Box className="flex flex-col gap-3 p-4 w-full">
         <Typography.Big>Profile</Typography.Big>
-        {/*<Typography.P>Avatar</Typography.P>
-         <div className="flex w-full">
-          <Image
-            className="rounded-full object-cover"
-            src={currentGovernor?.logo || "/icons/dao.svg"}
-            alt="project image"
-            width={64}
-            height={64}
-          />
-
-        </div> */}
         <Typography.P>Name</Typography.P>
         <Typography.Small className="text-snapLink pl-2">
           {currentGovernor.name}
@@ -37,59 +56,42 @@ function About() {
         <Container className="pl-2 flex flex-col gap-3">
           <Typography.P>Council</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.council}
+            {settings.council}
           </Typography.Small>
           <Typography.P>Counting Type</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.counting_type}
+            {`Quorum includes votes: ${quorum_vote_types.join(", ")}`}
           </Typography.Small>
-
           <Typography.P>Grace Period</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.grace_period}
+            {`${settings.grace_period} ledgers`}
           </Typography.Small>
           <Typography.P>Proposal Threshold</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {Number(currentGovernor?.settings?.proposal_threshold)}
+            {`${toBalance(settings.proposal_threshold, currentGovernor.decimals)} ${currentGovernor.voteTokenMetadata?.symbol}`}
           </Typography.Small>
           <Typography.P>Quorum</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.quorum}
+            {`${settings.quorum / 100}%`}
           </Typography.Small>
           <Typography.P>Timelock</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.timelock}
+            {`${settings.timelock} ledgers`}
           </Typography.Small>
           <Typography.P>Vote Delay</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.vote_delay}
+            {`${settings.vote_delay} ledgers`}
           </Typography.Small>
           <Typography.P>Vote Period</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.vote_period}
+            {`${settings.vote_period} ledgers`}
           </Typography.Small>
           <Typography.P>Vote Threshold</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor?.settings?.vote_threshold}
+            {`${settings.vote_threshold / 100}%`}
           </Typography.Small>
         </Container>
       </Box>
-      {/* <Box className="p-2">
-        <Typography.Big>Social</Typography.Big>
-        <div className="flex gap-3 justify-between p-4 ">
-          <div className="flex flex-col justify-left">
-            <Typography.Tiny className="text-snapLink">Twitter</Typography.Tiny>
-          </div>
-          <div className="flex flex-col justify-left">
-            <Typography.Tiny className="text-snapLink">Github</Typography.Tiny>
-          </div>
-          <div className="flex flex-col justify-left">
-            <Typography.Tiny className="text-snapLink">
-              CoinGecko
-            </Typography.Tiny>
-          </div>
-        </div>
-      </Box> */}
     </Container>
   );
 }
@@ -100,6 +102,7 @@ export default About;
 
 import governors from "../../../public/governors/governors.json";
 import { GetStaticPaths, GetStaticProps } from "next";
+import { Loader } from "@/components/common/Loader";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

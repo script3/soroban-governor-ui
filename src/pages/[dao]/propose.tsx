@@ -56,7 +56,8 @@ export default function CreateProposal() {
     proposalAction === ProposalActionEnum.UPGRADE &&
     (!upgradeString || !isUpgradeString(upgradeString, 64));
 
-  function handleProposal(action: string) {
+  async function handleProposal(action: string) {
+    let newProposalId: bigint | undefined = undefined;
     switch (action) {
       case ProposalActionEnum.CALLDATA:
         const calldata = parse(
@@ -65,14 +66,13 @@ export default function CreateProposal() {
               args:[],
               function:"",
               contract_id:""
-        
             }`
         ) as Calldata;
 
         const callDataToPass = parseCallData(calldata);
 
         if (callDataToPass !== null) {
-          createProposal(
+          newProposalId = await createProposal(
             title,
             description,
             {
@@ -86,7 +86,7 @@ export default function CreateProposal() {
         break;
       case ProposalActionEnum.UPGRADE:
         if (!!upgradeString) {
-          createProposal(
+          newProposalId = await createProposal(
             title,
             description,
             {
@@ -97,13 +97,11 @@ export default function CreateProposal() {
             params.dao as string
           );
         }
-
         break;
-
       case ProposalActionEnum.SETTINGS:
         if (!!governorSettings) {
           const governorToPass = parse(governorSettings) as GovernorSettings;
-          createProposal(
+          newProposalId = await createProposal(
             title,
             description,
             {
@@ -114,9 +112,8 @@ export default function CreateProposal() {
             params.dao as string
           );
         }
-
       case ProposalActionEnum.SNAPSHOT:
-        createProposal(
+        newProposalId = await createProposal(
           title,
           description,
           {
@@ -126,6 +123,9 @@ export default function CreateProposal() {
           false,
           params.dao as string
         );
+    }
+    if (!!newProposalId) {
+      router.push(`/${params.dao}/proposals/`);
     }
   }
 

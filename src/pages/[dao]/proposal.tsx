@@ -480,19 +480,22 @@ export default function Proposal() {
                     )}
                   </Typography.Small>
                 </Container>
-                <Container className="flex justify-between mb-2">
-                  <Typography.P className=" text-snapLink">
-                    Execution unlocked{" "}
-                  </Typography.P>
-                  <Typography.Small className="">
-                    {formatDate(
-                      getProposalDate(
-                        proposal?.executionETA,
-                        currentBlockNumber
-                      )
-                    )}
-                  </Typography.Small>
-                </Container>
+                {proposal.executionETA > 0 && (
+                    <Container className="flex justify-between mb-2">
+                      <Typography.P className=" text-snapLink">
+                        Execution unlocked{" "}
+                      </Typography.P>
+                      <Typography.Small className="">
+                        {formatDate(
+                          getProposalDate(
+                            proposal?.executionETA,
+                            currentBlockNumber
+                          )
+                        )}
+                      </Typography.Small>
+                    </Container>
+                  )
+                }
                 <Container className="flex justify-between mb-2">
                   <Typography.P className=" text-snapLink">ID </Typography.P>
                   <Typography.Small className="">

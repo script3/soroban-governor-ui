@@ -21,7 +21,6 @@ const MarkdownTextArea: React.FC<TextAreaProps> = ({
   const visitedBodyInput = useRef(false);
   const { upload, isUploadingImage, imageUploadError } = useImageUpload();
   const injectImageToBody = (image: { name: string; url: string }) => {
-    console.log("INJECTING");
     const cursorPosition = textAreaEl.current?.selectionStart;
     const currentBody = textAreaEl.current?.value;
     const currentBodyWithImage = `${currentBody?.substring(
@@ -34,7 +33,6 @@ const MarkdownTextArea: React.FC<TextAreaProps> = ({
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    console.log("PASTED");
     for (const item of e.clipboardData.items) {
       if (item.kind === "file" && item.type.startsWith("image/")) {
         const file = item.getAsFile();

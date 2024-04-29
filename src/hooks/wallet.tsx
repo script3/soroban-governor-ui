@@ -25,6 +25,7 @@ import {
   GovernorErrors,
   VotesErrors,
   GovernorSettings,
+  ContractErrorType,
 } from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
@@ -458,7 +459,7 @@ export const WalletProvider = ({ children = null as any }) => {
             successMessage: "Proposal created",
             failureMessage: "Failed to create proposal",
           });
-          return result || BigInt(0);
+          return result;
         }
       } else {
         return;
@@ -1157,10 +1158,7 @@ export const WalletProvider = ({ children = null as any }) => {
         setTxStatus(TxStatus.SUCCESS);
       } else {
         const error = result.result.error;
-        const message =
-          (GovernorErrors as any)[error.type.toString()]?.message ||
-          (VotesErrors as any)[error.type.toString()]?.message ||
-          "";
+        const message = ContractErrorType[error.type];
         console.log({ error, result, type: error.type, message });
         console.log("Failed submitted transaction: ", result.hash);
         setCleanTxMessage(

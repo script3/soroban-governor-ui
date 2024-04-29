@@ -399,7 +399,7 @@ export default function Proposal() {
                     </Box>
                   </Container>
                 )}
-                {votes.length > 0 && (
+                {votes?.length > 0 && (
                   <Container slim>
                     <Box className="!px-0">
                       <Container className="py-4 border-b flex gap-1 border-snapBorder">
@@ -408,7 +408,7 @@ export default function Proposal() {
                           {votes.length}
                         </Chip>
                       </Container>
-                      {votes.slice(0, 10).map((vote, index) => (
+                      {votes?.slice(0, 10).map((vote, index) => (
                         <VoteListItem
                           key={index}
                           vote={vote}
@@ -480,19 +480,22 @@ export default function Proposal() {
                     )}
                   </Typography.Small>
                 </Container>
-                <Container className="flex justify-between mb-2">
-                  <Typography.P className=" text-snapLink">
-                    Execution unlocked{" "}
-                  </Typography.P>
-                  <Typography.Small className="">
-                    {formatDate(
-                      getProposalDate(
-                        proposal?.executionETA,
-                        currentBlockNumber
-                      )
-                    )}
-                  </Typography.Small>
-                </Container>
+                {proposal.executionETA > 0 && (
+                    <Container className="flex justify-between mb-2">
+                      <Typography.P className=" text-snapLink">
+                        Execution unlocked{" "}
+                      </Typography.P>
+                      <Typography.Small className="">
+                        {formatDate(
+                          getProposalDate(
+                            proposal?.executionETA,
+                            currentBlockNumber
+                          )
+                        )}
+                      </Typography.Small>
+                    </Container>
+                  )
+                }
                 <Container className="flex justify-between mb-2">
                   <Typography.P className=" text-snapLink">ID </Typography.P>
                   <Typography.Small className="">
@@ -647,7 +650,7 @@ export default function Proposal() {
         title="Votes"
       >
         <Container slim className="h-max !p-4">
-          {votes.map((vote, index) => (
+          {votes?.map((vote, index) => (
             <VoteListItem
               decimals={currentGovernor?.decimals as number}
               key={index}

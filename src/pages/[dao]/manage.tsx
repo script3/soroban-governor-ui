@@ -56,17 +56,20 @@ function ManageVotes() {
     }
   );
 
-  const { votingPower, refetch: refetchVotingPower } = useVotingPower(governor?.voteTokenAddress, {
-    placeholderData: BigInt(0),
-    enabled: connected && !!governor?.voteTokenAddress,
-  });
+  const { votingPower, refetch: refetchVotingPower } = useVotingPower(
+    governor?.voteTokenAddress,
+    {
+      placeholderData: BigInt(0),
+      enabled: connected && !!governor?.voteTokenAddress,
+    }
+  );
 
   const { balance: underlyingTokenBalance, refetch: refetchunderlying } =
     useUnderlyingTokenBalance(governor?.underlyingTokenAddress || "", {
       enabled: connected && !!governor?.underlyingTokenAddress,
       placeholderData: BigInt(0),
     });
-  
+
   function handleWrapClick() {
     if (!connected) {
       connect();
@@ -192,12 +195,12 @@ function ManageVotes() {
             <Typography.P>
               Contract address:{" "}
               <Typography.P
-                  onClick={() => {
-                    window.open(
-                      `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/contract/${governor.voteTokenAddress}`,
-                      "_blank"
-                    );
-                  }}
+                onClick={() => {
+                  window.open(
+                    `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/contract/${governor.voteTokenAddress}`,
+                    "_blank"
+                  );
+                }}
                 className="text-snapLink cursor-pointer hover:underline"
               >
                 {governor?.voteTokenAddress}
@@ -238,7 +241,7 @@ function ManageVotes() {
             </Container>
           </Container>
         </Box>
-        <Box className="p-3 flex gap-3 flex-col !px-0">
+        <Box className="pt-3 flex gap-3 flex-col !px-0">
           {governor.isWrappedAsset && (
             <>
               <Container className="flex flex-col justify-center p-2 ">
@@ -263,26 +266,20 @@ function ManageVotes() {
                   value={toWrap}
                   type="number"
                 />
-                <Button
-                  className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
-                  onClick={handleWrapClick}
-                  disabled={isLoading || (connected && !toWrap)}
-                >
-                  {isLoading ? (
-                    <Loader />
-                  ) : connected ? (
-                    "Bond"
-                  ) : (
-                    "Connect wallet"
-                  )}
-                </Button>
               </Container>
+              <Button
+                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
+                onClick={handleWrapClick}
+                disabled={isLoading || (connected && !toWrap)}
+              >
+                {isLoading ? <Loader /> : connected ? "Bond" : "Connect wallet"}
+              </Button>
             </>
           )}
         </Box>
         {balance > BigInt(0) && governor?.isWrappedAsset && (
-          <Box className="p-3 flex gap-3 flex-col ">
-            <Container slim className="flex flex-col justify-center p-1 ">
+          <Box className="pt-3 !px-0 flex gap-3 flex-col ">
+            <Container className="flex flex-col justify-center p-2 ">
               <Typography.P>
                 Unbond {governor?.voteTokenMetadata.symbol} to get{" "}
                 {governor?.underlyingTokenMetadata?.symbol}
@@ -295,7 +292,7 @@ function ManageVotes() {
                 </Typography.Small>
               )}
             </Container>
-            <Container slim className="w-full flex flex-col  gap-3">
+            <Container slim className="w-full flex flex-col  gap-3 px-4">
               <Input
                 className="!w-1/3 flex"
                 placeholder="Amount to unbond"
@@ -303,20 +300,14 @@ function ManageVotes() {
                 value={toUnwrap}
                 type="number"
               />
-              <Button
-                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
-                onClick={handleUnwrapClick}
-                disabled={isLoading || (connected && !toUnwrap)}
-              >
-                {isLoading ? (
-                  <Loader />
-                ) : connected ? (
-                  "Unbond"
-                ) : (
-                  "Connect wallet"
-                )}
-              </Button>
             </Container>
+            <Button
+              className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
+              onClick={handleUnwrapClick}
+              disabled={isLoading || (connected && !toUnwrap)}
+            >
+              {isLoading ? <Loader /> : connected ? "Unbond" : "Connect wallet"}
+            </Button>
           </Box>
         )}
         {connected && <Typography.Big>Delegate</Typography.Big>}

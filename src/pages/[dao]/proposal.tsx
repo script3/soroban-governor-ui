@@ -1,7 +1,6 @@
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Chip } from "@/components/common/Chip";
-import { Dropdown, Item } from "@/components/common/Dropdown";
 import Typography from "@/components/common/Typography";
 import {
   ProposalActionEnum,
@@ -120,14 +119,6 @@ export default function Proposal() {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
-  function handleAction(action: string) {
-    switch (action) {
-      case "copy":
-        copyToClipboard(`${window.location.origin}${router.pathname}`);
-      default:
-        break;
-    }
-  }
   function handleLinkClick(link: string) {
     window.open(link, "_blank");
   }
@@ -265,7 +256,7 @@ export default function Proposal() {
                   <Button
                     onClick={() => {
                       copyToClipboard(
-                        `${window.location.origin}${router.pathname}`
+                        `${window.location.origin}${router.asPath}`
                       );
                       setCopied(true);
                     }}
@@ -339,97 +330,6 @@ export default function Proposal() {
                     </Box>
                   )}
                 </Container>
-                {proposalStatus === ProposalStatusEnum.Active && (
-                  <Container slim>
-                    <Box>
-                      <Container className="border-b border-snapBorder flex !flex-row justify-between ">
-                        <Typography.Medium className=" !p-4 flex w-max">
-                          {userVote !== undefined
-                            ? "Your vote is in"
-                            : "Cast your vote"}
-                        </Typography.Medium>
-                        {connected && (
-                          <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                            Voting power:{" "}
-                            {toBalance(votingPower, currentGovernor?.decimals)}
-                          </Typography.Medium>
-                        )}
-                      </Container>
-                      <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
-                        <SelectableList
-                          disabled={
-                            isLoading ||
-                            userVote !== undefined ||
-                            votingPower === BigInt(0) ||
-                            !connected
-                          }
-                          onSelect={setSelectedSupport}
-                          items={[
-                            { value: VoteSupport.For, label: "For" },
-                            { value: VoteSupport.Against, label: "Against" },
-                            { value: VoteSupport.Abstain, label: "Abstain" },
-                          ]}
-                          selected={userVote ?? selectedSupport}
-                        />
-                        <Button
-                          onClick={() => {
-                            if (connected && userVote === undefined) {
-                              handleVote();
-                            } else {
-                              connect();
-                            }
-                          }}
-                          className="!bg-secondary px-16 !w-full"
-                          disabled={
-                            isLoading ||
-                            userVote !== undefined ||
-                            proposalStatus !== ProposalStatusEnum.Active ||
-                            votingPower === BigInt(0)
-                          }
-                        >
-                          {isLoading ? (
-                            <Loader />
-                          ) : connected ? (
-                            "Vote"
-                          ) : (
-                            "Connect Wallet to Vote"
-                          )}
-                        </Button>
-                      </Container>
-                    </Box>
-                  </Container>
-                )}
-                {votes?.length > 0 && (
-                  <Container slim>
-                    <Box className="!px-0">
-                      <Container className="py-4 border-b flex gap-1 border-snapBorder">
-                        <Typography.P className="inline">Votes </Typography.P>
-                        <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
-                          {votes.length}
-                        </Chip>
-                      </Container>
-                      {votes?.slice(0, 10).map((vote, index) => (
-                        <VoteListItem
-                          key={index}
-                          vote={vote}
-                          index={index}
-                          decimals={currentGovernor?.decimals as number}
-                          voteCount={proposal.total_votes}
-                          symbol={currentGovernor?.voteTokenMetadata.symbol}
-                        />
-                      ))}
-                      <div
-                        className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
-                        onClick={() => {
-                          setIsVotesModalOpen(true);
-                        }}
-                      >
-                        {" "}
-                        See more
-                      </div>
-                    </Box>
-                  </Container>
-                )}
               </>
             )}
             {activeTab === "Action" && (
@@ -438,6 +338,97 @@ export default function Proposal() {
                   governor={currentGovernor}
                   proposal={proposal}
                 />
+              </Container>
+            )}
+            {proposalStatus === ProposalStatusEnum.Active && (
+              <Container slim>
+                <Box>
+                  <Container className="border-b border-snapBorder flex !flex-row justify-between ">
+                    <Typography.Medium className=" !p-4 flex w-max">
+                      {userVote !== undefined
+                        ? "Your vote is in"
+                        : "Cast your vote"}
+                    </Typography.Medium>
+                    {connected && (
+                      <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
+                        Proposal voting power:{" "}
+                        {toBalance(votingPower, currentGovernor?.decimals)}
+                      </Typography.Medium>
+                    )}
+                  </Container>
+                  <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
+                    <SelectableList
+                      disabled={
+                        isLoading ||
+                        userVote !== undefined ||
+                        votingPower === BigInt(0) ||
+                        !connected
+                      }
+                      onSelect={setSelectedSupport}
+                      items={[
+                        { value: VoteSupport.For, label: "For" },
+                        { value: VoteSupport.Against, label: "Against" },
+                        { value: VoteSupport.Abstain, label: "Abstain" },
+                      ]}
+                      selected={userVote ?? selectedSupport}
+                    />
+                    <Button
+                      onClick={() => {
+                        if (connected && userVote === undefined) {
+                          handleVote();
+                        } else {
+                          connect();
+                        }
+                      }}
+                      className="!bg-secondary px-16 !w-full"
+                      disabled={
+                        isLoading ||
+                        userVote !== undefined ||
+                        proposalStatus !== ProposalStatusEnum.Active ||
+                        votingPower === BigInt(0)
+                      }
+                    >
+                      {isLoading ? (
+                        <Loader />
+                      ) : connected ? (
+                        "Vote"
+                      ) : (
+                        "Connect Wallet to Vote"
+                      )}
+                    </Button>
+                  </Container>
+                </Box>
+              </Container>
+            )}
+            {votes?.length > 0 && (
+              <Container slim>
+                <Box className="!px-0">
+                  <Container className="py-4 border-b flex gap-1 border-snapBorder">
+                    <Typography.P className="inline">Votes </Typography.P>
+                    <Chip className="!px-2 inline !min-w-[20px] bg-secondary text-white">
+                      {votes.length}
+                    </Chip>
+                  </Container>
+                  {votes?.slice(0, 10).map((vote, index) => (
+                    <VoteListItem
+                      key={index}
+                      vote={vote}
+                      index={index}
+                      decimals={currentGovernor?.decimals as number}
+                      voteCount={proposal.total_votes}
+                      symbol={currentGovernor?.voteTokenMetadata.symbol}
+                    />
+                  ))}
+                  <div
+                    className="block rounded-b-none border-snapBorder cursor-pointer border-t p-4 text-center md:rounded-b-md justify-center"
+                    onClick={() => {
+                      setIsVotesModalOpen(true);
+                    }}
+                  >
+                    {" "}
+                    See more
+                  </div>
+                </Box>
               </Container>
             )}
           </Container>
@@ -606,14 +597,6 @@ export default function Proposal() {
                               )} ${currentGovernor.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.P>
-                        <Typography.Medium>
-                          {proposal.votes_abstain > 0
-                            ? `${toBalance(
-                                proposal.votes_abstain,
-                                currentGovernor.decimals
-                              )} ${currentGovernor.voteTokenMetadata.symbol}`
-                            : "   "}
-                        </Typography.Medium>
                         <Typography.P>
                           {" "}
                           {proposal.votes_abstain > 0

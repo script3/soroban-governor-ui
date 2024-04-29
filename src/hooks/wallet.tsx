@@ -65,6 +65,7 @@ export interface IWalletContext {
   notificationMode: string;
   showNotification: boolean;
   notificationTitle: string;
+  showNotificationLink: boolean;
   isLoading: boolean;
   network: Network;
   connect: () => Promise<void>;
@@ -181,12 +182,15 @@ export const WalletProvider = ({ children = null as any }) => {
   const [notificationMode, setNotificationMode] = useState<string>("");
   const [showNotification, setShowNotification] = useState<boolean>(false);
   const [notificationTitle, setNotificationTitle] = useState<string>("");
+  const [showNotificationLink, setShowNotificationLink] =
+    useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [txMessage, setTxMessage] = useState<string | undefined>(undefined);
   const [network, setStateNetwork] = useState<Network>({
     rpc:
       process.env.NEXT_PUBLIC_RPC_URL || "https://soroban-testnet.stellar.org",
-    passphrase: process.env.NEXT_PUBLIC_PASSPHRASE || "Test SDF Network ; September 2015",
+    passphrase:
+      process.env.NEXT_PUBLIC_PASSPHRASE || "Test SDF Network ; September 2015",
     opts: undefined,
   });
 
@@ -774,7 +778,11 @@ export const WalletProvider = ({ children = null as any }) => {
         const votesClient = new TokenVotesContract(voteTokenAddress);
         let proposeOperation;
         let proposalIsPast = false;
-        if (proposalStart && currentBlockNumber && currentBlockNumber > proposalStart) {
+        if (
+          proposalStart &&
+          currentBlockNumber &&
+          currentBlockNumber > proposalStart
+        ) {
           proposalIsPast = true;
           proposeOperation = votesClient.getPastVotes({
             user: walletAddress,
@@ -1156,10 +1164,16 @@ export const WalletProvider = ({ children = null as any }) => {
           options.successMessage || "Transaction submitted successfully"
         );
         setTxStatus(TxStatus.SUCCESS);
+        setShowNotificationLink(true);
       } else {
         const error = result.result.error;
         const message = ContractErrorType[error.type];
         console.log({ error, result, type: error.type, message });
+        if (error.type < 0) {
+          setShowNotificationLink(true);
+        } else {
+          setShowNotificationLink(false);
+        }
         console.log("Failed submitted transaction: ", result.hash);
         setCleanTxMessage(
           options.failureMessage
@@ -1188,6 +1202,7 @@ export const WalletProvider = ({ children = null as any }) => {
     setShowNotification(false);
     setNotificationMode("");
     setNotificationTitle("");
+    setShowNotificationLink(false);
   }
 
   function closeNotification() {
@@ -1234,6 +1249,7 @@ export const WalletProvider = ({ children = null as any }) => {
         notificationMode,
         showNotification,
         notificationTitle,
+        showNotificationLink,
       }}
     >
       {children}

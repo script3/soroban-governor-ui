@@ -8,11 +8,15 @@ export function FlashNotification({
   status,
   message,
   isOpen,
+  showLink,
+  txHash,
   onClose,
 }: {
   status: number;
   message: string;
   isOpen: boolean;
+  showLink?: boolean;
+  txHash?: string;
   onClose?: () => void;
 }) {
   const timeoutRef = useRef<any>();
@@ -42,11 +46,11 @@ export function FlashNotification({
       {isOpen && (
         <Container
           slim
-          className={` z-50 flex rounded-full fixed bottom-10 min-w-[350px] !flex-row justify-between left-[calc(50%-175px)] p-3 ${
+          className={` z-50 flex fixed mx-auto my-4 w-full md:w-1/2 box-border rounded-xl min-w-[350px] md:left-[calc(25%+60px)]  top-16  !flex-row justify-between py-6 p-3 ${
             status === TxStatus.SUCCESS ? "bg-success" : "bg-error"
           } `}
         >
-          <Container slim className="w-[90%] flex flex-row gap-2 pl-4">
+          <Container slim className="w-[80%] flex flex-row gap-2 pl-4">
             {status === TxStatus.SUCCESS ? (
               <Image
                 src="/icons/check.svg"
@@ -57,8 +61,38 @@ export function FlashNotification({
             ) : (
               ""
             )}
-            <Typography.P>{message}</Typography.P>
+            <Container className="flex flex-col ">
+              <Typography.P>
+                {message?.includes("|") ? (
+                  <>
+                    <b>{message?.split("|")[0]}</b> | {message?.split("|")[1]}
+                  </>
+                ) : (
+                  message
+                )}
+              </Typography.P>
+              {showLink && txHash && (
+                <Typography.P
+                  onClick={() => {
+                    window.open(
+                      `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/tx/${txHash}`,
+                      "_blank"
+                    );
+                  }}
+                  className="underline cursor-pointer flex flex-row gap-1"
+                >
+                  View
+                  <Image
+                    src="/icons/external-link.svg"
+                    width={20}
+                    height={20}
+                    alt="link"
+                  />
+                </Typography.P>
+              )}
+            </Container>
           </Container>
+
           <Container slim className="flex  w-max justify-end items-end pr-3">
             <Image
               onClick={onClose}

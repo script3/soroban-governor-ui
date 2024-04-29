@@ -1,13 +1,24 @@
 export interface ContainerProps {
   children: React.ReactNode;
+  style?: React.CSSProperties;
   slim?: boolean;
   className?: string;
 }
 
-export function Container({ slim, children, className }: ContainerProps) {
+export function Container({
+  slim,
+  children,
+  className,
+  style,
+}: ContainerProps) {
   const containerClasses = slim ? "px-0" : "px-4";
 
   return (
-    <div className={` ${containerClasses} ${className || ""}`}>{children}</div>
+    <div
+      style={style || {}}
+      className={` ${containerClasses} ${className || ""}`}
+    >
+      {children}
+    </div>
   );
 }

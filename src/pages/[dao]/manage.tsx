@@ -260,7 +260,7 @@ function ManageVotes() {
               </Container>
               <Container slim className="w-full flex flex-col  gap-3 px-4 ">
                 <Input
-                  className="!w-1/3 flex"
+                  className="!w-full flex"
                   placeholder="Amount to bond"
                   onChange={setToWrap}
                   value={toWrap}
@@ -294,7 +294,7 @@ function ManageVotes() {
             </Container>
             <Container slim className="w-full flex flex-col  gap-3 px-4">
               <Input
-                className="!w-1/3 flex"
+                className="!w-full flex"
                 placeholder="Amount to unbond"
                 onChange={setToUnwrap}
                 value={toUnwrap}

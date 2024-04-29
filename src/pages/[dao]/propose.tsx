@@ -124,7 +124,8 @@ export default function CreateProposal() {
           params.dao as string
         );
     }
-    if (!!newProposalId) {
+
+    if (!(newProposalId as any).result?.error) {
       router.push(`/${params.dao}/proposals/`);
     }
   }

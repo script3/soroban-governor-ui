@@ -241,7 +241,7 @@ function ManageVotes() {
             </Container>
           </Container>
         </Box>
-        <Box className="p-3 flex gap-3 flex-col !px-0">
+        <Box className="pt-3 flex gap-3 flex-col !px-0">
           {governor.isWrappedAsset && (
             <>
               <Container className="flex flex-col justify-center p-2 ">
@@ -278,8 +278,8 @@ function ManageVotes() {
           )}
         </Box>
         {balance > BigInt(0) && governor?.isWrappedAsset && (
-          <Box className="p-3 flex gap-3 flex-col ">
-            <Container slim className="flex flex-col justify-center p-1 ">
+          <Box className="pt-3 !px-0 flex gap-3 flex-col ">
+            <Container className="flex flex-col justify-center p-2 ">
               <Typography.P>
                 Unbond {governor?.voteTokenMetadata.symbol} to get{" "}
                 {governor?.underlyingTokenMetadata?.symbol}
@@ -292,7 +292,7 @@ function ManageVotes() {
                 </Typography.Small>
               )}
             </Container>
-            <Container slim className="w-full flex flex-col  gap-3">
+            <Container slim className="w-full flex flex-col  gap-3 px-4">
               <Input
                 className="!w-1/3 flex"
                 placeholder="Amount to unbond"

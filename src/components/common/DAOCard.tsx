@@ -36,7 +36,7 @@ export function DAOCard({
     >
       <div className="p-4  leading-5 sm:leading-6 flex w-full h-full flex-col gap-4 justify-center items-center">
         <Image
-          className="rounded-full object-cover"
+          className="rounded-full object-contain w-[82px] h-[82px]"
           src={logo}
           alt="project image"
           width={82}

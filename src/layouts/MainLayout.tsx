@@ -17,8 +17,10 @@ export function MainLayout({ children }: MainLayoutProps) {
     clearLastTx,
     notificationMode,
     lastTxMessage: txMessage,
+    lastTxHash: txHash,
     notificationTitle,
     showNotification,
+    showNotificationLink,
   } = useWallet();
   function getNotificationTitle() {
     if (!!notificationTitle) {
@@ -40,15 +42,17 @@ export function MainLayout({ children }: MainLayoutProps) {
       <SideBar />
       <Container slim className="w-full py-4">
         <TopBar />
-        {children}
         <FlashNotification
           isOpen={showNotification && notificationMode === "flash"}
           status={txStatus}
+          showLink={showNotificationLink}
+          txHash={txHash}
           message={txMessage as string}
           onClose={() => {
             clearLastTx();
           }}
         />
+        {children}
         <Modal
           title={getNotificationTitle()}
           onClose={() => {

@@ -17,7 +17,7 @@ const config: Config = {
         primary: "#ee2529",
         secondary: "#2599FF",
         accent: "#ffcccc",
-        error: "#ff0000",
+        error: "#fc4058",
         success: "#21b66f",
         warning: "#ffff00",
       },

@@ -31,7 +31,7 @@ export function FlashNotification({
     if (isOpen) {
       timeoutRef.current = setTimeout(() => {
         onClose && onClose();
-      }, 2000); // Set your desired timeout duration in milliseconds
+      }, 7000); // Set your desired timeout duration in milliseconds
     }
 
     // Clean up the timeout on component unmount or when isOpen becomes false
@@ -41,6 +41,7 @@ export function FlashNotification({
       }
     };
   }, [isOpen, onClose]);
+
   return (
     <>
       {isOpen && (

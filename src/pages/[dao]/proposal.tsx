@@ -21,6 +21,7 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
 import { VoteListItem } from "@/components/proposal/VoteListItem";
 import { copyToClipboard } from "@/utils/string";
+import { Tooltip } from 'react-tooltip'
 import Image from "next/image";
 
 import { useRouter } from "next/router";
@@ -350,10 +351,23 @@ export default function Proposal() {
                         : "Cast your vote"}
                     </Typography.Medium>
                     {connected && (
-                      <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                        Proposal voting power:{" "}
-                        {toBalance(votingPower, currentGovernor?.decimals)}
-                      </Typography.Medium>
+                      <>
+                        <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
+                          Proposal voting power:{" "}
+                          {toBalance(votingPower, currentGovernor?.decimals)}
+                        </Typography.Medium>
+                        <Image
+                          src="/icons/question-icon.svg"
+                          width={20}
+                          height={20}
+                          className="vote-tooltip"
+                          alt="question"
+                        />
+                        <Tooltip
+                          anchorSelect=".vote-tooltip"
+                          content="Proposal voting power is only active for voting assets that were acquired before the proposal start date. Any voting assets acquired after the proposal start date can be contirbuted to voting power in future proposals."
+                        />
+                      </>
                     )}
                   </Container>
                   <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">

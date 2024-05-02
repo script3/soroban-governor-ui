@@ -16,6 +16,21 @@
       }
     },
     {
+      "name": "Test SCF DAO",
+      "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+      "address": "CC5WY6I7XV4NXM3RS77WO6DNUGJ3GBVSJ66LKPTR3HTDUYVQAVAE2Z43",
+      "voteTokenAddress": "CCYZCNYTFOWK226G7VBEIFLJG3GGJSCURONHQ3QRAEJC7OHGMC5JJQWF",
+      "decimals": 7,
+      "isWrappedAsset": false,
+      "underlyingTokenAddress":null,
+      "voteTokenMetadata":{
+        "name":"SCF Governance Token",
+        "symbol":"voteSCF",
+        "decimals":7,
+        "icon":"https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7"
+      }
+    },
+    {
       "name": "XLM DAO",
       "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
       "address": "CC7XSM5U5Z7UGC3BMN5IHDH4R7DTRE4NFE46SKNSFN2SIMQZ6AVWTGEW",

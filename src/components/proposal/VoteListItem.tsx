@@ -1,4 +1,3 @@
-import { formatCompactNumber } from "@/utils/date";
 import { Container } from "../common/BaseContainer";
 import Typography from "../common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
@@ -12,13 +11,11 @@ export function VoteListItem({
   voteCount,
   index,
   decimals,
-  symbol,
 }: {
   vote: any;
   voteCount: any;
   index: number;
   decimals: number;
-  symbol?: string;
 }) {
   function getColorClassByVote(voteSupport: number) {
     if (voteSupport === VoteSupport.For) {
@@ -53,7 +50,7 @@ export function VoteListItem({
         </Chip>
       </Container>
       <Typography.P className="flex w-max min-w-[200px] items-center justify-end whitespace-nowrap text-right  xs:w-[130px] xs:min-w-[130px]">
-        {toBalance(vote.amount, decimals)} {symbol}
+        {toBalance(vote.amount, decimals)}
       </Typography.P>
     </Container>
   );

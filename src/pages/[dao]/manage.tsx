@@ -241,9 +241,9 @@ function ManageVotes() {
             </Container>
           </Container>
         </Box>
-        <Box className="pt-3 flex gap-3 flex-col !px-0">
-          {governor.isWrappedAsset && (
-            <>
+        {governor.isWrappedAsset && (
+          <>
+            <Box className="pt-3 flex gap-3 flex-col !px-0">
               <Container className="flex flex-col justify-center p-2 ">
                 <Typography.P>
                   Bond {governor?.underlyingTokenMetadata?.symbol} to get{" "}
@@ -274,41 +274,41 @@ function ManageVotes() {
               >
                 {isLoading ? <Loader /> : connected ? "Bond" : "Connect wallet"}
               </Button>
-            </>
-          )}
-        </Box>
-        {balance > BigInt(0) && governor?.isWrappedAsset && (
-          <Box className="pt-3 !px-0 flex gap-3 flex-col ">
-            <Container className="flex flex-col justify-center p-2 ">
-              <Typography.P>
-                Unbond {governor?.voteTokenMetadata.symbol} to get{" "}
-                {governor?.underlyingTokenMetadata?.symbol}
-              </Typography.P>
-              {connected && (
-                <Typography.Small className="text-snapLink">
-                  Voting token balance:{" "}
-                  {toBalance(balance, governor?.decimals || 7)}{" "}
-                  {governor?.voteTokenMetadata.symbol}
-                </Typography.Small>
-              )}
-            </Container>
-            <Container slim className="w-full flex flex-col  gap-3 px-4">
-              <Input
-                className="!w-full flex"
-                placeholder="Amount to unbond"
-                onChange={setToUnwrap}
-                value={toUnwrap}
-                type="number"
-              />
-            </Container>
-            <Button
-              className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
-              onClick={handleUnwrapClick}
-              disabled={isLoading || (connected && !toUnwrap)}
-            >
-              {isLoading ? <Loader /> : connected ? "Unbond" : "Connect wallet"}
-            </Button>
-          </Box>
+            </Box>
+            {balance > BigInt(0) && (
+              <Box className="pt-3 !px-0 flex gap-3 flex-col ">
+                <Container className="flex flex-col justify-center p-2 ">
+                  <Typography.P>
+                    Unbond {governor?.voteTokenMetadata.symbol} to get{" "}
+                    {governor?.underlyingTokenMetadata?.symbol}
+                  </Typography.P>
+                  {connected && (
+                    <Typography.Small className="text-snapLink">
+                      Voting token balance:{" "}
+                      {toBalance(balance, governor?.decimals || 7)}{" "}
+                      {governor?.voteTokenMetadata.symbol}
+                    </Typography.Small>
+                  )}
+                </Container>
+                <Container slim className="w-full flex flex-col  gap-3 px-4">
+                  <Input
+                    className="!w-full flex"
+                    placeholder="Amount to unbond"
+                    onChange={setToUnwrap}
+                    value={toUnwrap}
+                    type="number"
+                  />
+                </Container>
+                <Button
+                  className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
+                  onClick={handleUnwrapClick}
+                  disabled={isLoading || (connected && !toUnwrap)}
+                >
+                  {isLoading ? <Loader /> : connected ? "Unbond" : "Connect wallet"}
+                </Button>
+              </Box>
+            )}
+          </>
         )}
         {connected && <Typography.Big>Delegate</Typography.Big>}
         {connected && !hasDelegate && (

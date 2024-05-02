@@ -365,7 +365,7 @@ export default function Proposal() {
                         />
                         <Tooltip
                           anchorSelect=".vote-tooltip"
-                          content="Proposal voting power is only active for voting assets that were acquired before the proposal start date. Any voting assets acquired after the proposal start date can be contirbuted to voting power in future proposals."
+                          content="Proposal voting power only includes votes that were acquired before the proposal start ledger. Any votes acquired after the proposal start ledger will be included for future proposals."
                         />
                       </>
                     )}

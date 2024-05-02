@@ -15,13 +15,14 @@
     "@headlessui/react": "^1.7.18",
     "@script3/soroban-governor-sdk": "^1.0.1",
     "@snapshot-labs/pineapple": "^1.1.0",
+    "@stellar/stellar-sdk": "^11.3.0",
     "@tanstack/react-query": "^5.22.2",
     "@types/remarkable": "^2.0.8",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-tooltip": "^5.26.4",
     "remarkable": "^2.0.1",
-    "@stellar/stellar-sdk": "^11.3.0",
     "viewerjs": "^1.11.6"
   },
   "devDependencies": {

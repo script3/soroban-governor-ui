@@ -11,7 +11,8 @@ import {
   WalletNetwork,
   XBULL_ID,
   xBullModule,
-} from "@creit.tech/stellar-wallets-kit/build/main";
+  LobstrModule
+} from "@creit.tech/stellar-wallets-kit/build";
 
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -203,7 +204,7 @@ export const WalletProvider = ({ children = null as any }) => {
       autoConnect !== undefined && autoConnect !== "false"
         ? autoConnect
         : XBULL_ID,
-    modules: [new xBullModule(), new FreighterModule()],
+    modules: [new xBullModule(), new FreighterModule(), new LobstrModule()],
   });
 
   useEffect(() => {

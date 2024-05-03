@@ -430,7 +430,6 @@ export default function Proposal() {
                       index={index}
                       decimals={currentGovernor?.decimals as number}
                       voteCount={proposal.total_votes}
-                      symbol={currentGovernor?.voteTokenMetadata.symbol}
                     />
                   ))}
                   <div
@@ -532,7 +531,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_for,
                                 currentGovernor.decimals
-                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -569,7 +568,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_against,
                                 currentGovernor.decimals
-                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -608,7 +607,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_abstain,
                                 currentGovernor.decimals
-                              )} ${currentGovernor.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -654,7 +653,6 @@ export default function Proposal() {
               vote={vote}
               index={index}
               voteCount={proposal.total_votes}
-              symbol={currentGovernor?.voteTokenMetadata.symbol}
             />
           ))}
         </Container>

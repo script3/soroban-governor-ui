@@ -915,8 +915,9 @@ export const WalletProvider = ({ children = null as any }) => {
           return (
             submitTransaction<bigint>(submission, {
               notificationMode: "flash",
-              notificationTitle: "Tokens succesfully wrapped",
-              successMessage: "Tokens succesfully wrapped",
+              notificationTitle: "Tokens successfully bonded",
+              successMessage: "Tokens successfully bonded",
+              failureMessage: "Failed to bond tokens",
             }) || BigInt(0)
           );
         }
@@ -924,7 +925,7 @@ export const WalletProvider = ({ children = null as any }) => {
         return BigInt(0);
       }
     } catch (e) {
-      console.log("Error wrapping token: ", e);
+      console.log("Error bonding token: ", e);
       throw e;
     }
   }
@@ -974,9 +975,9 @@ export const WalletProvider = ({ children = null as any }) => {
           return (
             submitTransaction<bigint>(submission, {
               notificationMode: "flash",
-              notificationTitle: "Tokens succesfully unwrapped",
-              failureMessage: "Tokens succesfully unwrapped",
-              successMessage: "Tokens succesfully unwrapped",
+              notificationTitle: "Tokens successfully unbonded",
+              successMessage: "Tokens successfully unbonded",
+              failureMessage: "Failed to unbond tokens",
             }) || BigInt(0)
           );
         }
@@ -984,7 +985,7 @@ export const WalletProvider = ({ children = null as any }) => {
         return BigInt(0);
       }
     } catch (e) {
-      console.log("Error unwrapping token: ", e);
+      console.log("Error unbonding token: ", e);
       throw e;
     }
   }
@@ -1150,6 +1151,8 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
+
+      console.log(result);
 
       setTxHash(result.hash);
       const isOk = result.result.isOk();

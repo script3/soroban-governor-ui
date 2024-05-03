@@ -202,7 +202,7 @@ function Proposals() {
                             ? `${toBalance(
                                 proposal.votes_for,
                                 governor?.decimals
-                              )} ${governor?.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
@@ -233,7 +233,7 @@ function Proposals() {
                             ? `${toBalance(
                                 proposal.votes_against,
                                 governor?.decimals
-                              )} ${governor?.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
@@ -265,7 +265,7 @@ function Proposals() {
                             ? `${toBalance(
                                 proposal.votes_abstain,
                                 governor?.decimals
-                              )} ${governor?.voteTokenMetadata.symbol}`
+                              )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>

@@ -21,6 +21,7 @@ import { ProgressBar } from "@/components/common/ProgressBar";
 import { Modal } from "@/components/Modal";
 import { VoteListItem } from "@/components/proposal/VoteListItem";
 import { copyToClipboard } from "@/utils/string";
+import { Tooltip } from 'react-tooltip'
 import Image from "next/image";
 
 import { useRouter } from "next/router";
@@ -350,10 +351,23 @@ export default function Proposal() {
                         : "Cast your vote"}
                     </Typography.Medium>
                     {connected && (
-                      <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
-                        Proposal voting power:{" "}
-                        {toBalance(votingPower, currentGovernor?.decimals)}
-                      </Typography.Medium>
+                      <>
+                        <Typography.Medium className=" !p-4 flex w-max text-snapLink ">
+                          Proposal voting power:{" "}
+                          {toBalance(votingPower, currentGovernor?.decimals)}
+                        </Typography.Medium>
+                        <Image
+                          src="/icons/question-icon.svg"
+                          width={20}
+                          height={20}
+                          className="vote-tooltip"
+                          alt="question"
+                        />
+                        <Tooltip
+                          anchorSelect=".vote-tooltip"
+                          content="Proposal voting power only includes votes that were acquired before the proposal start ledger. Any votes acquired after the proposal start ledger will be included for future proposals."
+                        />
+                      </>
                     )}
                   </Container>
                   <Container className="flex flex-col gap-4 justify-center p-4 w-full items-center">
@@ -416,6 +430,7 @@ export default function Proposal() {
                       index={index}
                       decimals={currentGovernor?.decimals as number}
                       voteCount={proposal.total_votes}
+                      symbol={currentGovernor?.voteTokenMetadata.symbol}
                     />
                   ))}
                   <div
@@ -517,7 +532,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_for,
                                 currentGovernor.decimals
-                              )} -`
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -554,7 +569,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_against,
                                 currentGovernor.decimals
-                              )} -`
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -593,7 +608,7 @@ export default function Proposal() {
                             ? `${toBalance(
                                 proposal.votes_abstain,
                                 currentGovernor.decimals
-                              )} -`
+                              )} ${currentGovernor.voteTokenMetadata.symbol}`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
@@ -639,6 +654,7 @@ export default function Proposal() {
               vote={vote}
               index={index}
               voteCount={proposal.total_votes}
+              symbol={currentGovernor?.voteTokenMetadata.symbol}
             />
           ))}
         </Container>

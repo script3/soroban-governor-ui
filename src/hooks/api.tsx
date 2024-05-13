@@ -1,536 +1,276 @@
-import { Governor, Proposal, Vote, VoteSupport, XDRVote } from "@/types";
-import { DefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
+import { Governor, Proposal, ProposalStatusExt, Vote, VoteSupport } from "@/types";
+import { DefinedInitialDataOptions, UseQueryResult, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
-import { parseProposalFromXDR, parseVoteFromXDR } from "@/utils/parse";
-import { SorobanRpc, StrKey, nativeToScVal, xdr } from "@stellar/stellar-sdk";
-import { VoteCount } from "@script3/soroban-governor-sdk";
+import { SorobanRpc } from "@stellar/stellar-sdk";
+import { getBalance, getDelegate, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
+import { fetchProposalById, fetchProposalsByGovernor, fetchVotesByProposal } from "@/utils/graphql";
+import { GovernorSettings } from "@script3/soroban-governor-sdk";
 
-const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 const DEFAULT_STALE_TIME = 20 * 1000;
-export type NoSettingsGovernor = Omit<Governor, "settings">;
-export function useCurrentBlockNumber(
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
+
+export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
   const { network } = useWallet();
-  const { data, isLoading, error } = useQuery({
-    ...options,
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
-    refetchInterval: 10000,
     queryKey: ["blockNumber"],
+    placeholderData: 0,
     queryFn: async () => {
       const rpc = new SorobanRpc.Server(network.rpc);
       const data = await rpc.getLatestLedger();
       return data.sequence;
     },
   });
-
-  return {
-    blockNumber: data as number,
-    isLoading,
-    error,
-  };
 }
 
-export function useGovernors(
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { data, isLoading, error } = useQuery({
+export function useWalletBalance(
+  tokenAddress: string,
+): UseQueryResult<bigint> {
+  const { network, walletAddress, connected } = useWallet();
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
-    ...options,
-    queryKey: ["governors"],
-    queryFn: loadGovernors,
+    enabled: connected,
+    placeholderData: BigInt(0),
+    queryKey: ["balance", tokenAddress, walletAddress],
+    queryFn: async (): Promise<bigint> => {
+      if (!connected || walletAddress === "") {
+        return BigInt(0);
+      }
+      return await getBalance(network, tokenAddress, walletAddress);
+    }
   });
-  async function loadGovernors(): Promise<NoSettingsGovernor[]> {
-    return governors as NoSettingsGovernor[];
-  }
-  return {
-    governors: data as NoSettingsGovernor[],
-    isLoading,
-    error,
-  };
 }
 
-export function useGovernor(
-  governorId: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { governors } = useGovernors({
-    placeholderData: [],
-  });
-  const { getGovernorSettings } = useWallet();
+//********* Governor **********//
 
-  const { data, isLoading, error } = useQuery({
+export function useGovernors(): Governor[] {
+  return governors as Governor[];
+}
+
+export function useGovernor(governorId: string): Governor | undefined {
+  return governors.find((governor) => governor.address === governorId);
+}
+
+export function useGovernorSettings(
+  governorId: string | undefined,
+): UseQueryResult<GovernorSettings> {
+  const { network } = useWallet();
+
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
-    ...options,
     queryKey: ["governor", governorId],
-    queryFn: () => getGovernorById(governorId, governors),
-    enabled: governors.length >= 1,
+    enabled: governorId !== undefined,
+    queryFn: () => {
+      if (governorId) {
+        getGovernorSettings(network, governorId)
+      }
+    },
   });
-
-  async function getGovernorById(
-    governorId: string,
-    governors: NoSettingsGovernor[]
-  ): Promise<Governor | null> {
-    const foundGovernor = governors.find((p) => p.address === governorId);
-    if (!foundGovernor) {
-      return null;
-    }
-    const governorSettings = await getGovernorSettings(foundGovernor?.address);
-    if (!governorSettings) {
-      return null;
-    }
-    const data: Governor = {
-      ...foundGovernor,
-      settings: governorSettings,
-    };
-    return data;
-  }
-
-  return {
-    governor: data as Governor,
-    isLoading,
-    error,
-  };
 }
+
+//********* Proposals **********//
 
 export function useProposals(
-  governorAddress: string,
-  voteDelay: number,
-  votePeriod: number,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getTotalVotesByProposal } = useWallet();
-  const { data, isLoading, error } = useQuery({
-    staleTime: DEFAULT_STALE_TIME,
-    ...options,
-    queryKey: ["proposals", governorAddress],
-    queryFn: async () =>
-      loadProposalsByDaoId(governorAddress, voteDelay, votePeriod),
-  });
-  async function loadProposalsByDaoId(
-    daoId: string,
-    voteDelay: number,
-    votePeriod: number
-  ): Promise<Proposal[]> {
-    const proposals = await getProposalsByGovernor(daoId);
+  governorAddress: string | undefined,
+  currentBlock: number | undefined,
+  enabled: boolean = true,
+): UseQueryResult<Proposal[]> {
+  const { network } = useWallet();
+  const paramsDefined = governorAddress !== undefined && currentBlock !== undefined;
 
-    let proposalsToReturn: Proposal[] = [];
-    for (let proposal of proposals) {
-      const data = parseProposalFromXDR(proposal, voteDelay, votePeriod);
-      // get proposal votes from contract
-      const voteCount = (await getTotalVotesByProposal(
-        data.id,
-        governorAddress
-      )) as VoteCount;
+  async function loadProposals(): Promise<Proposal[]> {
+    if (paramsDefined) {
+      const proposals = await fetchProposalsByGovernor(governorAddress);
 
-      if (voteCount?._for !== undefined) {
-        data.votes_for = Number(voteCount._for);
-        data.total_votes = Number(
-          voteCount._for + voteCount.against + voteCount.abstain
-        );
-        data.votes_abstain = Number(voteCount.abstain);
-        data.votes_against = Number(voteCount.against);
-        proposalsToReturn.push(data);
+      for (let proposal of proposals) {
+        if (proposal.status === ProposalStatusExt.Open) {
+          // fetch voteCount from ledger - current vote count not available from indexer
+          proposal.vote_count = await getProposalVotes(network, governorAddress, proposal.id);
+          // update status to frontend status
+          if (proposal.vote_start < currentBlock && proposal.vote_end > currentBlock) {
+            proposal.status = ProposalStatusExt.Active;
+          } else if (proposal.vote_start > currentBlock) {
+            proposal.status = ProposalStatusExt.Pending;
+          } else {
+            proposal.status = ProposalStatusExt.Closed;
+          }
+        }
       }
+      return proposals.sort(({ id: a }, { id: b }) => b - a);
+    } else {
+      return [];
     }
-    return proposalsToReturn.sort(({ id: a }, { id: b }) => b - a);
   }
-  return {
-    proposals: data as Proposal[],
-    isLoading,
-    error,
-  };
+
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && enabled,
+    placeholderData: [],
+    queryKey: ["proposals", governorAddress],
+    queryFn: loadProposals,
+  });
 }
 
 export function useProposal(
-  proposalId: number,
-  governorAddress: string,
-  voteDelay: number,
-  votePeriod: number,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getTotalVotesByProposal } = useWallet();
-  const {
-    data: proposal,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    staleTime: DEFAULT_STALE_TIME,
-    ...options,
-    queryKey: ["proposal", proposalId],
-    queryFn: async () => {
-      return await getProposalByIdWithVoteCount(
-        proposalId,
-        governorAddress,
-        voteDelay,
-        votePeriod
-      );
-    },
-  });
-  async function getProposalByIdWithVoteCount(
-    proposalId: number,
-    governorAddress: string,
-    voteDelay: number,
-    votePeriod: number
-  ) {
-    const data = await getProposalById(
-      proposalId,
-      governorAddress,
-      voteDelay,
-      votePeriod
-    );
-    if (!data) {
-      return null;
-    }
+  governorAddress: string | undefined,
+  proposalId: number | undefined,
+  currentBlock: number | undefined,
+  enabled: boolean = true,
+): UseQueryResult<Proposal> {
+  const { network } = useWallet();
+  const paramsDefined = governorAddress !== undefined && proposalId !== undefined && currentBlock !== undefined;
 
-    // get proposal votes from contract
-    const voteCount = (await getTotalVotesByProposal(
-      proposalId,
-      governorAddress
-    )) as VoteCount;
-
-    if (voteCount?._for) {
-      data.votes_for = Number(voteCount._for);
-      data.total_votes = Number(
-        voteCount._for + voteCount.against + voteCount.abstain
-      );
-      data.votes_abstain = Number(voteCount.abstain);
-      data.votes_against = Number(voteCount.against);
+  async function loadProposal(): Promise<Proposal | undefined> {
+    if (!paramsDefined) {
+      return undefined;
     }
-    return data;
+    let proposal = await fetchProposalById(governorAddress, proposalId);
+    if (!proposal) {
+      return undefined;
+    }
+    if (proposal.status === ProposalStatusExt.Open) {
+      // fetch voteCount from ledger - current vote count not available from indexer
+      proposal.vote_count = await getProposalVotes(network, governorAddress, proposal.id);
+      // update status to frontend status
+      if (proposal.vote_start < currentBlock && proposal.vote_end > currentBlock) {
+        proposal.status = ProposalStatusExt.Active;
+      } else if (proposal.vote_start > currentBlock) {
+        proposal.status = ProposalStatusExt.Pending;
+      } else {
+        proposal.status = ProposalStatusExt.Closed;
+      }
+    }
+    return proposal;
   }
 
-  return {
-    proposal: proposal as Proposal,
-    isLoading,
-    error,
-    refetch,
-  };
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && enabled,
+    queryKey: ["proposal", governorAddress, proposalId],
+    queryFn: loadProposal,
+  });
 }
+
+//********* Votes **********//
 
 export function useVotes(
-  proposalId: number,
-  governorAddress: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const {
-    data: votes,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    staleTime: DEFAULT_STALE_TIME,
-    ...options,
-    queryKey: ["votes", proposalId],
-    queryFn: async () => getVotesByProposalId(proposalId, governorAddress),
-  });
+  governorAddress: string | undefined,
+  proposalId: number | undefined,
+  enabled: boolean = true,
+): UseQueryResult<Vote[]> {
+  const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
 
-  return {
-    votes: votes as Vote[],
-    isLoading,
-    error,
-    refetch,
-  };
-}
-
-export function useVoteTokenBalance(
-  voteTokenAddress: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getVoteTokenBalance, connected } = useWallet();
-  const { data, isLoading, error, refetch } = useQuery({
-    ...options,
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
-    queryKey: ["voteTokenBalance", voteTokenAddress, connected],
-    queryFn: async () => {
-      const result = await getVoteTokenBalance(voteTokenAddress, true);
-      return result || BigInt(0);
+    enabled: paramsDefined && enabled,
+    placeholderData: [],
+    queryKey: ["votes", governorAddress, proposalId],
+    queryFn: () => {
+      if (paramsDefined) {
+        return fetchVotesByProposal(governorAddress, proposalId)
+      } else {
+        return [];
+      }
     },
   });
-  return {
-    balance: data as bigint,
-    isLoading,
-    error,
-    refetch,
-  };
 }
 
 export function useVotingPower(
-  voteTokenAddress: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getVotingPower, connected } = useWallet();
-  const { data, isLoading, error, refetch } = useQuery({
-    ...options,
-    staleTime: DEFAULT_STALE_TIME,
-    queryKey: ["votingPower", connected],
-    queryFn: async () => {
-      const result = await getVotingPower(voteTokenAddress);
+  voteTokenAddress: string | undefined,
+  enabled: boolean = true,
+): UseQueryResult<bigint> {
+  const { network, walletAddress, connected } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined;
 
-      return result || BigInt(0);
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && connected && enabled,
+    queryKey: ["votingPower", voteTokenAddress, walletAddress],
+    queryFn: async () => {
+      if (!paramsDefined || !connected || walletAddress === "") {
+        return BigInt(0);
+      }
+      return await getVotingPower(network, voteTokenAddress, walletAddress);
     },
   });
-  return {
-    votingPower: data as bigint,
-    isLoading,
-    error,
-    refetch,
-  };
 }
 
-export function useVotingPowerByProposal(
-  voteTokenAddress: string,
-  proposalStartTime: number,
-  proposalId: number,
-  currentBlockNumber: number,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getVotingPowerByProposal, connected } = useWallet();
-  const { data, isLoading, error, refetch } = useQuery({
-    ...options,
+export function useVotingPowerByLedger(
+  voteTokenAddress: string | undefined,
+  ledger: number | undefined,
+  currentLedger: number | undefined,
+  enabled: boolean = true
+): UseQueryResult<bigint> {
+  const { network, walletAddress, connected } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined && ledger !== undefined && currentLedger !== undefined;
+
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && connected && enabled,
     queryKey: [
       "votingPowerByProposal",
-      proposalId,
-      proposalStartTime,
+      ledger,
       connected,
     ],
     queryFn: async () => {
-      const result = await getVotingPowerByProposal(
+      if (!paramsDefined || !connected || walletAddress === "") {
+        return BigInt(0);
+      }
+      return await getPastVotingPower(
+        network,
         voteTokenAddress,
-        proposalStartTime,
-        currentBlockNumber,
-        true
+        walletAddress,
+        ledger,
+        currentLedger,
       );
-
-      return result || BigInt(0);
     },
   });
-  return {
-    votingPower: data as bigint,
-    isLoading,
-    error,
-    refetch,
-  };
 }
 
 export function useUserVoteByProposalId(
-  proposalId: number,
-  governorAddress: string,
+  governorAddress: string | undefined,
+  proposalId: number | undefined,
+  enabled: boolean = true,
+): UseQueryResult<VoteSupport | undefined> {
+  const { network, walletAddress, connected } = useWallet();
+  const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
 
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getUserVoteByProposalId, connected } = useWallet();
-  const { data, isLoading, error } = useQuery({
-    ...options,
+  return  useQuery({
     staleTime: DEFAULT_STALE_TIME,
-
-    queryKey: ["userVoteByProposalId", proposalId, connected],
+    enabled: paramsDefined && connected && enabled,
+    placeholderData: undefined,
+    queryKey: ["userVoteByProposalId", proposalId, walletAddress],
     queryFn: async () => {
-      const result = await getUserVoteByProposalId(
-        proposalId,
+      if (!paramsDefined || !connected || walletAddress === "") {
+        return undefined;
+      }
+      return await getUserVoteForProposal(
+        network,
         governorAddress,
-        true
+        proposalId,
+        walletAddress,
       );
-
-      /** this is done because useQuery doesnt accept functions that return undefined values  */
-      return result === undefined ? null : result;
     },
   });
-
-  return {
-    /** if value is null set as undefined to prevent having to do null handling */
-    userVote: data === null ? undefined : (data as VoteSupport),
-    isLoading,
-    error,
-  };
-}
-
-export function useUnderlyingTokenBalance(
-  underlyingTokenAddress: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
-) {
-  const { getTokenBalance, connected } = useWallet();
-  const { data, isLoading, error, refetch } = useQuery({
-    ...options,
-    staleTime: DEFAULT_STALE_TIME,
-    queryKey: ["underlyingTokenBalance", underlyingTokenAddress, connected],
-    queryFn: async () => {
-      const result = await getTokenBalance(underlyingTokenAddress);
-      return result || BigInt(0);
-    },
-  });
-  return {
-    balance: data as bigint,
-    isLoading,
-    error,
-    refetch,
-  };
 }
 
 export function useDelegate(
-  voteTokenAddress: string,
-  options: Partial<DefinedInitialDataOptions> = {} as any
+  voteTokenAddress: string | undefined,
+  enabled: boolean = true,
 ) {
-  const { getDelegate, connected, walletAddress } = useWallet();
-  const { data, isLoading, error, refetch } = useQuery({
-    ...options,
+  const { network, walletAddress, connected } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined;
+
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
-    queryKey: ["delegate", voteTokenAddress, connected],
+    enabled: paramsDefined && connected && enabled,
+    placeholderData: walletAddress,
+    queryKey: ["delegate", voteTokenAddress, walletAddress],
     queryFn: async () => {
-      const result = await getDelegate(voteTokenAddress, true);
-      return result;
+      if (!paramsDefined || !connected || walletAddress === "") {
+        return walletAddress;
+      }
+      const result = await getDelegate(network, voteTokenAddress, walletAddress);
     },
   });
-  return {
-    delegateAddress: data as string,
-    isLoading,
-    error,
-    refetch,
-  };
-}
-
-async function getProposalsByGovernor(governorAddress: string) {
-  try {
-    const addressHash =
-      StrKey.decodeContract(governorAddress).toString("base64");
-
-    const data = await runGraphQLQuery(
-      `query getProposalsByGovernor { 
-        ${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}(hash: "${addressHash}") {
-      nodes {
-        contract
-      propNum
-      title
-      descr
-      action
-      creator
-      status
-      eta
-      vEnd
-      vStart
-      votes
-      }
-    }
-   }`,
-      "getProposalsByGovernor"
-    );
-    if (!data) {
-      return null;
-    }
-    const proposals = data[`${process.env.NEXT_PUBLIC_PROPOSAL_TABLE}`]?.nodes;
-    return proposals;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-}
-async function getProposalById(
-  proposalId: number,
-  governorAddress: string,
-  voteDelay: number,
-  votePeriod: number
-) {
-  try {
-    const addressHash =
-      StrKey.decodeContract(governorAddress).toString("base64");
-
-    const proposalNum = nativeToScVal(proposalId, { type: "u32" }).toXDR(
-      "base64"
-    );
-
-    const data = await runGraphQLQuery(
-      `query getProposalsById { 
-     ${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
-      contract
-      propNum
-      title
-      descr
-      action
-      creator
-      status
-      eta
-      vEnd
-      vStart
-      votes
-   }
-   }
-   }`,
-      "getProposalsById"
-    );
-    if (!data) {
-      return null;
-    }
-    const proposal =
-      data[`${process.env.NEXT_PUBLIC_PROPOSAL_BY_ID_TABLE}`]?.nodes[0];
-    return parseProposalFromXDR(proposal, voteDelay, votePeriod);
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-}
-async function getVotesByProposalId(
-  proposalId: number,
-  governorAddress: string
-) {
-  try {
-    const addressHash =
-      StrKey.decodeContract(governorAddress).toString("base64");
-
-    const proposalNum = nativeToScVal(proposalId, { type: "u32" }).toXDR(
-      "base64"
-    );
-
-    const data = await runGraphQLQuery(
-      `query getVotesByProposalId { 
-    ${process.env.NEXT_PUBLIC_VOTES_TABLE}(hash: "${addressHash}", num: "${proposalNum}") { nodes {
-      contract
-      propNum
-      voter
-      support
-      amount
-      ledger
-   }
-   }
-   }`,
-      "getVotesByProposalId"
-    );
-    if (!data) {
-      return null;
-    }
-    const votes = data[`${process.env.NEXT_PUBLIC_VOTES_TABLE}`]?.nodes;
-    const parsedVotes = votes.map((vote: XDRVote) => {
-      return parseVoteFromXDR(vote);
-    });
-
-    return parsedVotes;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-}
-
-async function runGraphQLQuery(queryString: string, operationName: string) {
-  try {
-    const res = await fetch(apiEndpoint, {
-      cache: "no-cache",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        operationName,
-        query: queryString,
-      }),
-    });
-    const json_res = await res.json();
-    const data = json_res.data;
-    return data;
-  } catch (e) {
-    console.log("error on fetch");
-    console.error(e);
-    return null;
-  }
 }

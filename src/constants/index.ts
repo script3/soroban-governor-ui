@@ -1,55 +1,14 @@
-export enum ProposalStatusEnum {
-  /**
-   * The proposal exists and voting has not been closed
-   */
-  Open = 0,
-  /**
-   * The proposal was voted for. If the proposal is executable, the timelock begins once this state is reached.
-   */
-  Successful = 1,
-  /**
-   * The proposal was voted against
-   */
-  Defeated = 2,
-  /**
-   * The proposal did not reach quorum before the voting period ended
-   */
-  Expired = 3,
-  /**
-   * The proposal has been executed
-   */
-  Executed = 4,
-  /**
-   * The proposal has been canceled
-   */
-  Canceled = 5,
-  // frontend status only
-  /// The proposal is pending and is not open for voting
-  Pending = 6,
-  /// The proposal is active and can be voted on
-  Active = 7,
-  Closed = 8,
-}
-
-export type ProposalStatus =
-  | "Pending"
-  | "Active"
-  | "Defeated"
-  | "Successful"
-  | "Canceled"
-  | "Expired"
-  | "Executed";
+import { ProposalStatusExt } from "@/types";
 
 export const ProposalStatusText = {
-  [ProposalStatusEnum.Pending]: "Pending",
-  [ProposalStatusEnum.Active]: "Active",
-  [ProposalStatusEnum.Successful]: "Successful",
-  [ProposalStatusEnum.Defeated]: "Defeated",
-  [ProposalStatusEnum.Expired]: "Expired",
-  [ProposalStatusEnum.Executed]: "Executed",
-  [ProposalStatusEnum.Canceled]: "Canceled",
-  [ProposalStatusEnum.Open]: "Open",
-  [ProposalStatusEnum.Closed]: "Closed",
+  [ProposalStatusExt.Pending]: "Pending",
+  [ProposalStatusExt.Active]: "Active",
+  [ProposalStatusExt.Successful]: "Successful",
+  [ProposalStatusExt.Defeated]: "Defeated",
+  [ProposalStatusExt.Expired]: "Expired",
+  [ProposalStatusExt.Executed]: "Executed",
+  [ProposalStatusExt.Canceled]: "Canceled",
+  [ProposalStatusExt.Open]: "Open",
 };
 
 export enum ProposalActionEnum {
@@ -68,16 +27,16 @@ export const classByProposalAction = {
 
 export type ObType = { [key: string]: string };
 export const classByStatus: ObType = {
-  [ProposalStatusEnum.Successful]: "!bg-green-400",
-  [ProposalStatusEnum.Active]: "!bg-green-500",
-  [ProposalStatusEnum.Open]: "!bg-blue-500",
-  [ProposalStatusEnum.Defeated]: "!bg-red-500",
-  [ProposalStatusEnum.Canceled]: "!bg-gray-500",
-  [ProposalStatusEnum.Expired]: "!bg-gray-500",
-  [ProposalStatusEnum.Executed]: "!bg-gray-500",
-  [ProposalStatusEnum.Pending]: "!bg-amber-800",
-  [ProposalStatusEnum.Closed]: "!bg-gray-500",
+  [ProposalStatusExt.Successful]: "!bg-green-400",
+  [ProposalStatusExt.Active]: "!bg-green-500",
+  [ProposalStatusExt.Open]: "!bg-blue-500",
+  [ProposalStatusExt.Defeated]: "!bg-red-500",
+  [ProposalStatusExt.Canceled]: "!bg-gray-500",
+  [ProposalStatusExt.Expired]: "!bg-gray-500",
+  [ProposalStatusExt.Executed]: "!bg-gray-500",
+  [ProposalStatusExt.Pending]: "!bg-amber-800",
 };
+
 export const EighteenDecimals = 10_000_000_000_000_000_000;
 export const SevenDecimals = 10_000_000_000;
 export const CALLDATA_PLACEHOLDER = `JSON string of the function arguments.\nExample: 
@@ -121,4 +80,3 @@ const x = {
 
 export const DUMMY_ADDRESS =
   "GANXGJV2RNOFMOSQ2DTI3RKDBAVERXUVFC27KW3RLVQCLB3RYNO3AAI4";
-

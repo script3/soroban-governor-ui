@@ -91,8 +91,6 @@ export function useProposals(
             proposal.status = ProposalStatusExt.Active;
           } else if (proposal.vote_start > currentBlock) {
             proposal.status = ProposalStatusExt.Pending;
-          } else {
-            proposal.status = ProposalStatusExt.Closed;
           }
         }
       }
@@ -136,8 +134,6 @@ export function useProposal(
         proposal.status = ProposalStatusExt.Active;
       } else if (proposal.vote_start > currentBlock) {
         proposal.status = ProposalStatusExt.Pending;
-      } else {
-        proposal.status = ProposalStatusExt.Closed;
       }
     }
     return proposal;

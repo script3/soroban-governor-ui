@@ -35,11 +35,6 @@ export enum ProposalStatusExt {
    * The proposal is open but the vote start ledger has not been reached
    */
   Active = 7,
-  /**
-   * Frontend Only
-   * The proposal is open but the vote end ledger has been reached
-   */
-  Closed = 8,
 }
 
 export interface Proposal {

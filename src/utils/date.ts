@@ -3,8 +3,6 @@
  * returning computed properties based on current locale from i18n
  */
 
-import { ProposalStatusEnum } from "@/constants";
-
 /**
  * This is needed since Intl still doesn't support durations:
  * https://github.com/tc39/proposal-intl-duration-format (hopefully soon!)
@@ -104,7 +102,7 @@ const formatRelativeTime = (
 ) => {
   const relativeTo = new Date().getTime() / 1e3;
 
-  const { duration, unit } = getDurationAndUnit((timestamp/1e3) - relativeTo);
+  const { duration, unit } = getDurationAndUnit(timestamp / 1e3 - relativeTo);
 
   formatter = formatter || defaultRelativeTimeFormatter;
 
@@ -130,31 +128,39 @@ const formatCompactNumber = (number: number) =>
 const formatPercentNumber = (number: number) =>
   formatNumber(number, percentNumberFormatter);
 
+function getProposalDate(block: number, currentBlock: number) {
+  const now = new Date();
+  const d = new Date(now.getTime() + (block - currentBlock) * 5000);
+  return d;
+}
 
-   function getProposalDate(block:number,currentBlock:number){
+const getRelativeProposalPeriod = (
+  startBlock: number,
+  endBlock: number,
+  currentBlock: number
+): any => {
+  const now = new Date();
+  const startDate = new Date(
+    now.getTime() + (startBlock - currentBlock) * 5000
+  );
+  const endDate = new Date(now.getTime() + (endBlock - currentBlock) * 5000);
 
-    const now = new Date()
-    const d = new Date(now.getTime() + ((block - currentBlock) * 5000))
-    return d
-
-  }
-
-
-const getRelativeProposalPeriod = (state: ProposalStatusEnum, startBlock: number, endBlock: number,currentBlock:number): any => {
-
-  const now = new Date()
-  const startDate = new Date(now.getTime() + ((startBlock - currentBlock) * 5000))
-  const endDate = new Date(now.getTime() +( (endBlock - currentBlock) * 5000))
-
-  if (
-    endDate < now 
-  ) {
-    return `Ended ${formatRelativeTime(endDate.getTime(), longRelativeTimeFormatter)} `;
+  if (endDate < now) {
+    return `Ended ${formatRelativeTime(
+      endDate.getTime(),
+      longRelativeTimeFormatter
+    )} `;
   }
   if (startDate < now && endDate > now) {
-    return `Ends ${formatRelativeTime(endDate.getTime(), longRelativeTimeFormatter)}`;
+    return `Ends ${formatRelativeTime(
+      endDate.getTime(),
+      longRelativeTimeFormatter
+    )}`;
   }
-  return `Starts ${formatRelativeTime(startDate.getTime(), longRelativeTimeFormatter)}`;
+  return `Starts ${formatRelativeTime(
+    startDate.getTime(),
+    longRelativeTimeFormatter
+  )}`;
 };
 
 const getPercentFractionDigits = (value: number) => {
@@ -177,18 +183,17 @@ function formatDate(d: Date) {
   return getDateTimeFormatter().format(d || Date.now());
 }
 
-
 export {
-  getRelativeTimeFormatter,
-  getNumberFormatter,
-  formatRelativeTime,
+  formatCompactNumber,
+  formatDate,
   formatDuration,
   formatNumber,
-  formatCompactNumber,
   formatPercentNumber,
-  formatDate,
-  getRelativeProposalPeriod,
-  getProposalDate,
+  formatRelativeTime,
+  getNumberFormatter,
   getPercentFractionDigits,
+  getProposalDate,
+  getRelativeProposalPeriod,
+  getRelativeTimeFormatter,
   longRelativeTimeFormatter,
 };

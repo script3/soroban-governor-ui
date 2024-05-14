@@ -6,6 +6,7 @@ import {
   VoteCount,
   VotesContract,
 } from "@script3/soroban-governor-sdk";
+import { scValToNative, xdr } from "@stellar/stellar-sdk";
 import { Network, TxOptions, invokeOperation } from "./stellar";
 
 function getSimTxParams(network: Network): TxOptions {
@@ -25,6 +26,9 @@ function getSimTxParams(network: Network): TxOptions {
 }
 
 const FALSE_SIGN = (txXdr: string): any => txXdr;
+
+// zero address - won't get fetched. Just needs to be a valid keypair
+const PUBKEY = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
 
 //********** Common **********//
 
@@ -46,7 +50,7 @@ export async function getBalance(
   const operation = contract.balance({ id: userId });
   const result = (
     await invokeOperation<bigint>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
@@ -78,7 +82,7 @@ export async function getGovernorSettings(
   const operation = contract.settings();
   const result = (
     await invokeOperation<GovernorSettings>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
@@ -110,11 +114,14 @@ export async function getProposalVotes(
   const operation = contract.getProposalVotes({ proposal_id: proposalId });
   const result = (
     await invokeOperation<VoteCount | undefined>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
-      GovernorContract.parsers.getProposalVotes,
+      (result: string): VoteCount => {
+        let temp = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
+        return temp as VoteCount;
+      },
       operation
     )
   ).result;
@@ -148,7 +155,7 @@ export async function getUserVoteForProposal(
   });
   const result = (
     await invokeOperation<number | undefined>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
@@ -182,7 +189,7 @@ export async function getVotingPower(
   const operation = contract.getVotes({ account: userId });
   const result = (
     await invokeOperation<bigint>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
@@ -223,7 +230,7 @@ export async function getPastVotingPower(
     });
     const result = (
       await invokeOperation<bigint>(
-        "",
+        PUBKEY,
         FALSE_SIGN,
         network,
         txOptions,
@@ -258,7 +265,7 @@ export async function getDelegate(
   const operation = contract.getDelegate({ account: userId });
   const result = (
     await invokeOperation<string>(
-      "",
+      PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,

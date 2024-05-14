@@ -32,7 +32,7 @@ export enum ProposalStatusExt {
   Pending = 6,
   /**
    * Frontend Only
-   * The proposal is open but the vote start ledger has not been reached
+   * The proposal is open for voting
    */
   Active = 7,
 }

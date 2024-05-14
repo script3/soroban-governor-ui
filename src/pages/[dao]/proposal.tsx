@@ -4,7 +4,6 @@ import { Chip } from "@/components/common/Chip";
 import Typography from "@/components/common/Typography";
 import {
   ProposalActionEnum,
-  ProposalStatusEnum,
   ProposalStatusText,
   classByProposalAction,
   classByStatus,
@@ -13,7 +12,7 @@ import {
 import { shortenAddress } from "@/utils/shortenAddress";
 
 import { MarkdownPreview } from "@/components/MarkdownPreview";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/common/Button";
 import { ViewMore } from "@/components/ViewMore";
 import { formatDate, getProposalDate } from "@/utils/date";
@@ -28,67 +27,27 @@ import { useRouter } from "next/router";
 import {
   useCurrentBlockNumber,
   useGovernor,
+  useGovernorSettings,
   useProposal,
   useUserVoteByProposalId,
   useVotes,
-  useVotingPowerByProposal,
+  useVotingPowerByLedger,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import { SelectableList } from "@/components/common/SelectableList";
 import { toBalance } from "@/utils/formatNumber";
 import { Loader } from "@/components/common/Loader";
-import { getStatusByProposalState } from "@/utils/proposal";
-import { VoteSupport } from "@/types";
+import { ProposalStatusExt, VoteSupport } from "@/types";
 import { useTemporaryState } from "@/hooks/useTemporaryState";
 import { TabBar } from "@/components/common/Tab/TabBar";
 import { ProposalAction } from "@/components/proposal/action/ProposalAction";
 
 export default function Proposal() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<string>("Action");
   const params = router.query;
-  const { governor: currentGovernor } = useGovernor(params.dao as string);
 
+  const [activeTab, setActiveTab] = useState<string>("Action");
   const [copied, setCopied] = useTemporaryState(false, 1000, false);
-  const { proposal, refetch } = useProposal(
-    Number(params.id),
-    currentGovernor?.address,
-    currentGovernor?.settings?.vote_delay,
-    currentGovernor?.settings?.vote_period,
-    {
-      enabled: !!params.id && !!currentGovernor?.address,
-      placeholderData: {},
-    }
-  );
-
-  const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
-  const proposalStatus = getStatusByProposalState(
-    proposal?.status,
-    proposal?.vote_start,
-    proposal?.vote_end,
-    currentBlockNumber
-  );
-  const isExecutable =
-    proposalStatus === ProposalStatusEnum.Successful &&
-    proposal?.action.tag !== ProposalActionEnum.SNAPSHOT &&
-    proposal?.executionETA <= currentBlockNumber;
-  const { votes, refetch: refetchVotes } = useVotes(
-    proposal?.id,
-    currentGovernor?.address,
-    {
-      enabled: proposal?.id > -1,
-      placeholderData: [],
-    }
-  );
-  const { userVote } = useUserVoteByProposalId(
-    Number(params.id),
-    currentGovernor?.address,
-    {
-      enabled: proposal?.id > -1 && !!currentGovernor?.address,
-      placeholderData: undefined,
-    }
-  );
-
   const {
     walletAddress,
     vote,
@@ -100,33 +59,44 @@ export default function Proposal() {
     cancelProposal,
   } = useWallet();
 
-  const { votingPower } = useVotingPowerByProposal(
+  const { data: currentBlockNumber } = useCurrentBlockNumber();
+  const currentGovernor = useGovernor(params.dao as string);
+  const { data: proposal, refetch } = useProposal(
+    currentGovernor?.address,
+    Number(params.id),
+    currentBlockNumber,
+    !!params.id && !!currentGovernor?.address
+  )
+  console.log("proposal", proposal)
+  const { data: governorSettings } = useGovernorSettings(currentGovernor?.address, proposal?.action?.tag === ProposalActionEnum.SETTINGS);
+
+  const { data: tempVotes, refetch: refetchVotes } = useVotes(currentGovernor?.address, proposal?.id);
+  const votes = tempVotes ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount)) : [];
+
+  const { data: userVote } = useUserVoteByProposalId(
+    currentGovernor?.address,
+    proposal?.id
+  );
+
+  const { data: votingPower } = useVotingPowerByLedger(
     currentGovernor?.voteTokenAddress,
     proposal?.vote_start,
-    proposal?.id,
     currentBlockNumber,
-    {
-      placeholderData: BigInt(0),
-      enabled:
-        connected &&
-        proposal?.id > -1 &&
-        !!currentGovernor?.voteTokenAddress &&
-        !!currentBlockNumber,
-    }
   );
 
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
-  function handleLinkClick(link: string) {
-    window.open(link, "_blank");
-  }
+  const isExecutable = proposal !== undefined && proposal.status === ProposalStatusExt.Successful &&
+    proposal.action.tag !== ProposalActionEnum.SNAPSHOT &&
+    currentBlockNumber ? proposal.eta <= currentBlockNumber : false;
+  const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
+
   function handleVote() {
-    if (selectedSupport !== null) {
+    if (selectedSupport !== null && proposal !== undefined && currentGovernor !== undefined) {
       vote(
-        proposal?.id as number,
+        proposal.id,
         selectedSupport,
         false,
         currentGovernor.address
@@ -138,24 +108,30 @@ export default function Proposal() {
   }
 
   function handleExecute() {
-    executeProposal(proposal.id, currentGovernor.address).then(() => {
-      refetch();
-      refetchVotes();
-    });
+    if (proposal !== undefined && currentGovernor !== undefined) {
+      executeProposal(proposal.id, currentGovernor.address).then(() => {
+        refetch();
+        refetchVotes();
+      });
+    }
   }
 
   function handleClose() {
-    closeProposal(proposal.id, currentGovernor.address).then(() => {
-      refetch();
-      refetchVotes();
-    });
+    if (proposal !== undefined && currentGovernor !== undefined) {
+      closeProposal(proposal.id, currentGovernor.address).then(() => {
+        refetch();
+        refetchVotes();
+      });
+    }
   }
 
   function handleCancel() {
-    cancelProposal(proposal.id, currentGovernor.address).then(() => {
-      refetch();
-      refetchVotes();
-    });
+    if (proposal !== undefined && currentGovernor !== undefined) {
+      cancelProposal(proposal.id, currentGovernor.address).then(() => {
+        refetch();
+        refetchVotes();
+      });
+    }
   }
 
   return (
@@ -182,7 +158,7 @@ export default function Proposal() {
         </Typography.Small>
       </Container>
 
-      {proposal?.id !== undefined && (
+      {proposal !== undefined && currentGovernor !== undefined && (
         <Container
           slim
           className="flex flex-col px-0 md:px-4 gap-4 mx-auto lg:w-[1012px]  2xl:w-[1400px]  mt-[20px] w-auto m-auto lg:flex-row "
@@ -193,8 +169,8 @@ export default function Proposal() {
           >
             <Container slim className="flex flex-col mb-2">
               <Container slim className="flex flex-row gap-2">
-                <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
-                  {ProposalStatusText[proposalStatus]}
+                <Chip className={`${classByStatus[proposal.status]} mb-4`}>
+                  {ProposalStatusText[proposal.status]}
                 </Chip>
                 <Chip
                   className={`${
@@ -205,12 +181,12 @@ export default function Proposal() {
                 </Chip>
               </Container>
               <Typography.Big className="break-words leading-8 sm:leading-[44px]">
-                {proposal?.title}
+                {proposal.title}
               </Typography.Big>
               <Container slim className="flex flex-row justify-between">
                 <Container slim>
                   <Typography.Small className="text-snapLink">
-                    {currentGovernor?.name} by{" "}
+                    {currentGovernor.name} by{" "}
                     <Typography.Small className="!text-white font-bold">
                       {shortenAddress(proposal.proposer)}
                     </Typography.Small>
@@ -228,7 +204,8 @@ export default function Proposal() {
                       {isLoading ? <Loader /> : "Execute"}
                     </Button>
                   )}
-                  {proposalStatus === ProposalStatusEnum.Open &&
+                  {proposal.status === ProposalStatusExt.Open &&
+                    currentBlockNumber &&
                     proposal.vote_end < currentBlockNumber &&
                     connected && (
                       <Button
@@ -243,7 +220,7 @@ export default function Proposal() {
                     )}
                   {proposal?.proposer === walletAddress &&
                     connected &&
-                    proposalStatus === ProposalStatusEnum.Pending && (
+                    proposal.status === ProposalStatusExt.Pending && (
                       <Button
                         className={`w-32 !bg-secondary ${
                           isLoading ? "!py-1.5" : ""
@@ -299,49 +276,30 @@ export default function Proposal() {
             </Container>
 
             {activeTab === "Description" && (
-              <>
-                <Container slim>
-                  <ViewMore onChange={setIsFullView} isFull={isFullView}>
-                    <Container
-                      slim
-                      className={`${
-                        isFullView
-                          ? "overflow-hidden mb-[92px]"
-                          : "overflow-hidden h-[500px] mb-[56px]"
-                      }`}
-                    >
-                      <MarkdownPreview body={proposal.description} />
-                    </Container>
-                  </ViewMore>
-                </Container>
-                <Container slim>
-                  {!!proposal.link && (
-                    <Box
-                      className="flex min-h-20 items-center cursor-pointer hover:border hover:border-snapLink active:opacity-50 my-2 justify-center gap-2"
-                      onClick={() => {
-                        setIsLinkModalOpen(true);
-                      }}
-                    >
-                      <Typography.P className="flex  text-lg items-center gap-2">
-                        Discussion link{" "}
-                      </Typography.P>
-                      <Typography.Small className="text-snapLink flex ">
-                        ({proposal.link})
-                      </Typography.Small>
-                    </Box>
-                  )}
-                </Container>
-              </>
+              <Container slim>
+                <ViewMore onChange={setIsFullView} isFull={isFullView}>
+                  <Container
+                    slim
+                    className={`${
+                      isFullView
+                        ? "overflow-hidden mb-[92px]"
+                        : "overflow-hidden h-[500px] mb-[56px]"
+                    }`}
+                  >
+                    <MarkdownPreview body={proposal.description} />
+                  </Container>
+                </ViewMore>
+              </Container>
             )}
             {activeTab === "Action" && (
               <Container>
                 <ProposalAction
-                  governor={currentGovernor}
+                  governorSettings={governorSettings as GovernorSettings}
                   proposal={proposal}
                 />
               </Container>
             )}
-            {proposalStatus === ProposalStatusEnum.Active && (
+            {proposal.status === ProposalStatusExt.Active && (
               <Container slim>
                 <Box>
                   <Container className="border-b border-snapBorder flex !flex-row justify-between ">
@@ -398,7 +356,7 @@ export default function Proposal() {
                       disabled={
                         isLoading ||
                         userVote !== undefined ||
-                        proposalStatus !== ProposalStatusEnum.Active ||
+                        proposal.status !== ProposalStatusExt.Active ||
                         votingPower === BigInt(0)
                       }
                     >
@@ -429,7 +387,7 @@ export default function Proposal() {
                       vote={vote}
                       index={index}
                       decimals={currentGovernor?.decimals as number}
-                      voteCount={proposal.total_votes}
+                      voteCount={total_votes}
                     />
                   ))}
                   <div
@@ -469,9 +427,9 @@ export default function Proposal() {
                     Start date
                   </Typography.P>
                   <Typography.Small className="">
-                    {formatDate(
+                    {currentBlockNumber ? formatDate(
                       getProposalDate(proposal?.vote_start, currentBlockNumber)
-                    )}
+                    ) : "unknown"}
                   </Typography.Small>
                 </Container>
                 <Container className="flex justify-between mb-2">
@@ -479,23 +437,23 @@ export default function Proposal() {
                     End date{" "}
                   </Typography.P>
                   <Typography.Small className="">
-                    {formatDate(
+                    {currentBlockNumber ? formatDate(
                       getProposalDate(proposal?.vote_end, currentBlockNumber)
-                    )}
+                    ) : "unkown"}
                   </Typography.Small>
                 </Container>
-                {proposal.executionETA > 0 && (
+                {proposal.eta > 0 && (
                     <Container className="flex justify-between mb-2">
                       <Typography.P className=" text-snapLink">
                         Execution unlocked{" "}
                       </Typography.P>
                       <Typography.Small className="">
-                        {formatDate(
+                        {currentBlockNumber ? formatDate(
                           getProposalDate(
-                            proposal?.executionETA,
+                            proposal?.eta,
                             currentBlockNumber
                           )
-                        )}
+                        ) : "unknown"}
                       </Typography.Small>
                     </Container>
                   )
@@ -508,7 +466,7 @@ export default function Proposal() {
                 </Container>
               </Container>
             </Box>
-            {proposalStatus !== ProposalStatusEnum.Canceled && (
+            {proposal.status !== ProposalStatusExt.Canceled && (
               <Box className="!p-0">
                 <Container slim className="border-b mb-2 border-snapBorder">
                   <Typography.Medium className=" !p-4 flex w-full ">
@@ -520,115 +478,87 @@ export default function Proposal() {
                     className="flex flex-col gap-2 mb-4"
                     label="Yes"
                     barClassName={
-                      proposalStatus === ProposalStatusEnum.Active
+                      proposal.status === ProposalStatusExt.Active
                         ? "bg-secondary"
                         : "bg-neutral-200"
                     }
                     endContent={
                       <Container slim>
                         <Typography.P>
-                          {proposal.votes_for > 0
+                          {proposal.vote_count._for > BigInt(0)
                             ? `${toBalance(
-                                proposal.votes_for,
+                                proposal.vote_count._for,
                                 currentGovernor.decimals
                               )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.votes_for > 0
-                            ? Number(
-                                (
-                                  proposal.votes_for / proposal.total_votes
-                                ).toFixed(2)
-                              ) * 100
-                            : 0}
+                          {proposal.vote_count._for > BigInt(0) ? (Number(proposal.vote_count._for * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
                     progress={
-                      Number(
-                        (proposal.votes_for / proposal.total_votes).toFixed(2)
-                      ) * 100
+                      proposal.vote_count._for > BigInt(0) ? Number(proposal.vote_count._for * BigInt(100) / total_votes) : 0
                     }
                   />{" "}
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
                     label="No"
                     barClassName={
-                      proposalStatus === ProposalStatusEnum.Active
+                      proposal.status === ProposalStatusExt.Active
                         ? "bg-secondary"
                         : "bg-neutral-200"
                     }
                     endContent={
                       <Container slim>
                         <Typography.P>
-                          {proposal.votes_against > 0
+                          {proposal.vote_count.against > 0
                             ? `${toBalance(
-                                proposal.votes_against,
+                                proposal.vote_count.against,
                                 currentGovernor.decimals
                               )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.votes_against > 0
-                            ? Number(
-                                (
-                                  proposal.votes_against / proposal.total_votes
-                                ).toFixed(2)
-                              ) * 100
-                            : 0}
+                          {proposal.vote_count.against > BigInt(0) ? (Number(proposal.vote_count.against * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
                     progress={
-                      Number(
-                        (proposal.votes_against / proposal.total_votes).toFixed(
-                          2
-                        )
-                      ) * 100
+                      proposal.vote_count.against > BigInt(0) ? Number(proposal.vote_count.against * BigInt(100) / total_votes) : 0
                     }
                   />{" "}
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
                     label="Abstain"
                     barClassName={
-                      proposalStatus === ProposalStatusEnum.Active
+                      proposal.status === ProposalStatusExt.Active
                         ? "bg-secondary"
                         : "bg-neutral-200"
                     }
                     endContent={
                       <Container slim>
                         <Typography.P>
-                          {proposal.votes_abstain > 0
+                          {proposal.vote_count.abstain > 0
                             ? `${toBalance(
-                                proposal.votes_abstain,
+                                proposal.vote_count.abstain,
                                 currentGovernor.decimals
                               )} -`
                             : "   "}
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.votes_abstain > 0
-                            ? Number(
-                                (
-                                  proposal.votes_abstain / proposal.total_votes
-                                ).toFixed(2)
-                              ) * 100
-                            : 0}
+                          {proposal.vote_count.abstain > BigInt(0) ? (Number(proposal.vote_count.abstain * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
                     progress={
-                      Number(
-                        (proposal.votes_abstain / proposal.total_votes).toFixed(
-                          2
-                        )
-                      ) * 100
+                      proposal.vote_count.abstain > BigInt(0) ? Number(proposal.vote_count.abstain * BigInt(100) / total_votes) : 0
                     }
                   />{" "}
                 </Container>
@@ -652,47 +582,9 @@ export default function Proposal() {
               key={index}
               vote={vote}
               index={index}
-              voteCount={proposal.total_votes}
+              voteCount={total_votes}
             />
           ))}
-        </Container>
-      </Modal>
-      <Modal
-        isOpen={isLinkModalOpen}
-        onClose={() => {
-          setIsLinkModalOpen(false);
-        }}
-        title="Proceed with caution!"
-      >
-        <Container
-          slim
-          className="h-max !p-4 text-center mb-2 border-b border-snapBorder w-full"
-        >
-          <Typography.P className="text-snapLink">
-            This link will take you to{" "}
-            <Typography.P className="text-white">{proposal.link}</Typography.P>
-            <br />
-            Be careful, this link could be malicious. Are you sure you want to
-            continue?
-          </Typography.P>
-        </Container>
-        <Container className="flex gap-4 justify-center p-4">
-          <Button
-            onClick={() => {
-              setIsLinkModalOpen(false);
-            }}
-            className="px-16"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              handleLinkClick(proposal.link);
-            }}
-            className="!bg-secondary px-16"
-          >
-            Continue
-          </Button>
         </Container>
       </Modal>
     </Container>
@@ -701,6 +593,7 @@ export default function Proposal() {
 
 import governors from "../../../public/governors/governors.json";
 import { GetStaticPaths, GetStaticProps } from "next";
+import { GovernorSettings } from "@script3/soroban-governor-sdk";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

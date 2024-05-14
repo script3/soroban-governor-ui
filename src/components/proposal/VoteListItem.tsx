@@ -3,7 +3,7 @@ import Typography from "../common/Typography";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { getSupportStringFromVote } from "@/utils/vote";
 import { Chip } from "../common/Chip";
-import { VoteSupport } from "@/types";
+import { Vote, VoteSupport } from "@/types";
 import { toBalance } from "@/utils/formatNumber";
 
 export function VoteListItem({
@@ -12,8 +12,8 @@ export function VoteListItem({
   index,
   decimals,
 }: {
-  vote: any;
-  voteCount: any;
+  vote: Vote;
+  voteCount: bigint;
   index: number;
   decimals: number;
 }) {
@@ -33,9 +33,7 @@ export function VoteListItem({
   return (
     <Container
       key={index}
-      className={`flex relative items-center gap-3 justify-between box-border border-snapBorder px-4 py-[14px]  ${
-        index === voteCount - 1 ? "border-b-0 border-t" : "border-t"
-      }`}
+      className={`flex relative items-center gap-3 justify-between box-border border-snapBorder px-4 py-[14px]`}
     >
       <Typography.P className="w-max min-w-[110px] xs:w-[130px] xs:min-w-[130px]">
         {shortenAddress(vote.voter)}

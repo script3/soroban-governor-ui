@@ -24,7 +24,6 @@ export function parseProposalFromXDR(proposal: XDRProposal): Proposal {
     proposal.votes === "AAAAAQ==" // base64 encoding of ScVoid
       ? undefined
       : scValToNative(xdr.ScVal.fromXDR(proposal.votes, "base64"));
-
   const proposalToReturn: Proposal = {
     id: scValToNative(xdr.ScVal.fromXDR(proposal.propNum, "base64")),
     title: scValToNative(xdr.ScVal.fromXDR(proposal.title, "base64")),
@@ -43,7 +42,6 @@ export function parseProposalFromXDR(proposal: XDRProposal): Proposal {
       abstain: BigInt(0),
     },
   };
-
   return proposalToReturn;
 }
 

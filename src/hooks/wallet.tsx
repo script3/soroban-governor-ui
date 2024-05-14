@@ -31,32 +31,7 @@ import {
 import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
 import { useLocalStorageState } from "./useLocalStorageState";
-export class Resources {
-  fee: number;
-  refundableFee: number;
-  cpuInst: number;
-  readBytes: number;
-  writeBytes: number;
-  readOnlyEntries: number;
-  readWriteEntries: number;
-  constructor(
-    fee: number,
-    refundableFee: number,
-    cpuInst: number,
-    readBytes: number,
-    writeBytes: number,
-    readOnlyEntries: number,
-    readWriteEntries: number
-  ) {
-    this.fee = fee;
-    this.refundableFee = refundableFee;
-    this.cpuInst = cpuInst;
-    this.readBytes = readBytes;
-    this.writeBytes = writeBytes;
-    this.readOnlyEntries = readOnlyEntries;
-    this.readWriteEntries = readWriteEntries;
-  }
-}
+
 export interface IWalletContext {
   connected: boolean;
   walletAddress: string;
@@ -1151,9 +1126,6 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
-
-      console.log(result);
-
       setTxHash(result.hash);
       const isOk = result.result.isOk();
       setNotificationMode("flash");

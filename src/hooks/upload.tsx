@@ -20,7 +20,6 @@ export function useImageUpload() {
   ) {
     reset();
     if (!file) return;
-    console.log("uploading file");
     setIsUploadingImage(true);
     const formData = new FormData();
 

@@ -5,15 +5,18 @@ import { parseProposalFromXDR, parseVoteFromXDR } from "./parse";
 const apiEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_API_ENDPOINT as string;
 
 /// Fetch against graphql and throw error if response is not ok
-async function fetchGraphQL(query: string, variables: any): Promise<any> {
+async function fetchGraphQL(
+  queryString: string,
+  operationName: string
+): Promise<any> {
   const response = await fetch(apiEndpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      query,
-      variables,
+      operationName,
+      query: queryString,
     }),
   });
   if (!response.ok) {
@@ -23,7 +26,7 @@ async function fetchGraphQL(query: string, variables: any): Promise<any> {
   }
 
   try {
-    return await response.json();
+    return (await response.json()).data;
   } catch (e: any) {
     throw new Error(
       `Unable to parse JSON response from GraphQL: ${e?.message}`

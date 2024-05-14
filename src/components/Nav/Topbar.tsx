@@ -26,14 +26,6 @@ export function TopBar() {
         Soroban Governor
       </Typography.Medium>
       <div className="flex items-center gap-2">
-        {/* <a href="https://github.com/script3/soroban-governor" target="_blank" rel="noreferrer">
-        <Image
-            src="/icons/github-mark-white.svg"
-            width={40}
-            height={40}
-            alt="github"
-          />
-          </a> */}
         <Button
           padding="p-2"
           onClick={() => {

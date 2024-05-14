@@ -56,7 +56,6 @@ export function useGovernorSettings(
 ): UseQueryResult<GovernorSettings> {
   const { network } = useWallet();
 
-  console.log("useGovernorSettings", governorId, enabled, governorId !== undefined && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     queryKey: ["governor", governorId],
@@ -103,7 +102,6 @@ export function useProposals(
     }
   }
 
-  console.log("useProposals", governorAddress, currentBlock, paramsDefined && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && enabled,
@@ -143,7 +141,6 @@ export function useProposal(
     return proposal;
   }
 
-  console.log("useProposal", governorAddress, proposalId, enabled, paramsDefined && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && enabled,
@@ -161,7 +158,6 @@ export function useVotes(
 ): UseQueryResult<Vote[]> {
   const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
 
-  console.log("useVotes", governorAddress, proposalId, enabled, paramsDefined && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && enabled,
@@ -184,7 +180,6 @@ export function useVotingPower(
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
 
-  console.log("useVotingPower", voteTokenAddress, enabled, paramsDefined && connected && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
@@ -207,7 +202,6 @@ export function useVotingPowerByLedger(
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined && ledger !== undefined && currentLedger !== undefined;
 
-  console.log("useVotingPowerByLedger", voteTokenAddress, ledger, currentLedger, enabled, paramsDefined && connected && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
@@ -239,7 +233,6 @@ export function useUserVoteByProposalId(
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
 
-  console.log("useUserVoteByProposalId", governorAddress, proposalId, enabled, paramsDefined && connected && enabled);
   return  useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
@@ -266,7 +259,6 @@ export function useDelegate(
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
 
-  console.log("useDelegate", voteTokenAddress, enabled, paramsDefined && connected && enabled);
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,

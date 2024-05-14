@@ -26,6 +26,28 @@ export function TopBar() {
         Soroban Governor
       </Typography.Medium>
       <div className="flex items-center gap-2">
+        {/* <a href="https://github.com/script3/soroban-governor" target="_blank" rel="noreferrer">
+        <Image
+            src="/icons/github-mark-white.svg"
+            width={40}
+            height={40}
+            alt="github"
+          />
+          </a> */}
+        <Button
+          padding="p-2"
+          onClick={() => {
+            window.open("https://github.com/script3/soroban-governor", "_blank");
+          }}
+        >
+        <Image
+            src="/icons/github-mark-white.svg"
+            width={27}
+            height={27}
+            alt="github"
+            style={{ opacity: 0.5 }}
+          />
+        </Button>
         <Button
           className="px-6"
           onClick={() => {
@@ -37,6 +59,7 @@ export function TopBar() {
         </Button>
         {connected && (
           <Button
+            padding="p-3"
             onClick={() => {
               disconnect();
             }}

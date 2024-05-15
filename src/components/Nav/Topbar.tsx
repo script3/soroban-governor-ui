@@ -27,7 +27,7 @@ export function TopBar() {
       </Typography.Medium>
       <div className="flex items-center gap-2">
         <Button
-          padding="p-2"
+          className="!p-2"
           onClick={() => {
             window.open("https://github.com/script3/soroban-governor", "_blank");
           }}
@@ -51,7 +51,6 @@ export function TopBar() {
         </Button>
         {connected && (
           <Button
-            padding="p-3"
             onClick={() => {
               disconnect();
             }}

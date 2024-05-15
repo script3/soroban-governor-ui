@@ -6,6 +6,7 @@ export interface ButtonProps {
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  padding?: string;
 }
 
 export function Button({

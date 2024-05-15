@@ -27,6 +27,20 @@ export function TopBar() {
       </Typography.Medium>
       <div className="flex items-center gap-2">
         <Button
+          className="!p-2"
+          onClick={() => {
+            window.open("https://github.com/script3/soroban-governor", "_blank");
+          }}
+        >
+        <Image
+            src="/icons/github-mark-white.svg"
+            width={27}
+            height={27}
+            alt="github"
+            style={{ opacity: 0.5 }}
+          />
+        </Button>
+        <Button
           className="px-6"
           onClick={() => {
             connect();

@@ -1,14 +1,8 @@
 import { Proposal, Vote, XDRProposal, XDRVote } from "@/types";
-import { ProposalAction } from "@script3/soroban-governor-sdk";
+import { ProposalAction, VoteCount } from "@script3/soroban-governor-sdk";
 import { StrKey, scValToNative, xdr } from "@stellar/stellar-sdk";
 
-export function parseProposalFromXDR(
-  proposal: XDRProposal,
-  voteDelay: number,
-  votePeriod: number
-): Proposal {
-  let contract = xdr.Hash.fromXDR(proposal.contract, "base64");
-  let governor = StrKey.encodeContract(contract);
+export function parseProposalFromXDR(proposal: XDRProposal): Proposal {
   let scval = xdr.ScVal.fromXDR(proposal.action, "base64");
   let actionPropArray = scValToNative(scval);
   let action: ProposalAction;
@@ -26,8 +20,11 @@ export function parseProposalFromXDR(
     }
   }
 
+  const vote_count: VoteCount | undefined =
+    proposal.votes === "AAAAAQ==" // base64 encoding of ScVoid
+      ? undefined
+      : scValToNative(xdr.ScVal.fromXDR(proposal.votes, "base64"));
   const proposalToReturn: Proposal = {
-    governor,
     id: scValToNative(xdr.ScVal.fromXDR(proposal.propNum, "base64")),
     title: scValToNative(xdr.ScVal.fromXDR(proposal.title, "base64")),
     description: scValToNative(xdr.ScVal.fromXDR(proposal.descr, "base64")),
@@ -36,26 +33,15 @@ export function parseProposalFromXDR(
     status: scValToNative(xdr.ScVal.fromXDR(proposal.status, "base64")),
     vote_start: scValToNative(xdr.ScVal.fromXDR(proposal.vStart, "base64")),
     vote_end: scValToNative(xdr.ScVal.fromXDR(proposal.vEnd, "base64")),
-    executionETA:
+    eta:
       !!proposal.eta &&
       scValToNative(xdr.ScVal.fromXDR(proposal.eta, "base64")),
-    link: "",
-    votes_for: 0,
-    votes_against: 0,
-    votes_abstain: 0,
-    total_votes: 0,
+    vote_count: vote_count ?? {
+      _for: BigInt(0),
+      against: BigInt(0),
+      abstain: BigInt(0),
+    },
   };
-
-  const voteCount =
-    !!proposal.votes &&
-    scValToNative(xdr.ScVal.fromXDR(proposal.votes, "base64"));
-  if (!!voteCount) {
-    proposalToReturn.votes_for = voteCount[0];
-    proposalToReturn.votes_against = voteCount[1];
-    proposalToReturn.votes_abstain = voteCount[2];
-    proposalToReturn.total_votes = voteCount[3];
-  }
-
   return proposalToReturn;
 }
 

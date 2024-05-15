@@ -5,20 +5,15 @@ import { DAOCard } from "@/components/common/DAOCard";
 import { Input } from "@/components/common/Input";
 
 import Typography from "@/components/common/Typography";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Governor } from "@/types";
 import { useGovernors } from "@/hooks/api";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const [searchValue, setSearchValue] = useState<string>("");
   const router = useRouter();
-  const { governors, isLoading } = useGovernors({
-    placeholderData: [],
-  });
+  const governors = useGovernors();
 
   return (
     <Container className="mx-auto max-w-[1012px]">
@@ -34,17 +29,6 @@ export default function Home() {
               onChange={setSearchValue}
             />
           </Container>{" "}
-          {/* <Dropdown
-            buttonText="Options"
-            items={[
-              { text: "All", action: "all" },
-              { text: "Spaces", action: "spaces" },
-              { text: "Users", action: "users" },
-            ]}
-            selected="all"
-            placement="bottom-end"
-            onSelect={(action) => console.log(action)}
-          /> */}
         </Container>{" "}
         <Container slim className="w-max flex">
           <Typography.Small className="text-snapLink">

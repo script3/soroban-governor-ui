@@ -6,7 +6,6 @@
       "voteTokenAddress": "CCZFATFQOJS2DYOAXXUBEKQIHZAPZPR2SO32BVSUW7GOZQF3LSTWJTK4",
       "decimals": 6,
       "isWrappedAsset": false,
-      "underlyingTokenAddress":null,
       "voteTokenMetadata":{
         "name":"VOTES",
         "symbol":"VOTES",
@@ -22,7 +21,6 @@
       "voteTokenAddress": "CCYZCNYTFOWK226G7VBEIFLJG3GGJSCURONHQ3QRAEJC7OHGMC5JJQWF",
       "decimals": 7,
       "isWrappedAsset": false,
-      "underlyingTokenAddress":null,
       "voteTokenMetadata":{
         "name":"SCF Governance Token",
         "symbol":"voteSCF",

@@ -4,16 +4,16 @@ import { Box } from "@/components/common/Box";
 import Typography from "@/components/common/Typography";
 import { ProposalActionEnum } from "@/constants";
 import { Governor, Proposal } from "@/types";
-import { Calldata } from "@script3/soroban-governor-sdk";
+import { Calldata, GovernorSettings } from "@script3/soroban-governor-sdk";
 import { stringify } from "json5";
 import Image from "next/image";
 
 export function ProposalAction({
   proposal,
-  governor,
+  governorSettings,
 }: {
   proposal: Proposal;
-  governor?: Governor;
+  governorSettings: GovernorSettings;
 }) {
   const proposalType = proposal.action.tag;
 
@@ -80,7 +80,7 @@ export function ProposalAction({
           <Typography.P className="mb-2">Current settings object:</Typography.P>
           <Box className="p-4 box-border">
             <code className="whitespace-pre-wrap word-break p-1 ">
-              {stringify(governor?.settings, null, 8)}
+              {stringify(governorSettings, null, 8)}
             </code>
           </Box>
           <Typography.P className="mb-2">

@@ -26,49 +26,29 @@ import {
 import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
 import { stripMarkdown } from "@/utils/string";
-import { getStatusByProposalState } from "@/utils/proposal";
 import { useWallet } from "@/hooks/wallet";
 
 function Proposals() {
-  const [searchValue, setSearchValue] = useState<string>("");
-
   const router = useRouter();
-  const { blockNumber: currentBlockNumber } = useCurrentBlockNumber();
-
   const params = router.query;
-  const { connected, walletAddress } = useWallet();
-  const { governor } = useGovernor(params.dao as string, {
-    placeholderData: {},
-  });
-  const { delegateAddress } = useDelegate(governor?.voteTokenAddress, {
-    enabled: connected && !!governor?.voteTokenAddress,
-  });
-  const hasDelegate = delegateAddress !== walletAddress;
-  const { votingPower } = useVotingPower(governor?.voteTokenAddress, {
-    placeholderData: BigInt(0),
-    enabled: connected && !!governor?.voteTokenAddress && !!currentBlockNumber,
-  });
 
-  const { proposals } = useProposals(
-    governor?.address,
-    governor?.settings?.vote_delay,
-    governor?.settings?.vote_period,
-    {
-      placeholderData: [],
-      enabled:
-        !!params.dao &&
-        !!governor?.address &&
-        !!governor?.settings?.vote_delay &&
-        !!governor?.settings?.vote_period,
-    }
-  );
+  const { connected, walletAddress } = useWallet();
+
+  const { data: currentBlockNumber } = useCurrentBlockNumber();
+  const governor = useGovernor(params.dao as string);
+  const { data: delegateAddress } = useDelegate(governor?.voteTokenAddress);
+  const hasDelegate = delegateAddress !== walletAddress;
+  const { data: votingPower } = useVotingPower(governor?.voteTokenAddress);
+  const { data: proposals } = useProposals(governor?.address, currentBlockNumber);
+
+  const [searchValue, setSearchValue] = useState<string>("");
 
   const filteredProposals = useMemo(() => {
     const searchLower = searchValue.toLowerCase();
-    return proposals.filter(proposal =>
+    return (proposals ?? []).filter(proposal =>
         `${proposal.title} ${proposal.description} ${proposal.proposer}`.toLowerCase().includes(searchLower)
     );
-}, [searchValue, proposals]);
+  }, [searchValue, proposals]);
 
 
   return (
@@ -145,12 +125,7 @@ function Proposals() {
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
         {filteredProposals.map((proposal, ind) => {
-          const proposalStatus = getStatusByProposalState(
-            proposal.status,
-            proposal.vote_start,
-            proposal.vote_end,
-            currentBlockNumber
-          );
+          const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
           return (
             <Box
               key={`${proposal.id} ${ind}`}
@@ -161,8 +136,8 @@ function Proposals() {
                   {shortenAddress(proposal.proposer)}
                 </Typography.Small>
                 <Container slim className="flex  gap-2 ">
-                  <Chip className={`${classByStatus[proposalStatus]} mb-4`}>
-                    {ProposalStatusText[proposalStatus]}
+                  <Chip className={`${classByStatus[proposal.status]} mb-4`}>
+                    {ProposalStatusText[proposal.status]}
                   </Chip>
                   <Chip
                     className={`${
@@ -189,30 +164,23 @@ function Proposals() {
                   {/* votes progress bar */}
                   <ProgressWrapper
                     percentage={
-                      proposal.total_votes > 0
-                        ? proposal.votes_for / proposal.total_votes
-                        : 0
+                      proposal.vote_count._for > BigInt(0) ? Number(proposal.vote_count._for * BigInt(100) / total_votes) : 0
                     }
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Yes</Typography.Medium>
                       <Container slim className="flex gap-2">
                         <Typography.Medium>
-                          {proposal.votes_for > 0
+                          {proposal.vote_count._for > 0
                             ? `${toBalance(
-                                proposal.votes_for,
+                                proposal.vote_count._for,
                                 governor?.decimals
                               )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.total_votes > 0
-                              ? (
-                                  (proposal.votes_for / proposal.total_votes) *
-                                  100
-                                ).toFixed(2)
-                              : 0
+                            proposal.vote_count._for > BigInt(0) ? (Number(proposal.vote_count._for * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -220,31 +188,23 @@ function Proposals() {
                   </ProgressWrapper>
                   <ProgressWrapper
                     percentage={
-                      proposal.total_votes > 0
-                        ? proposal.votes_against / proposal.total_votes
-                        : 0
+                      proposal.vote_count.against > BigInt(0) ? Number(proposal.vote_count.against * BigInt(100) / total_votes) : 0
                     }
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>No</Typography.Medium>
                       <Container slim className="flex gap-2">
                         <Typography.Medium>
-                          {proposal.votes_against > 0
+                          {proposal.vote_count.against > 0
                             ? `${toBalance(
-                                proposal.votes_against,
+                                proposal.vote_count.against,
                                 governor?.decimals
                               )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.total_votes > 0
-                              ? (
-                                  (proposal.votes_against /
-                                    proposal.total_votes) *
-                                  100
-                                ).toFixed(2)
-                              : 0
+                            proposal.vote_count.against > BigInt(0) ? (Number(proposal.vote_count.against * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -252,31 +212,23 @@ function Proposals() {
                   </ProgressWrapper>
                   <ProgressWrapper
                     percentage={
-                      proposal.total_votes > 0
-                        ? proposal.votes_abstain / proposal.total_votes
-                        : 0
+                      proposal.vote_count.abstain > BigInt(0) ? Number(proposal.vote_count.abstain * BigInt(100) / total_votes) : 0
                     }
                   >
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Abstain</Typography.Medium>
                       <Container slim className="flex gap-2">
                         <Typography.Medium>
-                          {proposal.votes_abstain > 0
+                          {proposal.vote_count.abstain > 0
                             ? `${toBalance(
-                                proposal.votes_abstain,
+                                proposal.vote_count.abstain,
                                 governor?.decimals
                               )} -`
                             : "   "}
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.total_votes > 0
-                              ? (
-                                  (proposal.votes_abstain /
-                                    proposal.total_votes) *
-                                  100
-                                ).toFixed(2)
-                              : 0
+                            proposal.vote_count.abstain > BigInt(0) ? (Number(proposal.vote_count.abstain * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -285,12 +237,11 @@ function Proposals() {
                 </div>
                 <Typography.Tiny className="text-snapLink">
                   {/* X days remaining / ended X days ago  */}{" "}
-                  {getRelativeProposalPeriod(
-                    proposalStatus,
+                  {currentBlockNumber ? getRelativeProposalPeriod(
                     proposal.vote_start,
                     proposal.vote_end,
                     currentBlockNumber
-                  )}
+                  ): "unkown"}
                 </Typography.Tiny>
               </div>
             </Box>

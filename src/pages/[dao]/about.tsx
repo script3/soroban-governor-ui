@@ -4,25 +4,23 @@ import { Box } from "@/components/common/Box";
 import Typography from "@/components/common/Typography";
 import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
-import { useGovernor } from "@/hooks/api";
+import { useGovernor, useGovernorSettings } from "@/hooks/api";
 
 function About() {
   const router = useRouter();
   const params = router.query;
-  const { governor: currentGovernor } = useGovernor(params.dao as string, {
-    placeholderData: {},
-    enabled: !!params.dao,
-  });
+  const currentGovernor = useGovernor(params.dao as string);
+  const { data: settings } = useGovernorSettings(currentGovernor?.address);
 
-  let settings = currentGovernor?.settings;
-  if (settings == undefined) {
+
+  if (settings == undefined || currentGovernor == undefined) {
     return (
       <Container slim className=" mt-3 flex flex-col gap-6 w-full">
         <Box className="flex flex-col gap-3 p-4 w-full">
           <Typography.Big>Profile</Typography.Big>
           <Typography.P>Name</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {currentGovernor.name}
+            {currentGovernor?.name ?? "Loading..."}
           </Typography.Small>
           <Typography.Medium>Settings</Typography.Medium>
           <Container className="pl-2 flex flex-col gap-3">

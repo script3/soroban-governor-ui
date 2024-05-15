@@ -11,7 +11,8 @@ import {
   WalletNetwork,
   XBULL_ID,
   xBullModule,
-  LobstrModule
+  LobstrModule,
+  AlbedoModule
 } from "@creit.tech/stellar-wallets-kit/build";
 
 import React, { useContext, useEffect, useState } from "react";
@@ -23,40 +24,13 @@ import {
   GovernorContract,
   TokenVotesContract,
   BondingVotesContract,
-  GovernorErrors,
-  VotesErrors,
   GovernorSettings,
   ContractErrorType,
 } from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
 import { getTokenBalance as getBalance } from "@/utils/token";
 import { useLocalStorageState } from "./useLocalStorageState";
-export class Resources {
-  fee: number;
-  refundableFee: number;
-  cpuInst: number;
-  readBytes: number;
-  writeBytes: number;
-  readOnlyEntries: number;
-  readWriteEntries: number;
-  constructor(
-    fee: number,
-    refundableFee: number,
-    cpuInst: number,
-    readBytes: number,
-    writeBytes: number,
-    readOnlyEntries: number,
-    readWriteEntries: number
-  ) {
-    this.fee = fee;
-    this.refundableFee = refundableFee;
-    this.cpuInst = cpuInst;
-    this.readBytes = readBytes;
-    this.writeBytes = writeBytes;
-    this.readOnlyEntries = readOnlyEntries;
-    this.readWriteEntries = readWriteEntries;
-  }
-}
+
 export interface IWalletContext {
   connected: boolean;
   walletAddress: string;
@@ -204,7 +178,7 @@ export const WalletProvider = ({ children = null as any }) => {
       autoConnect !== undefined && autoConnect !== "false"
         ? autoConnect
         : XBULL_ID,
-    modules: [new xBullModule(), new FreighterModule(), new LobstrModule()],
+    modules: [new xBullModule(), new FreighterModule(), new LobstrModule(), new AlbedoModule()],
   });
 
   useEffect(() => {
@@ -212,7 +186,7 @@ export const WalletProvider = ({ children = null as any }) => {
       // @dev: timeout ensures chrome has the ability to load extensions
       setTimeout(() => {
         handleSetWalletAddress();
-      }, 500);
+      }, 1000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoConnect]);
@@ -1151,9 +1125,6 @@ export const WalletProvider = ({ children = null as any }) => {
       setCleanTxMessage(undefined);
       setTxStatus(TxStatus.BUILDING);
       let result = await submission;
-
-      console.log(result);
-
       setTxHash(result.hash);
       const isOk = result.result.isOk();
       setNotificationMode("flash");

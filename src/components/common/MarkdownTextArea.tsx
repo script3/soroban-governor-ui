@@ -45,7 +45,6 @@ const MarkdownTextArea: React.FC<TextAreaProps> = ({
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    console.log("DROPPED");
     e.preventDefault();
     for (const item of e.dataTransfer.files) {
       if (item.type.startsWith("image/")) {

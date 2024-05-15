@@ -8,8 +8,7 @@ import Typography from "@/components/common/Typography";
 import {
   useDelegate,
   useGovernor,
-  useUnderlyingTokenBalance,
-  useVoteTokenBalance,
+  useWalletBalance,
   useVotingPower,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
@@ -38,93 +37,83 @@ function ManageVotes() {
   } = useWallet();
   const router = useRouter();
   const params = router.query;
-  const { governor } = useGovernor(params.dao as string, {
-    placeholderData: {},
-  });
-  const { delegateAddress, refetch: refetchDelegate } = useDelegate(
+  const governor = useGovernor(params.dao as string);
+  const { data: delegateAddress, refetch: refetchDelegate } = useDelegate(
     governor?.voteTokenAddress,
-    {
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
   );
   const hasDelegate = connected && delegateAddress !== walletAddress;
-  const { balance, refetch: refetchBalance } = useVoteTokenBalance(
-    governor?.voteTokenAddress,
-    {
-      placeholderData: BigInt(0),
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
-  );
 
-  const { votingPower, refetch: refetchVotingPower } = useVotingPower(
+  const { data: voteTokenBalance, refetch: refetchTokenBalance } = useWalletBalance(
     governor?.voteTokenAddress,
-    {
-      placeholderData: BigInt(0),
-      enabled: connected && !!governor?.voteTokenAddress,
-    }
   );
-
-  const { balance: underlyingTokenBalance, refetch: refetchunderlying } =
-    useUnderlyingTokenBalance(governor?.underlyingTokenAddress || "", {
-      enabled: connected && !!governor?.underlyingTokenAddress,
-      placeholderData: BigInt(0),
-    });
+  const { data: votingPower, refetch: refetchVotingPower } = useVotingPower(
+    governor?.voteTokenAddress,
+  );
+  const { data: underlyingTokenBalance, refetch: refetchUnderlying } = useWalletBalance(governor?.underlyingTokenAddress);
 
   function handleWrapClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      const amount = scaleNumberToBigInt(toWrap, governor?.decimals);
-      wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
-        refetchBalance();
-        refetchunderlying();
-        refetchVotingPower();
-        setToUnwrap("");
-        setToWrap("");
-      });
+    if (governor) {
+      if (!connected) {
+        connect();
+        return;
+      } else {
+        const amount = scaleNumberToBigInt(toWrap, governor.decimals);
+        wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
+          refetchTokenBalance();
+          refetchUnderlying();
+          refetchVotingPower();
+          setToUnwrap("");
+          setToWrap("");
+        });
+      }
     }
   }
 
   function handleUnwrapClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      const amount = scaleNumberToBigInt(toUnwrap, governor?.decimals);
-      unwrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
-        refetchunderlying();
-        refetchBalance();
-        refetchVotingPower();
-        setToUnwrap("");
-        setToWrap("");
-      });
+    if (governor) {
+      if (!connected) {
+        connect();
+        return;
+      } else {
+        const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
+        unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+          refetchUnderlying();
+          refetchTokenBalance();
+          refetchVotingPower();
+          setToUnwrap("");
+          setToWrap("");
+        });
+      }
     }
   }
 
   function handleDelegateClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      delegate(governor?.voteTokenAddress, newDelegate, false).then(() => {
-        setNewDelegate("");
-        refetchDelegate();
-        refetchVotingPower();
-      });
+    if (governor) {
+      if (!connected) {
+        connect();
+        return;
+      } else {
+        delegate(governor.voteTokenAddress, newDelegate, false).then(() => {
+          setNewDelegate("");
+          refetchDelegate();
+          refetchVotingPower();
+        });
+      }
     }
   }
 
   function handleRemoveDelegateClick() {
-    if (!connected) {
-      connect();
-      return;
-    } else {
-      delegate(governor?.voteTokenAddress, walletAddress, false).then(() => {
-        setNewDelegate("");
-        refetchDelegate();
-        refetchVotingPower();
-      });
+    if (governor) {
+      if (!connected) {
+        connect();
+        return;
+      } else {
+        delegate(governor.voteTokenAddress, walletAddress, false).then(() => {
+          setNewDelegate("");
+          refetchDelegate();
+          refetchVotingPower();
+        });
+      }
     }
   }
 
@@ -146,7 +135,7 @@ function ManageVotes() {
           Back
         </Typography.P>
         <Typography.Huge>Your Votes</Typography.Huge>
-        {!!governor.isWrappedAsset && (
+        {governor?.isWrappedAsset === true && (
           <Container>
             <Typography.P>
               This space uses a bonded token for voting. You can get bonded
@@ -189,8 +178,7 @@ function ManageVotes() {
             </Container>
           </Container>
         )}
-
-        {!governor.isWrappedAsset && (
+        {governor?.isWrappedAsset === false && (
           <Container slim className="py-2 gap-1 flex flex-col">
             <Typography.P>
               Contract address:{" "}
@@ -230,7 +218,7 @@ function ManageVotes() {
             </Typography.Tiny>
             <Container slim className="flex gap-2">
               <Typography.P>
-                {toBalance(balance, governor?.decimals || 7)}{" "}
+                {toBalance(voteTokenBalance, governor?.decimals || 7)}{" "}
                 {governor?.voteTokenMetadata?.symbol}
               </Typography.P>
               {hasDelegate && (
@@ -241,7 +229,7 @@ function ManageVotes() {
             </Container>
           </Container>
         </Box>
-        {governor.isWrappedAsset && (
+        {governor?.isWrappedAsset === true && (
           <>
             <Box className="pt-3 flex gap-3 flex-col !px-0">
               <Container className="flex flex-col justify-center p-2 ">
@@ -275,7 +263,7 @@ function ManageVotes() {
                 {isLoading ? <Loader /> : connected ? "Bond" : "Connect wallet"}
               </Button>
             </Box>
-            {balance > BigInt(0) && (
+            {voteTokenBalance && voteTokenBalance > BigInt(0) && (
               <Box className="pt-3 !px-0 flex gap-3 flex-col ">
                 <Container className="flex flex-col justify-center p-2 ">
                   <Typography.P>
@@ -285,7 +273,7 @@ function ManageVotes() {
                   {connected && (
                     <Typography.Small className="text-snapLink">
                       Voting token balance:{" "}
-                      {toBalance(balance, governor?.decimals || 7)}{" "}
+                      {toBalance(voteTokenBalance, governor?.decimals || 7)}{" "}
                       {governor?.voteTokenMetadata.symbol}
                     </Typography.Small>
                   )}
@@ -343,7 +331,7 @@ function ManageVotes() {
             </Button>
           </Box>
         )}
-        {connected && !!hasDelegate && (
+        {connected && hasDelegate && delegateAddress && (
           <Box className="!p-0 flex gap-3 flex-col ">
             <Container className="flex flex-col justify-center p-4 border-b border-snapBorder">
               <Typography.Small>Your delegate</Typography.Small>
@@ -351,7 +339,7 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(balance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
+                {toBalance(voteTokenBalance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
                 {"delegated votes"}
               </Typography.P>
             </Container>

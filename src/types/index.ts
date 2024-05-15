@@ -1,12 +1,42 @@
-import { ProposalStatusEnum } from "@/constants";
-import {
-  GovernorSettings,
-  ProposalAction,
-} from "@script3/soroban-governor-sdk";
+import { ProposalAction, VoteCount } from "@script3/soroban-governor-sdk";
 
-/**
- * Interface for a governace proposal
- */
+export enum ProposalStatusExt {
+  /**
+   * The proposal exists and voting has not been closed
+   */
+  Open = 0,
+  /**
+   * The proposal was voted for. If the proposal is executable, the timelock begins once this state is reached.
+   */
+  Successful = 1,
+  /**
+   * The proposal was voted against
+   */
+  Defeated = 2,
+  /**
+   * The proposal did not reach quorum before the voting period ended
+   */
+  Expired = 3,
+  /**
+   * The proposal has been executed
+   */
+  Executed = 4,
+  /**
+   * The proposal has been canceled
+   */
+  Canceled = 5,
+  /**
+   * Frontend Only
+   * The proposal is open but the vote start ledger has not been reached
+   */
+  Pending = 6,
+  /**
+   * Frontend Only
+   * The proposal is open for voting
+   */
+  Active = 7,
+}
+
 export interface Proposal {
   /**
    * The proposal id
@@ -15,14 +45,19 @@ export interface Proposal {
   /**
    * The proposal status
    */
-  status: ProposalStatusEnum;
+  status: ProposalStatusExt;
   /**
-   * The function to call on execution, encoded as base64 XDR
+   * The title of the proposal
    */
+  title: string;
   /**
    * The description of the proposal
    */
   description: string;
+  /**
+   * The action of the proposal
+   */
+  action: ProposalAction;
   /**
    * The user who created the proposal
    */
@@ -35,15 +70,14 @@ export interface Proposal {
    * The ledger timestamp voting will close at
    */
   vote_end: number;
-  title: string;
-  link: string;
-  votes_for: number;
-  votes_against: number;
-  votes_abstain: number;
-  total_votes: number;
-  governor: string;
-  action: ProposalAction;
-  executionETA: number;
+  /**
+   * The ledger the proposal can be executed
+   */
+  eta: number;
+  /**
+   * The current vote count
+   */
+  vote_count: VoteCount;
 }
 
 export interface TokenMetadata {
@@ -55,19 +89,14 @@ export interface TokenMetadata {
   domain?: string;
 }
 
-/**
- * Interface for the Governor contract
- */
 export interface Governor {
   name: string;
   logo: string;
   address: string;
   voteTokenAddress: string;
   voteTokenMetadata: TokenMetadata;
-  settings: GovernorSettings;
   decimals: number;
   isWrappedAsset: boolean;
-
   underlyingTokenAddress?: string;
   underlyingTokenMetadata?: TokenMetadata;
 }
@@ -82,8 +111,8 @@ export interface Vote {
 }
 
 export enum VoteSupport {
-  For = 1,
   Against = 0,
+  For = 1,
   Abstain = 2,
 }
 
@@ -97,8 +126,8 @@ export interface XDRProposal {
   status: string;
   vStart: string;
   vEnd: string;
-  votes?: string;
-  eta?: string;
+  votes: string;
+  eta: string;
 }
 
 export interface XDRVote {

@@ -5,7 +5,7 @@ import Typography from "./Typography";
  * @name ProgressBar
  * @description
  * @param {string} [className=""] - className
- * @param {number} progress - progress
+ * @param {number} percentage - progress as a percentage in decimal form
  * @param {string} [barClassName=""] - barClassName -  pass any classes you wish applied to the colored portion of the progress bar
  * @param {string} [label=""] - label
  * @param {ReactNode} [endContent=""] - endContent
@@ -13,24 +13,21 @@ import Typography from "./Typography";
  */
 export interface ProgressBarProps {
   className?: string;
-  progress: number;
+  percentage: number;
   barClassName?: string;
   label?: string;
   endContent?: ReactNode;
 }
 export function ProgressBar({
   className,
-  progress,
+  percentage,
   barClassName,
   label,
   endContent,
 }: ProgressBarProps) {
-  /** if greater than 1 then take as 100 based  */
   const width =
-    progress > 1
-      ? progress.toFixed(2)
-      : (Number(progress.toFixed(2)) * 100).toFixed(2);
-  const fullWidth = progress > 1 ? progress === 100 : progress === 1;
+    (Math.min(percentage * 100, 100)).toFixed(2);
+  const fullWidth = percentage >= 1;
   return (
     <div
       className={`flex flex-col justify-center items-center w-full ${className}`}

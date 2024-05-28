@@ -7,6 +7,7 @@ import { Governor, Proposal } from "@/types";
 import { Calldata, GovernorSettings } from "@script3/soroban-governor-sdk";
 import { stringify } from "json5";
 import Image from "next/image";
+import { DisplayCalldata } from "./DisplayCalldata";
 
 export function ProposalAction({
   proposal,
@@ -21,36 +22,7 @@ export function ProposalAction({
     case ProposalActionEnum.CALLDATA:
       const calldata = proposal.action.values as any as Calldata;
 
-      return (
-        <Container className="flex flex-col gap-3">
-          <Typography.P className="mb-2">Contract ID:</Typography.P>
-          <Box className="p-4 box-border">
-            <code className="whitespace-pre-wrap word-break p-1 ">
-              {calldata.contract_id}
-            </code>
-          </Box>
-          <Typography.P className="mb-2">Function:</Typography.P>
-          <Box className="p-4 box-border">
-            <code className="whitespace-pre-wrap word-break p-1 ">
-              {calldata.function}
-            </code>
-          </Box>
-          <Typography.P className="mb-2">Arguments:</Typography.P>
-          {calldata.args.map((arg, index) => (
-            <Box key={"arg" + index} className="p-4 box-border">
-              <code className="whitespace-pre-wrap word-break !p-0 leading-7 text-left justify-start ">
-                {arg.toString()}
-              </code>
-            </Box>
-          ))}
-          <Typography.P className="mb-2">Auths:</Typography.P>
-          <Box className="p-4 box-border">
-            <code className="whitespace-pre-wrap word-break !p-0 ">
-              {"[" + calldata.auths.join(",\n") + "]"}
-            </code>
-          </Box>
-        </Container>
-      );
+      return <DisplayCalldata calldata={calldata} />;
     case ProposalActionEnum.UPGRADE:
       return (
         <Container className="flex flex-col gap-3">

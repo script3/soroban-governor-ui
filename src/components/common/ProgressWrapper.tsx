@@ -10,11 +10,7 @@ export function ProgressWrapper({
   className,
   percentage,
 }: ProgressWrapperProps) {
-  /** if greater than 1 then take as 100 based  */
-  const width =
-    percentage > 1
-      ? percentage.toFixed(2)
-      : (Number(percentage.toFixed(2)) * 100).toFixed(2);
+  const width = (percentage * 100).toFixed(2);
   return (
     <div
       className={`flex relative min-h-[40px] w-full rounded-md bg-transparent items-center  ${

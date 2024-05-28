@@ -126,6 +126,10 @@ function Proposals() {
       <Container className="flex flex-col gap-4">
         {filteredProposals.map((proposal, ind) => {
           const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
+          const percent_for = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count._for) / Number(total_votes) : 0;
+          const percent_against = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.against) / Number(total_votes) : 0;
+          const percent_abstain = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.abstain) / Number(total_votes) : 0;
+        
           return (
             <Box
               key={`${proposal.id} ${ind}`}
@@ -164,7 +168,7 @@ function Proposals() {
                   {/* votes progress bar */}
                   <ProgressWrapper
                     percentage={
-                      proposal.vote_count._for > BigInt(0) ? Number(proposal.vote_count._for * BigInt(100) / total_votes) : 0
+                      percent_for
                     }
                   >
                     <div className="flex justify-between w-full">
@@ -180,7 +184,7 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.vote_count._for > BigInt(0) ? (Number(proposal.vote_count._for * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
+                            percent_for > 0 ? (percent_for * 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -188,7 +192,7 @@ function Proposals() {
                   </ProgressWrapper>
                   <ProgressWrapper
                     percentage={
-                      proposal.vote_count.against > BigInt(0) ? Number(proposal.vote_count.against * BigInt(100) / total_votes) : 0
+                      percent_against
                     }
                   >
                     <div className="flex justify-between w-full">
@@ -204,7 +208,7 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.vote_count.against > BigInt(0) ? (Number(proposal.vote_count.against * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
+                            percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -212,7 +216,7 @@ function Proposals() {
                   </ProgressWrapper>
                   <ProgressWrapper
                     percentage={
-                      proposal.vote_count.abstain > BigInt(0) ? Number(proposal.vote_count.abstain * BigInt(100) / total_votes) : 0
+                      percent_abstain
                     }
                   >
                     <div className="flex justify-between w-full">
@@ -228,7 +232,7 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            proposal.vote_count.abstain > BigInt(0) ? (Number(proposal.vote_count.abstain * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"
+                            percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>

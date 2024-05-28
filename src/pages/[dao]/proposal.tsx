@@ -67,7 +67,6 @@ export default function Proposal() {
     currentBlockNumber,
     !!params.id && !!currentGovernor?.address
   )
-  console.log("proposal", proposal)
   const { data: governorSettings } = useGovernorSettings(currentGovernor?.address, proposal?.action?.tag === ProposalActionEnum.SETTINGS);
 
   const { data: tempVotes, refetch: refetchVotes } = useVotes(currentGovernor?.address, proposal?.id);
@@ -92,6 +91,9 @@ export default function Proposal() {
     proposal.action.tag !== ProposalActionEnum.SNAPSHOT &&
     currentBlockNumber ? proposal.eta <= currentBlockNumber : false;
   const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
+  const percent_for = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count._for) / Number(total_votes) : 0;
+  const percent_against = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.against) / Number(total_votes) : 0;
+  const percent_abstain = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.abstain) / Number(total_votes) : 0;
 
   function handleVote() {
     if (selectedSupport !== null && proposal !== undefined && currentGovernor !== undefined) {
@@ -494,13 +496,13 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.vote_count._for > BigInt(0) ? (Number(proposal.vote_count._for * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
+                          {percent_for > 0 ? (percent_for * 100).toFixed(2) : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
-                    progress={
-                      proposal.vote_count._for > BigInt(0) ? Number(proposal.vote_count._for * BigInt(100) / total_votes) : 0
+                    percentage={
+                      percent_for
                     }
                   />{" "}
                   <ProgressBar
@@ -523,13 +525,12 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.vote_count.against > BigInt(0) ? (Number(proposal.vote_count.against * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
-                          %
+                          {percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"}                          %
                         </Typography.P>
                       </Container>
                     }
-                    progress={
-                      proposal.vote_count.against > BigInt(0) ? Number(proposal.vote_count.against * BigInt(100) / total_votes) : 0
+                    percentage={
+                      percent_against
                     }
                   />{" "}
                   <ProgressBar
@@ -552,13 +553,13 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {proposal.vote_count.abstain > BigInt(0) ? (Number(proposal.vote_count.abstain * BigInt(10000) / total_votes) / 100).toFixed(2) : "0"}
+                          {percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"}                          %
                           %
                         </Typography.P>
                       </Container>
                     }
-                    progress={
-                      proposal.vote_count.abstain > BigInt(0) ? Number(proposal.vote_count.abstain * BigInt(100) / total_votes) : 0
+                    percentage={
+                      percent_abstain
                     }
                   />{" "}
                 </Container>

@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@creit.tech/stellar-wallets-kit": "^0.8.1",
+    "@creit.tech/stellar-wallets-kit": "^0.8.2",
     "@headlessui/react": "^1.7.18",
     "@script3/soroban-governor-sdk": "^1.0.1",
     "@snapshot-labs/pineapple": "^1.1.0",

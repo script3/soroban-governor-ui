@@ -525,7 +525,8 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"}                          %
+                          {percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"}
+                          %
                         </Typography.P>
                       </Container>
                     }
@@ -553,7 +554,7 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"}                          %
+                          {percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"}
                           %
                         </Typography.P>
                       </Container>

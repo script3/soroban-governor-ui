@@ -51,5 +51,28 @@
   
         "icon":"/icons/token/soroban.svg"
       }
+    },
+    {
+      "name": "Emissions DAO",
+      "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+      "address": "CDQLN3KN474SDSZGER7KKPFBGXYFQ6ITORADWOOJK5BR4N354KWOY3WU",
+      "voteTokenAddress": "CDVZUG4YOUOG6KDS2JKGSG23HRCHGXLLOUANJ73UHLVY7PS5HDFH5JP6",
+      "decimals": 7,
+      "isWrappedAsset": true,
+      "underlyingTokenAddress":"CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU",
+      "underlyingTokenMetadata":{
+        "name":"USDC",
+        "symbol":"USDC",
+        "decimals":7,
+        "domain":"teapot.finance",
+        "icon":"/icons/token/xlm.svg",
+        "issuer":"GATALTGTWIOT6BUDBCZM3Q4OQ4BO2COLOAZ7IYSKPLC2PMSOPPGF5V56"
+      },
+      "voteTokenMetadata":{
+        "name":"voteUSDC",
+        "symbol":"voteUSDC",
+        "decimals":7,
+        "icon":"/icons/token/soroban.svg"
+      }
     }
   ]

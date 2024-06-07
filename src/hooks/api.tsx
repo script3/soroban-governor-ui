@@ -3,9 +3,9 @@ import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
 import { SorobanRpc } from "@stellar/stellar-sdk";
-import { getBalance, getDelegate, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
+import { getBalance, getClaimAmount, getDelegate, getEmissionConfig, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
 import { fetchProposalById, fetchProposalsByGovernor, fetchVotesByProposal } from "@/utils/graphql";
-import { GovernorSettings } from "@script3/soroban-governor-sdk";
+import { EmissionConfig, GovernorSettings } from "@script3/soroban-governor-sdk";
 
 const DEFAULT_STALE_TIME = 20 * 1000;
 
@@ -248,6 +248,52 @@ export function useUserVoteByProposalId(
         proposalId,
         walletAddress,
       );
+    },
+  });
+}
+
+export function useEmissionConfig(
+  voteTokenAddress: string | undefined,
+  enabled: boolean = true,
+) {
+  const { network } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined;
+
+  const placeholder: EmissionConfig = {
+    eps: BigInt(0),
+    expiration: BigInt(0),
+  }
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && enabled,
+    placeholderData: placeholder,
+    queryKey: ["emisConfig", voteTokenAddress],
+    queryFn: async () => {
+      if (!paramsDefined) {
+        return placeholder;
+      }
+      return await getEmissionConfig(network, voteTokenAddress);
+    },
+  });
+}
+
+export function useClaimAmount(
+  voteTokenAddress: string | undefined,
+  enabled: boolean = true,
+) {
+  const { network, connected, walletAddress } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined;
+
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && connected && enabled,
+    placeholderData: BigInt(0),
+    queryKey: ["claimAmount", voteTokenAddress, walletAddress],
+    queryFn: async () => {
+      if (!paramsDefined || walletAddress === "") {
+        return BigInt(0);
+      }
+      return await getClaimAmount(network, voteTokenAddress, walletAddress);
     },
   });
 }

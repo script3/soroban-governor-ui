@@ -1,12 +1,14 @@
 import { VoteSupport } from "@/types";
 import {
+  BondingVotesContract,
+  EmissionConfig,
   GovernorContract,
   GovernorSettings,
   TokenVotesContract,
   VoteCount,
   VotesContract,
 } from "@script3/soroban-governor-sdk";
-import { scValToNative, xdr } from "@stellar/stellar-sdk";
+import { SorobanRpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 import { Network, TxOptions, invokeOperation } from "./stellar";
 
 function getSimTxParams(network: Network): TxOptions {
@@ -245,6 +247,69 @@ export async function getPastVotingPower(
   } else {
     return getVotingPower(network, contractId, userId);
   }
+}
+
+/**
+ * Fetch the emission config for a bonding votes contract
+ * @param network - The network to use
+ * @param contractId - The contract ID to check
+ * @returns The emissions config, or an empty emissions config if an error occurs
+ */
+export async function getEmissionConfig(
+  network: Network,
+  contractId: string
+): Promise<EmissionConfig> {
+  try {
+    let rpc = new SorobanRpc.Server(network.rpc, network.opts);
+    let contract_entry = await rpc.getContractData(
+      contractId,
+      xdr.ScVal.scvSymbol("EMIS_CFG"),
+      SorobanRpc.Durability.Persistent
+    );
+    if (contract_entry.val) {
+      let data = contract_entry.val.contractData().val();
+      let emis_data = scValToNative(data) as EmissionConfig;
+      return emis_data;
+    }
+  } catch (e) {}
+  return {
+    eps: BigInt(0),
+    expiration: BigInt(0),
+  };
+}
+
+/**
+ * Fetch the claim amount for a user from a bonding votes contract
+ * @param network - The network to use
+ * @param contractId - The contract ID to call
+ * @param userId - The user ID
+ * @returns BigInt of the user's claim amount
+ * @throws Error if the operation fails
+ */
+export async function getClaimAmount(
+  network: Network,
+  contractId: string,
+  userId: string
+): Promise<bigint> {
+  const txOptions = getSimTxParams(network);
+  const contract = new BondingVotesContract(contractId);
+  const operation = contract.claim({
+    address: userId,
+  });
+  const result = (
+    await invokeOperation<bigint>(
+      PUBKEY,
+      FALSE_SIGN,
+      network,
+      txOptions,
+      BondingVotesContract.parsers.claim,
+      operation
+    )
+  ).result;
+  if (result.isErr()) {
+    throw result.unwrapErr();
+  }
+  return result.unwrap();
 }
 
 /**

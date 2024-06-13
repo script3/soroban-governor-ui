@@ -10,6 +10,8 @@ import {
   useGovernor,
   useWalletBalance,
   useVotingPower,
+  useEmissionConfig,
+  useClaimAmount,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
@@ -29,6 +31,7 @@ function ManageVotes() {
   const {
     wrapToken,
     unwrapToken,
+    claimEmissions,
     connect,
     connected,
     isLoading,
@@ -51,6 +54,9 @@ function ManageVotes() {
   );
   const { data: underlyingTokenBalance, refetch: refetchUnderlying } = useWalletBalance(governor?.underlyingTokenAddress);
 
+  const { data: emisConfig } = useEmissionConfig(governor?.voteTokenAddress, governor?.isWrappedAsset);
+  const { data: claimAmount, refetch: refetchClaimAmount } = useClaimAmount(governor?.voteTokenAddress, emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0));
+
   function handleWrapClick() {
     if (governor) {
       if (!connected) {
@@ -62,6 +68,10 @@ function ManageVotes() {
           refetchTokenBalance();
           refetchUnderlying();
           refetchVotingPower();
+          if (emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)) {
+            refetchClaimAmount();
+          }
+          
           setToUnwrap("");
           setToWrap("");
         });
@@ -80,10 +90,27 @@ function ManageVotes() {
           refetchUnderlying();
           refetchTokenBalance();
           refetchVotingPower();
+          if (emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)) {
+            refetchClaimAmount();
+          }
           setToUnwrap("");
           setToWrap("");
         });
       }
+    }
+  }
+
+  function handleClaim() {
+    if (governor) {
+      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
+      claimEmissions(governor.voteTokenAddress, false).then((res) => {
+        refetchUnderlying();
+        refetchTokenBalance();
+        refetchVotingPower();
+        refetchClaimAmount();
+        setToUnwrap("");
+        setToWrap("");
+      });
     }
   }
 
@@ -196,8 +223,8 @@ function ManageVotes() {
             </Typography.P>
           </Container>
         )}
-        <Box className="p-3 flex gap-3 flex-col !px-0">
-          <Container className="flex flex-col p-3 gap-2 border-b border-snapBorder w-full">
+        <Box className="p-t-3 mb-3 flex flex-col !px-0">
+          <Container className="flex flex-col p-3 gap-2  w-full">
             <Typography.Tiny className="text-snapLink">
               Current Voting power
             </Typography.Tiny>
@@ -212,7 +239,7 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
-          <Container className="flex flex-col p-3 gap-2  w-full">
+          <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
             <Typography.Tiny className="text-snapLink">
               Current Voting tokens balance
             </Typography.Tiny>
@@ -228,6 +255,28 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
+          {governor?.isWrappedAsset === true && claimAmount !== undefined && claimAmount > BigInt(0) && (
+            <>
+              <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
+                <Typography.Tiny className="text-snapLink">
+                  Emissions
+                </Typography.Tiny>
+                <Container slim className="flex flex-col justify-center">
+                  <Typography.P>
+                    {toBalance(claimAmount, governor?.decimals || 7)}{" "}
+                    {governor?.voteTokenMetadata?.symbol}
+                  </Typography.P>
+                </Container>
+              </Container>
+                <Button
+                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder"
+                onClick={handleClaim}
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader /> : "Claim"}
+              </Button>
+            </>
+          )}
         </Box>
         {governor?.isWrappedAsset === true && (
           <>

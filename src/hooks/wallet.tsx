@@ -106,6 +106,10 @@ export interface IWalletContext {
     amount: bigint,
     sim: boolean
   ) => Promise<bigint>;
+  claimEmissions: (
+    voteTokenAddress: string,
+    sim: boolean
+  ) => Promise<bigint>;
   getUserVoteByProposalId: (
     proposalId: number,
     governorAddress: string,
@@ -964,6 +968,65 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
+  async function claimEmissions(
+    voteTokenAddress: string,
+    sim: boolean
+  ) {
+    try {
+      if (connected && walletAddress) {
+        let txOptions: TxOptions = {
+          sim,
+          pollingInterval: 1000,
+          timeout: 15000,
+          builderOptions: {
+            fee: "10000",
+            timebounds: {
+              minTime: 0,
+              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+            },
+            networkPassphrase: network.passphrase,
+          },
+        };
+        let votesClient = new BondingVotesContract(voteTokenAddress);
+
+        let withdrawOperation = votesClient.claim({
+          address: walletAddress
+        });
+        const submission = invokeOperation<xdr.ScVal>(
+          walletAddress,
+          sign,
+          network,
+          txOptions,
+          BondingVotesContract.parsers.claim,
+          withdrawOperation
+        );
+        if (sim) {
+          const sub = await submission;
+
+          if (sub instanceof ContractResult) {
+            return sub.result.unwrap();
+          }
+          return sub;
+        } else {
+          return (
+            submitTransaction<bigint>(submission, {
+              notificationMode: "flash",
+              notificationTitle: "Emissions successfully claimed",
+              successMessage: "Emissions successfully claimed",
+              failureMessage: "Failed to claim emissions",
+            }) || BigInt(0)
+          );
+        }
+      } else {
+        return BigInt(0);
+      }
+    } catch (e) {
+      console.log("Error claiming emissions: ", e);
+      throw e;
+    }
+  }
+
+
   async function getUserVoteByProposalId(
     proposalId: number,
     governorAddress: string,
@@ -1217,6 +1280,7 @@ export const WalletProvider = ({ children = null as any }) => {
         getTokenBalance,
         wrapToken,
         unwrapToken,
+        claimEmissions,
         getUserVoteByProposalId,
         getTotalVotesByProposal,
         getDelegate,

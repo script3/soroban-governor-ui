@@ -15,7 +15,7 @@ import {
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
-import { scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
+import { bigintToString, scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { getTokenExplorerUrl } from "@/utils/token";
 import Image from "next/image";
@@ -56,6 +56,8 @@ function ManageVotes() {
 
   const { data: emisConfig } = useEmissionConfig(governor?.voteTokenAddress, governor?.isWrappedAsset);
   const { data: claimAmount, refetch: refetchClaimAmount } = useClaimAmount(governor?.voteTokenAddress, emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0));
+
+  const isOldYBXGovernor = governor?.address === "CCD366MT4KWNVCW62UMRTBOFYU2J776VAGOQIHQGJEIGUDLB47ICJP4I";
 
   function handleWrapClick() {
     if (governor) {
@@ -151,7 +153,7 @@ function ManageVotes() {
           onClick={() => {
             router.back();
           }}
-          className="text-snapLink  hover:underline cursor-pointer  flex w-max "
+          className="text-snapLink hover:underline cursor-pointer flex w-max "
         >
           <Image
             src="/icons/back-arrow.svg"
@@ -164,6 +166,21 @@ function ManageVotes() {
         <Typography.Huge>Your Votes</Typography.Huge>
         {governor?.isWrappedAsset === true && (
           <Container>
+            {/* TODO: Add in when proposals appear like they will pass
+            {isOldYBXGovernor && (
+              <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2">
+                <Image
+                  src="/icons/report.svg"
+                  width={28}
+                  height={28}
+                  alt={"close"}
+                />
+                <Typography.P className="text-warning">
+                  {"This DAO is being sunset. Please unbond your tokens.\n\n"}
+                </Typography.P>
+              </Container>
+            )} */}
+
             <Typography.P>
               This space uses a bonded token for voting. You can get bonded
               tokens by bonding the corresponding Stellar asset. A bonded token
@@ -302,6 +319,7 @@ function ManageVotes() {
                   onChange={setToWrap}
                   value={toWrap}
                   type="number"
+                  max={bigintToString(underlyingTokenBalance ?? BigInt(0), governor?.decimals || 7)}
                 />
               </Container>
               <Button
@@ -334,6 +352,7 @@ function ManageVotes() {
                     onChange={setToUnwrap}
                     value={toUnwrap}
                     type="number"
+                    max={bigintToString(voteTokenBalance ?? BigInt(0), governor?.decimals || 7)}
                   />
                 </Container>
                 <Button

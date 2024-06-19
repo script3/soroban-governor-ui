@@ -22,7 +22,7 @@ import {
   isCalldata,
   isCalldataString,
   isValidGovernorSettings,
-  isUpgradeString,
+  isCouncilString,
   parseCallData,
 } from "@/utils/validation";
 import { parse } from "json5";
@@ -54,7 +54,7 @@ export default function CreateProposal() {
     vote_period: 0,
     vote_threshold: 0,
   } as GovernorSettings);
-  const [upgradeString, setUpgradeString] = useState("");
+  const [councilAddress, setCouncilAddress] = useState("");
   const [proposalAction, setProposalAction] = useState(
     ProposalActionEnum.CALLDATA
   );
@@ -73,9 +73,9 @@ export default function CreateProposal() {
     proposalAction === ProposalActionEnum.SETTINGS &&
     (!governorSettings ||
       (!!governorSettings && !isValidGovernorSettings(governorSettings)));
-  const isUpgradeDisabled =
-    proposalAction === ProposalActionEnum.UPGRADE &&
-    (!upgradeString || !isUpgradeString(upgradeString, 64));
+  const isCouncilDisabled =
+    proposalAction === ProposalActionEnum.COUNCIL &&
+    (!councilAddress || !isCouncilString(councilAddress));
 
   async function handleProposal(action: string) {
     let newProposalId: bigint | undefined = undefined;
@@ -107,14 +107,14 @@ export default function CreateProposal() {
           );
         }
         break;
-      case ProposalActionEnum.UPGRADE:
-        if (!!upgradeString) {
+      case ProposalActionEnum.COUNCIL:
+        if (!!councilAddress) {
           newProposalId = await createProposal(
             title,
             description,
             {
               tag: action,
-              values: [Buffer.from(upgradeString, "hex")],
+              values: [councilAddress],
             },
             false,
             params.dao as string
@@ -201,18 +201,18 @@ export default function CreateProposal() {
             }
           />
           <RadioButton
-            endText="Change the contract code of the DAO"
-            selected={proposalAction === ProposalActionEnum.UPGRADE}
+            endText="Change the security council of the DAO"
+            selected={proposalAction === ProposalActionEnum.COUNCIL}
             onChange={() => {
-              setProposalAction(ProposalActionEnum.UPGRADE);
+              setProposalAction(ProposalActionEnum.COUNCIL);
             }}
             label={
               <Chip
                 className={`${
-                  classByProposalAction[ProposalActionEnum.UPGRADE]
+                  classByProposalAction[ProposalActionEnum.COUNCIL]
                 } !py-4`}
               >
-                {ProposalActionEnum.UPGRADE}
+                {ProposalActionEnum.COUNCIL}
               </Chip>
             }
           />
@@ -307,30 +307,20 @@ export default function CreateProposal() {
                 )}
               </>
             )}
-            {proposalAction === ProposalActionEnum.UPGRADE && (
+            {proposalAction === ProposalActionEnum.COUNCIL && (
               <>
                 <Typography.Small className="text-snapLink !my-2 ">
-                  Upgrade to WASM hash
+                  New security council address
                 </Typography.Small>
                 <Input
-                  error={isUpgradeDisabled}
+                  error={isCouncilDisabled}
                   className=""
-                  value={upgradeString}
-                  onChange={setUpgradeString}
-                  placeholder={"WASM hash"}
+                  value={councilAddress}
+                  onChange={setCouncilAddress}
+                  placeholder={"G... or C..."}
                 />
               </>
             )}
-
-            {/* <Typography.Small className="text-snapLink !my-2 ">
-              Discussion (optional)
-            </Typography.Small>
-            <Input
-              placeholder="https://forum.balancer.fi/proposal"
-              type="url"
-              value={link}
-              onChange={setLink}
-            /> */}
           </>
         )}
         {isPreview && (
@@ -376,7 +366,7 @@ export default function CreateProposal() {
                 !description ||
                 isCalldataDisabled ||
                 isSettingsDisabled ||
-                isUpgradeDisabled)
+                isCouncilDisabled)
             }
             onClick={() => {
               if (!!connected) {

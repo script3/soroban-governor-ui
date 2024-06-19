@@ -19,7 +19,8 @@ const config: Config = {
         accent: "#ffcccc",
         error: "#fc4058",
         success: "#21b66f",
-        warning: "#ffff00",
+        warning: "#FFCB00",
+        warningOpaque: "#FFCB0026",
       },
       fontSize: {
         tiny: ["14px", "18px"],

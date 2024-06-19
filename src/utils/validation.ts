@@ -2,6 +2,7 @@ import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
 import { Address } from "@stellar/stellar-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
+
 export function safeJSONParse(value: any) {
   try {
     if (typeof value === "object") {
@@ -96,22 +97,6 @@ export function isValidGovernorSettings(settings: GovernorSettings): boolean {
   return true;
 }
 
-export function isUpgradeString(str: string, len: number): boolean {
-  const hexRegex = /^[0-9A-Fa-f]{64}$/;
-  if (str.length === len && hexRegex.test(str)) {
-    return true;
-  }
-  return false;
-}
-
-export function isContractId(address: string) {
-  const regex = /^C/;
-  if (isAddress(address) && regex.test(address)) {
-    return true;
-  }
-  return false;
-}
-
 export function isAddress(address: string) {
   try {
     Address.fromString(address);
@@ -119,4 +104,11 @@ export function isAddress(address: string) {
   } catch (error) {
     return false;
   }
+}
+export function isContractId(address: string) {
+  const regex = /^C/;
+  if (isAddress(address) && regex.test(address)) {
+    return true;
+  }
+  return false;
 }

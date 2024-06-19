@@ -24,16 +24,16 @@ export function ProposalAction({
 
       return <DisplayCalldata calldata={calldata} />;
     case ProposalActionEnum.UPGRADE:
-      return (
-        <Container className="flex flex-col gap-3">
-          <Typography.P className="mb-2">Proposed WASM hash:</Typography.P>
-          <Box className="p-4 box-border">
-            <code className="whitespace-pre-wrap word-break p-1 ">
-              {(proposal.action.values as any).toString("hex")}
-            </code>
-          </Box>
-        </Container>
-      );
+        return (
+          <Container className="flex flex-col gap-3">
+            <Typography.P className="mb-2">Proposed WASM hash:</Typography.P>
+            <Box className="p-4 box-border">
+              <code className="whitespace-pre-wrap word-break p-1 ">
+                {(proposal.action.values as any).toString("hex")}
+              </code>
+            </Box>
+          </Container>
+        );
     case ProposalActionEnum.SNAPSHOT:
       return (
         <Box className="flex  border-snapLink  flex-col gap-2 p-6 m-4">
@@ -61,6 +61,17 @@ export function ProposalAction({
           <Box className="p-4 box-border">
             <code className="whitespace-pre-wrap word-break p-1 ">
               {stringify(proposal.action?.values, null, 8)}
+            </code>
+          </Box>
+        </Container>
+      );
+    case ProposalActionEnum.COUNCIL:
+      return (
+        <Container className="flex flex-col gap-3">
+          <Typography.P className="mb-2">Proposed security council:</Typography.P>
+          <Box className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break p-1 ">
+              {proposal.action.values}
             </code>
           </Box>
         </Container>

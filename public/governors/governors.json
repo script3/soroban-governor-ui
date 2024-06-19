@@ -1,55 +1,26 @@
 [
-    {
-      "name": "Soroban Token DAO",
-      "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-      "address": "CBGZFBCHOYDGBSYNHPAETPE7TLISZXN5E6Q3VIDUVUWV74NODINIZKLV",
-      "voteTokenAddress": "CCZFATFQOJS2DYOAXXUBEKQIHZAPZPR2SO32BVSUW7GOZQF3LSTWJTK4",
-      "decimals": 6,
-      "isWrappedAsset": false,
-      "voteTokenMetadata":{
-        "name":"VOTES",
-        "symbol":"VOTES",
-        "decimals":7,
-  
-        "icon":"/icons/token/soroban.svg"
-      }
+
+  {
+    "name": "XLM DAO",
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CAMGVZXFCBDMIZ67XTRFJBQDYIVNQ6ZAADYAR7OTIXYOV5FGQBBTNXQX",
+    "voteTokenAddress": "CATCZQWGI4BUR63JX5DXA5XWENNXWU4IHGEIMVHZ4FJ7IZVD2USYPRPU",
+    "decimals": 7,
+    "isWrappedAsset": true,
+    "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    "underlyingTokenMetadata":{
+      "name":"XLM",
+      "symbol":"XLM",
+      "decimals":7,
+      "domain":"stellar.org",
+      "icon":"/icons/token/xlm.svg",
+      "issuer":"GANZ2BKT4LQD2ZAF3KHXWMVS6YMWOXD4GYZOYT3GWWZJ4OSFGNU4MN4X"
     },
-    {
-      "name": "Test SCF DAO",
-      "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-      "address": "CC5WY6I7XV4NXM3RS77WO6DNUGJ3GBVSJ66LKPTR3HTDUYVQAVAE2Z43",
-      "voteTokenAddress": "CCYZCNYTFOWK226G7VBEIFLJG3GGJSCURONHQ3QRAEJC7OHGMC5JJQWF",
-      "decimals": 7,
-      "isWrappedAsset": false,
-      "voteTokenMetadata":{
-        "name":"SCF Governance Token",
-        "symbol":"voteSCF",
-        "decimals":7,
-        "icon":"https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7"
-      }
-    },
-    {
-      "name": "XLM DAO",
-      "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-      "address": "CC7XSM5U5Z7UGC3BMN5IHDH4R7DTRE4NFE46SKNSFN2SIMQZ6AVWTGEW",
-      "voteTokenAddress": "CBFKXFFX2YZ3WA765RQKMCJDT5XKCQXJIICXPZ4WJLN54MYJH5EZYJEX",
-      "decimals": 7,
-      "isWrappedAsset": true,
-      "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-      "underlyingTokenMetadata":{
-        "name":"XLM",
-        "symbol":"XLM",
-        "decimals":7,
-        "domain":"stellar.org",
-        "icon":"/icons/token/xlm.svg",
-        "issuer":"GANZ2BKT4LQD2ZAF3KHXWMVS6YMWOXD4GYZOYT3GWWZJ4OSFGNU4MN4X"
-      },
-      "voteTokenMetadata":{
-        "name":"voteXLM",
-        "symbol":"voteXLM",
-        "decimals":7,
-  
-        "icon":"/icons/token/soroban.svg"
-      }
+    "voteTokenMetadata":{
+      "name":"voteXLM",
+      "symbol":"voteXLM",
+      "decimals":7,
+      "icon":"/icons/token/soroban.svg"
     }
-  ]
+  }
+]

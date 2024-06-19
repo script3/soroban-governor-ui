@@ -89,3 +89,14 @@ export function scaleNumberToBigInt(input: string, decimals: number): bigint {
   }
   return BigInt(scaled_input);
 }
+
+export function bigintToString(input: bigint, decimals: number): string {
+  let str = input.toString();
+  // Pad with zeros
+  while (str.length <= decimals) {
+    str = "0" + str;
+  }
+  const index = str.length - decimals;
+  str = str.slice(0, index) + "." + str.slice(index);
+  return str;
+}

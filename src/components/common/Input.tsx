@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useRef } from "react";
 import Typography from "./Typography";
+
 export interface InputProps {
   symbol?: string;
   placeholder: string;
@@ -10,7 +11,9 @@ export interface InputProps {
   icon?: React.ReactNode;
   error?: boolean;
   errorMessage?: string;
+  max?: string;
 }
+
 export function Input({
   onChange,
   placeholder,
@@ -20,6 +23,7 @@ export function Input({
   icon,
   error = false,
   errorMessage,
+  max
 }: InputProps) {
   const baseInputRef = useRef(null);
 
@@ -32,6 +36,12 @@ export function Input({
       onChange(sanitizedValue);
     } else {
       onChange(val);
+    }
+  }
+
+  function handleMax() {
+    if (max && type === "number" && isFinite(Number(max))) {
+      onChange(max);
     }
   }
 
@@ -55,6 +65,14 @@ export function Input({
         className="input w-full border-none bg-transparent focus:border-none outline-none "
         onChange={handleChange}
       />
+      {!!max && (
+        <button
+          onClick={handleMax}
+          className="text-snapLink p-2 m-2 hover:text-white"
+        >
+          MAX
+        </button>
+      )}
       {!!errorMessage && (
         <Typography.Tiny className="text-red">{errorMessage}</Typography.Tiny>
       )}

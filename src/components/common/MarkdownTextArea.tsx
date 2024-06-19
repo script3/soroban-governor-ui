@@ -54,7 +54,7 @@ const MarkdownTextArea: React.FC<TextAreaProps> = ({
   };
 
   return (
-    <div className="mb-5 px-4 md:px-0">
+    <div className="mb-5 px-0 md:px-0">
       <div className="flex flex-col space-y-3">
         <div
           onDrop={handleDrop}

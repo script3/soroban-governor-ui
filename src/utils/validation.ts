@@ -1,4 +1,5 @@
 import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
+import { Address } from "@stellar/stellar-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
 export function safeJSONParse(value: any) {
@@ -15,11 +16,7 @@ export function safeJSONParse(value: any) {
 }
 export function isVal(obj: any): obj is Val {
   return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "value" in obj &&
-    "type" in obj &&
-    typeof obj.type === "object"
+    typeof obj === "object" && obj !== null && "value" in obj && "type" in obj
   );
 }
 
@@ -36,7 +33,9 @@ export function isCalldata(obj: any): obj is Calldata {
     obj.args.every(isVal) &&
     obj.auths.every(isCalldata) &&
     typeof obj.contract_id === "string" &&
-    typeof obj.function === "string"
+    isContractId(obj.contract_id) &&
+    typeof obj.function === "string" &&
+    obj.function !== ""
   );
 }
 
@@ -65,46 +64,59 @@ export function parseCallData(calldataObj: any): Calldata | null {
   return null;
 }
 
-export function isGovernorSettings(obj: any): obj is GovernorSettings {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "council" in obj &&
-    typeof obj.council === "string" &&
-    "counting_type" in obj &&
-    typeof obj.counting_type === "number" &&
-    "grace_period" in obj &&
-    typeof obj.grace_period === "number" &&
-    "proposal_threshold" in obj &&
-    (typeof obj.proposal_threshold === "bigint"||typeof obj.proposal_threshold === "number") &&
-    "quorum" in obj &&
-    typeof obj.quorum === "number" &&
-    "timelock" in obj &&
-    typeof obj.timelock === "number" &&
-    "vote_delay" in obj &&
-    typeof obj.vote_delay === "number" &&
-    "vote_period" in obj &&
-    typeof obj.vote_period === "number" &&
-    "vote_threshold" in obj &&
-    typeof obj.vote_threshold === "number"
-  );
-}
-
-export function isGovernorSettingsString(str: string): boolean {
-  try {
-    const {data , isValid} = safeJSONParse(str);
-    if (!isValid) {
-      return false;
-    }
-    return isGovernorSettings(data);
-  } catch (error) {
+export function isValidGovernorSettings(settings: GovernorSettings): boolean {
+  const ONE_DAY_LEDGERS = 17280;
+  const ONE_HOUR_LEDGERS = 720;
+  const BPS_SCALAR = 10_000;
+  const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
+  const MAX_VOTE_PERIOD = 7 * ONE_DAY_LEDGERS;
+  const MIN_VOTE_PERIOD = ONE_HOUR_LEDGERS;
+  const MAX_GRACE_PERIOD = 7 * ONE_DAY_LEDGERS;
+  const MIN_GRACE_PERIOD = ONE_DAY_LEDGERS;
+  const MIN_VOTE_THRESHOLD = 1;
+  if (
+    settings.vote_period > MAX_VOTE_PERIOD ||
+    settings.vote_period < MIN_VOTE_PERIOD ||
+    settings.grace_period < MIN_GRACE_PERIOD ||
+    settings.grace_period > MAX_GRACE_PERIOD ||
+    settings.vote_delay +
+      settings.vote_period +
+      settings.timelock +
+      settings.grace_period * 2 >
+      MAX_PROPOSAL_LIFETIME ||
+    settings.counting_type > 7 ||
+    settings.proposal_threshold < MIN_VOTE_THRESHOLD ||
+    settings.quorum > BPS_SCALAR - 100 ||
+    settings.quorum < 10 ||
+    settings.vote_threshold > BPS_SCALAR - 100 ||
+    settings.vote_threshold < 10
+  ) {
     return false;
   }
+  return true;
 }
+
 export function isUpgradeString(str: string, len: number): boolean {
   const hexRegex = /^[0-9A-Fa-f]{64}$/;
   if (str.length === len && hexRegex.test(str)) {
     return true;
   }
   return false;
+}
+
+export function isContractId(address: string) {
+  const regex = /^C/;
+  if (isAddress(address) && regex.test(address)) {
+    return true;
+  }
+  return false;
+}
+
+export function isAddress(address: string) {
+  try {
+    Address.fromString(address);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

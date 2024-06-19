@@ -18,7 +18,7 @@ function About() {
   const { data: council } = useGovernorCouncil(
     currentGovernor?.address,
     // TEMP-1: Temp fix until CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV is no longer supported
-    currentGovernor?.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
+    currentGovernor !== undefined && currentGovernor.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
   );
 
 

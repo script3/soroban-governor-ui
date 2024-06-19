@@ -1,4 +1,4 @@
-import { VoteSupport } from "@/types";
+import { VoteSupport, oldSettingsSpec } from "@/types";
 import {
   BondingVotesContract,
   EmissionConfig,
@@ -82,13 +82,18 @@ export async function getGovernorSettings(
   const txOptions = getSimTxParams(network);
   const contract = new GovernorContract(contractId);
   const operation = contract.settings();
+  let safe_parser =
+    contractId === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
+      ? (result: string): GovernorSettings =>
+          oldSettingsSpec.funcResToNative("settings", result)
+      : GovernorContract.parsers.settings;
   const result = (
     await invokeOperation<GovernorSettings>(
       PUBKEY,
       FALSE_SIGN,
       network,
       txOptions,
-      GovernorContract.parsers.settings,
+      safe_parser,
       operation
     )
   ).result;

@@ -135,6 +135,7 @@ export async function invokeOperation<T>(
   }
 
   const result = ContractResult.fromTransactionResponse(
+    // @ts-ignore
     response as SorobanRpc.Api.GetTransactionResponse,
     tx_hash,
     resources,

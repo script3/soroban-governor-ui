@@ -4,13 +4,22 @@ import { Box } from "@/components/common/Box";
 import Typography from "@/components/common/Typography";
 import { toBalance } from "@/utils/formatNumber";
 import { useRouter } from "next/router";
-import { useGovernor, useGovernorSettings } from "@/hooks/api";
+import { useGovernor, useGovernorCouncil, useGovernorSettings } from "@/hooks/api";
+import governors from "../../../public/governors/governors.json";
+import { GetStaticPaths, GetStaticProps } from "next";
+import { Loader } from "@/components/common/Loader";
+import { Address } from "@stellar/stellar-sdk";
 
 function About() {
   const router = useRouter();
   const params = router.query;
   const currentGovernor = useGovernor(params.dao as string);
   const { data: settings } = useGovernorSettings(currentGovernor?.address);
+  const { data: council } = useGovernorCouncil(
+    currentGovernor?.address,
+    // TEMP-1: Temp fix until CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV is no longer supported
+    currentGovernor?.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
+  );
 
 
   if (settings == undefined || currentGovernor == undefined) {
@@ -30,6 +39,10 @@ function About() {
       </Container>
     );
   }
+
+  // TEMP-1: Temp fix until CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV is no longer supported
+  let resolved_council = currentGovernor?.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV" ? 
+    council : new Address("GBCAS7XIGDRZY4BMABJMGGW7J3YTITRRV5BTEMFQE5ZZSSVWHHX2ZSS4");
 
   let quorum_vote_types: string[] = [];
   if (settings?.counting_type & 0b100) {
@@ -54,7 +67,7 @@ function About() {
         <Container className="pl-2 flex flex-col gap-3">
           <Typography.P>Council</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
-            {settings.council}
+            {resolved_council ? resolved_council.toString() : "Unknown"}
           </Typography.Small>
           <Typography.P>Counting Type</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
@@ -98,14 +111,12 @@ About.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default About;
 
-import governors from "../../../public/governors/governors.json";
-import { GetStaticPaths, GetStaticProps } from "next";
-import { Loader } from "@/components/common/Loader";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{
   dao: string;
 }>;
+
 export const getStaticPaths = (async () => {
   return {
     paths: governors.map((governor) => {

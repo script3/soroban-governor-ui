@@ -34,7 +34,7 @@ export function DisplayCalldata({ calldata }: { calldata: Calldata }) {
             return (
               <ExpandableComponent
                 key={index}
-                name={"Function: " + calldata.function}
+                name={"Function: " + auth.function}
               >
                 <DisplayCalldata calldata={auth} />
               </ExpandableComponent>

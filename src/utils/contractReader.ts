@@ -8,7 +8,7 @@ import {
   VoteCount,
   VotesContract,
 } from "@script3/soroban-governor-sdk";
-import { SorobanRpc, scValToNative, xdr } from "@stellar/stellar-sdk";
+import { Address, SorobanRpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 import { Network, TxOptions, invokeOperation } from "./stellar";
 
 function getSimTxParams(network: Network): TxOptions {
@@ -89,6 +89,36 @@ export async function getGovernorSettings(
       network,
       txOptions,
       GovernorContract.parsers.settings,
+      operation
+    )
+  ).result;
+  if (result.isErr()) {
+    throw result.unwrapErr();
+  }
+  return result.unwrap();
+}
+
+/**
+ * Fetch the governor council from a contract
+ * @param network - The network to use
+ * @param contractId - The contract ID to call
+ * @returns Security Council for the governor contract
+ * @throws Error if the operation fails
+ */
+export async function getGovernorCouncil(
+  network: Network,
+  contractId: string
+): Promise<Address> {
+  const txOptions = getSimTxParams(network);
+  const contract = new GovernorContract(contractId);
+  const operation = contract.council();
+  const result = (
+    await invokeOperation<Address>(
+      PUBKEY,
+      FALSE_SIGN,
+      network,
+      txOptions,
+      GovernorContract.parsers.council,
       operation
     )
   ).result;

@@ -2,8 +2,8 @@ import { Governor, Proposal, ProposalStatusExt, Vote, VoteSupport } from "@/type
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { useWallet } from "./wallet";
 import governors from "../../public/governors/governors.json";
-import { SorobanRpc } from "@stellar/stellar-sdk";
-import { getBalance, getClaimAmount, getDelegate, getEmissionConfig, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
+import { Address, SorobanRpc } from "@stellar/stellar-sdk";
+import { getBalance, getClaimAmount, getDelegate, getEmissionConfig, getGovernorCouncil, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
 import { fetchProposalById, fetchProposalsByGovernor, fetchVotesByProposal } from "@/utils/graphql";
 import { EmissionConfig, GovernorSettings } from "@script3/soroban-governor-sdk";
 
@@ -63,6 +63,24 @@ export function useGovernorSettings(
     queryFn: async () => {
       if (governorId) {
         return await getGovernorSettings(network, governorId)
+      }
+    },
+  });
+}
+
+export function useGovernorCouncil(
+  governorId: string | undefined,
+  enabled: boolean = true,
+): UseQueryResult<Address> {
+  const { network } = useWallet();
+
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    queryKey: ["governor_council", governorId],
+    enabled: governorId !== undefined && enabled,
+    queryFn: async () => {
+      if (governorId) {
+        return await getGovernorCouncil(network, governorId)
       }
     },
   });

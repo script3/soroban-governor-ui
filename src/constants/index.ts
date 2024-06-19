@@ -15,6 +15,7 @@ export enum ProposalActionEnum {
   CALLDATA = "Calldata",
   UPGRADE = "Upgrade",
   SETTINGS = "Settings",
+  COUNCIL = "Council",
   SNAPSHOT = "Snapshot",
 }
 
@@ -22,6 +23,7 @@ export const classByProposalAction = {
   [ProposalActionEnum.CALLDATA]: "!bg-blue-800 !text-blue-300",
   [ProposalActionEnum.UPGRADE]: "!bg-fuchsia-800 !text-fuchsia-300",
   [ProposalActionEnum.SETTINGS]: "!bg-neutral-700 !text-neutral-300",
+  [ProposalActionEnum.COUNCIL]: "!bg-green-800 !text-green-300",
   [ProposalActionEnum.SNAPSHOT]: "!bg-amber-800 !text-amber-300",
 };
 

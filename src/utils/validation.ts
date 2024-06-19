@@ -1,6 +1,8 @@
 import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
+import { Address } from "@stellar/stellar-sdk";
 /** used this to be able to parse a json with no double quotes on properties */
 import { parse } from "json5";
+
 export function safeJSONParse(value: any) {
   try {
     if (typeof value === "object") {
@@ -76,7 +78,8 @@ export function isGovernorSettings(obj: any): obj is GovernorSettings {
     "grace_period" in obj &&
     typeof obj.grace_period === "number" &&
     "proposal_threshold" in obj &&
-    (typeof obj.proposal_threshold === "bigint"||typeof obj.proposal_threshold === "number") &&
+    (typeof obj.proposal_threshold === "bigint" ||
+      typeof obj.proposal_threshold === "number") &&
     "quorum" in obj &&
     typeof obj.quorum === "number" &&
     "timelock" in obj &&
@@ -92,7 +95,7 @@ export function isGovernorSettings(obj: any): obj is GovernorSettings {
 
 export function isGovernorSettingsString(str: string): boolean {
   try {
-    const {data , isValid} = safeJSONParse(str);
+    const { data, isValid } = safeJSONParse(str);
     if (!isValid) {
       return false;
     }
@@ -101,10 +104,13 @@ export function isGovernorSettingsString(str: string): boolean {
     return false;
   }
 }
-export function isUpgradeString(str: string, len: number): boolean {
-  const hexRegex = /^[0-9A-Fa-f]{64}$/;
-  if (str.length === len && hexRegex.test(str)) {
+
+export function isCouncilString(str: string): boolean {
+  try {
+    let _ = new Address(str);
+    // if the address is invalid, the above will throw
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }

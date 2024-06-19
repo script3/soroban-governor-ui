@@ -23,24 +23,6 @@ export function SettingsForm({ settings, setSettings }: SettingsFormProps) {
   return (
     <>
       <Typography.Small className="text-snapLink !my-2 ">
-        Council Address
-      </Typography.Small>
-      <Input
-        error={settings.council === "" || !isAddress(settings.council)}
-        errorMessage="Invalid Address"
-        placeholder={"Enter Council Address"}
-        value={settings.council}
-        onChange={function (newValue: string): void {
-          setSettings((prevState) => {
-            return {
-              ...prevState,
-              council: newValue,
-            };
-          });
-        }}
-      ></Input>
-
-      <Typography.Small className="text-snapLink !my-2 ">
         Counting Type
       </Typography.Small>
       <Input

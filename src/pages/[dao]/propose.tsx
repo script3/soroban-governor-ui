@@ -22,7 +22,7 @@ import {
   isCalldata,
   isCalldataString,
   isValidGovernorSettings,
-  isCouncilString,
+  isAddress,
   parseCallData,
 } from "@/utils/validation";
 import { parse } from "json5";
@@ -75,7 +75,7 @@ export default function CreateProposal() {
       (!!governorSettings && !isValidGovernorSettings(governorSettings)));
   const isCouncilDisabled =
     proposalAction === ProposalActionEnum.COUNCIL &&
-    (!councilAddress || !isCouncilString(councilAddress));
+    (!councilAddress || !isAddress(councilAddress));
 
   async function handleProposal(action: string) {
     let newProposalId: bigint | undefined = undefined;

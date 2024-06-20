@@ -69,7 +69,6 @@ export function isValidGovernorSettings(settings: GovernorSettings): boolean {
   const ONE_DAY_LEDGERS = 17280;
   const ONE_HOUR_LEDGERS = 720;
   const BPS_SCALAR = 10_000;
-  const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
   const MAX_VOTE_PERIOD = 7 * ONE_DAY_LEDGERS;
   const MIN_VOTE_PERIOD = ONE_HOUR_LEDGERS;
   const MAX_GRACE_PERIOD = 7 * ONE_DAY_LEDGERS;
@@ -80,11 +79,7 @@ export function isValidGovernorSettings(settings: GovernorSettings): boolean {
     settings.vote_period < MIN_VOTE_PERIOD ||
     settings.grace_period < MIN_GRACE_PERIOD ||
     settings.grace_period > MAX_GRACE_PERIOD ||
-    settings.vote_delay +
-      settings.vote_period +
-      settings.timelock +
-      settings.grace_period * 2 >
-      MAX_PROPOSAL_LIFETIME ||
+    isMaxTimeExceeded(settings) ||
     settings.counting_type > 7 ||
     settings.proposal_threshold < MIN_VOTE_THRESHOLD ||
     settings.quorum > BPS_SCALAR - 100 ||
@@ -95,6 +90,18 @@ export function isValidGovernorSettings(settings: GovernorSettings): boolean {
     return false;
   }
   return true;
+}
+
+export function isMaxTimeExceeded(settings: GovernorSettings): boolean {
+  const ONE_DAY_LEDGERS = 17280;
+  const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
+  return (
+    settings.vote_delay +
+      settings.vote_period +
+      settings.timelock +
+      settings.grace_period * 2 >
+    MAX_PROPOSAL_LIFETIME
+  );
 }
 
 export function isAddress(address: string) {

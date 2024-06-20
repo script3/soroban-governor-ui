@@ -24,6 +24,7 @@ import {
   isValidGovernorSettings,
   isAddress,
   parseCallData,
+  isMaxTimeExceeded,
 } from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
@@ -43,8 +44,7 @@ export default function CreateProposal() {
   );
   const [jsonExecutionCalldata, setJsonExecutionCalldata] = useState("");
   const [inputStyle, setInputStyle] = useState("Form");
-  const [governorSettings, setGovernorSettings] = useState({
-    council: "",
+  const [governorSettings, setGovernorSettings] = useState<GovernorSettings>({
     grace_period: 0,
     counting_type: 0,
     proposal_threshold: BigInt(0),
@@ -53,7 +53,7 @@ export default function CreateProposal() {
     vote_delay: 0,
     vote_period: 0,
     vote_threshold: 0,
-  } as GovernorSettings);
+  });
   const [councilAddress, setCouncilAddress] = useState("");
   const [proposalAction, setProposalAction] = useState(
     ProposalActionEnum.CALLDATA
@@ -294,7 +294,7 @@ export default function CreateProposal() {
                   settings={governorSettings}
                   setSettings={setGovernorSettings}
                 />
-                {isSettingsDisabled && (
+                {isSettingsDisabled && isMaxTimeExceeded(governorSettings) && (
                   <Typography.Tiny className="text-red-500">
                     Max proposal lifetime can not exceed 535680 ledgers
                     (Proposal lifetime:{" "}

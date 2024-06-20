@@ -130,7 +130,7 @@ export function CalldataForm({
         </Typography.Small>
       )}
       {calldata.auths.map((arg, index) => (
-        <div style={{ paddingLeft: "20px" }}>
+        <Container slim={true} className="pl-4" key={index}>
           <CalldataForm
             isAuth={true}
             calldata={arg}
@@ -149,7 +149,7 @@ export function CalldataForm({
               });
             }}
           />
-        </div>
+        </Container>
       ))}
 
       {isAuth !== undefined && !isAuth && (

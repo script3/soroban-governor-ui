@@ -76,7 +76,7 @@ export function Input({
         </button>
       )}
       {!!errorMessage && error && (
-        <Typography.Tiny className="text-red-500">
+        <Typography.Tiny className="text-red-500 pr-2">
           {errorMessage}
         </Typography.Tiny>
       )}

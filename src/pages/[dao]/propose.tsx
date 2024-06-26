@@ -9,25 +9,29 @@ import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
 import Typography from "@/components/common/Typography";
+import { CalldataForm } from "@/components/proposal/CalldataForm";
+import ToggleComponent from "@/components/common/Toggle";
+import { SettingsForm } from "@/components/proposal/SettingsForm";
 import {
   CALLDATA_PLACEHOLDER,
-  GOVERNOR_SETTINGS_PLACEHOLDER,
   ProposalActionEnum,
   classByProposalAction,
 } from "@/constants";
 import { useWallet } from "@/hooks/wallet";
 import {
+  isCalldata,
   isCalldataString,
-  isGovernorSettingsString,
-  isCouncilString,
+  isValidGovernorSettings,
+  isAddress,
   parseCallData,
+  isMaxTimeExceeded,
 } from "@/utils/validation";
 import { parse } from "json5";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Calldata, GovernorSettings, Val } from "@script3/soroban-governor-sdk";
+import { Calldata, GovernorSettings } from "@script3/soroban-governor-sdk";
 
 export default function CreateProposal() {
   const router = useRouter();
@@ -35,8 +39,21 @@ export default function CreateProposal() {
   const [isPreview, setIsPreview] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [executionCalldata, setExecutionCalldata] = useState("");
-  const [governorSettings, setGovernorSettings] = useState("");
+  const [formExecutionCalldata, setFormExecutionCalldata] = useState(
+    new Calldata("", "", [], [])
+  );
+  const [jsonExecutionCalldata, setJsonExecutionCalldata] = useState("");
+  const [inputStyle, setInputStyle] = useState("Form");
+  const [governorSettings, setGovernorSettings] = useState<GovernorSettings>({
+    grace_period: 0,
+    counting_type: 0,
+    proposal_threshold: BigInt(0),
+    quorum: 0,
+    timelock: 0,
+    vote_delay: 0,
+    vote_period: 0,
+    vote_threshold: 0,
+  });
   const [councilAddress, setCouncilAddress] = useState("");
   const [proposalAction, setProposalAction] = useState(
     ProposalActionEnum.CALLDATA
@@ -45,31 +62,37 @@ export default function CreateProposal() {
   const { connected, connect, createProposal, isLoading } = useWallet();
 
   const isCalldataDisabled =
-    proposalAction === ProposalActionEnum.CALLDATA &&
-    (!executionCalldata ||
-      (!!executionCalldata && !isCalldataString(executionCalldata)));
+    inputStyle == "Json"
+      ? proposalAction === ProposalActionEnum.CALLDATA &&
+        (!jsonExecutionCalldata ||
+          (!!jsonExecutionCalldata && !isCalldataString(jsonExecutionCalldata)))
+      : proposalAction === ProposalActionEnum.CALLDATA &&
+        !isCalldata(formExecutionCalldata);
+
   const isSettingsDisabled =
     proposalAction === ProposalActionEnum.SETTINGS &&
     (!governorSettings ||
-      (!!governorSettings && !isGovernorSettingsString(governorSettings)));
+      (!!governorSettings && !isValidGovernorSettings(governorSettings)));
   const isCouncilDisabled =
     proposalAction === ProposalActionEnum.COUNCIL &&
-    (!councilAddress || !isCouncilString(councilAddress));
+    (!councilAddress || !isAddress(councilAddress));
 
   async function handleProposal(action: string) {
     let newProposalId: bigint | undefined = undefined;
     switch (action) {
       case ProposalActionEnum.CALLDATA:
-        const calldata = parse(
-          executionCalldata ||
-            `{
-              args:[],
-              function:"",
-              contract_id:""
-            }`
-        ) as Calldata;
-
-        const callDataToPass = parseCallData(calldata);
+        const executionCalldata =
+          inputStyle === "Json"
+            ? (parse(
+                jsonExecutionCalldata ||
+                  `{
+                  args:[],
+                  function:"",
+                  contract_id:""
+                }`
+              ) as Calldata)
+            : formExecutionCalldata;
+        const callDataToPass = parseCallData(executionCalldata);
 
         if (callDataToPass !== null) {
           newProposalId = await createProposal(
@@ -100,13 +123,12 @@ export default function CreateProposal() {
         break;
       case ProposalActionEnum.SETTINGS:
         if (!!governorSettings) {
-          const governorToPass = parse(governorSettings) as GovernorSettings;
           newProposalId = await createProposal(
             title,
             description,
             {
               tag: action,
-              values: [governorToPass],
+              values: [governorSettings],
             },
             false,
             params.dao as string
@@ -244,30 +266,45 @@ export default function CreateProposal() {
             />
             {proposalAction === ProposalActionEnum.CALLDATA && (
               <>
-                <Typography.Small className="text-snapLink !my-2 ">
-                  Execution Calldata
-                </Typography.Small>
-                <TextArea
-                  isError={isCalldataDisabled}
-                  className="min-h-72"
-                  value={executionCalldata}
-                  onChange={setExecutionCalldata}
-                  placeholder={CALLDATA_PLACEHOLDER}
+                <ToggleComponent
+                  value={inputStyle}
+                  options={["Form", "Json"]}
+                  onChange={setInputStyle}
                 />
+                {inputStyle === "Json" ? (
+                  <TextArea
+                    isError={isCalldataDisabled}
+                    className="min-h-72"
+                    value={jsonExecutionCalldata}
+                    onChange={setJsonExecutionCalldata}
+                    placeholder={CALLDATA_PLACEHOLDER}
+                  />
+                ) : (
+                  <CalldataForm
+                    isAuth={false}
+                    calldata={formExecutionCalldata}
+                    setCalldata={setFormExecutionCalldata}
+                  />
+                )}
               </>
             )}
             {proposalAction === ProposalActionEnum.SETTINGS && (
               <>
-                <Typography.Small className="text-snapLink !my-2 ">
-                  Governor Settings
-                </Typography.Small>
-                <TextArea
-                  isError={isSettingsDisabled}
-                  className="min-h-72"
-                  value={governorSettings}
-                  onChange={setGovernorSettings}
-                  placeholder={GOVERNOR_SETTINGS_PLACEHOLDER}
+                <SettingsForm
+                  settings={governorSettings}
+                  setSettings={setGovernorSettings}
                 />
+                {isSettingsDisabled && isMaxTimeExceeded(governorSettings) && (
+                  <Typography.Tiny className="text-red-500">
+                    Max proposal lifetime can not exceed 535680 ledgers
+                    (Proposal lifetime:{" "}
+                    {governorSettings.vote_delay +
+                      governorSettings.vote_period +
+                      governorSettings.timelock +
+                      governorSettings.grace_period * 2}
+                    )
+                  </Typography.Tiny>
+                )}
               </>
             )}
             {proposalAction === ProposalActionEnum.COUNCIL && (

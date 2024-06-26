@@ -26,7 +26,7 @@ export function Button({
           : "bg-transparent"
       } ${
         className || ""
-      } flex w-max text-sm  border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center font-normal   focus:outline-none focus-visible:ring-2 active:bg-neutral-800  
+      } flex w-max text-sm border border-snapBorder hover:border-snapLink p-3 rounded-full justify-center font-normal   focus:outline-none focus-visible:ring-2 active:bg-neutral-800  
       `}
       onClick={handleClick}
     >

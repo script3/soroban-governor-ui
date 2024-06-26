@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Container } from "./BaseContainer";
-import { Button } from "./Button";
 import Image from "next/image";
 
 const ExpandableComponent = ({

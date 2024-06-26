@@ -12,7 +12,7 @@ import {
   XBULL_ID,
   xBullModule,
   LobstrModule,
-  AlbedoModule
+  AlbedoModule,
 } from "@creit.tech/stellar-wallets-kit/build";
 
 import React, { useContext, useEffect, useState } from "react";
@@ -106,10 +106,7 @@ export interface IWalletContext {
     amount: bigint,
     sim: boolean
   ) => Promise<bigint>;
-  claimEmissions: (
-    voteTokenAddress: string,
-    sim: boolean
-  ) => Promise<bigint>;
+  claimEmissions: (voteTokenAddress: string, sim: boolean) => Promise<bigint>;
   getUserVoteByProposalId: (
     proposalId: number,
     governorAddress: string,
@@ -182,7 +179,12 @@ export const WalletProvider = ({ children = null as any }) => {
       autoConnect !== undefined && autoConnect !== "false"
         ? autoConnect
         : XBULL_ID,
-    modules: [new xBullModule(), new FreighterModule(), new LobstrModule(), new AlbedoModule()],
+    modules: [
+      new xBullModule(),
+      new FreighterModule(),
+      new LobstrModule(),
+      new AlbedoModule(),
+    ],
   });
 
   useEffect(() => {
@@ -968,10 +970,7 @@ export const WalletProvider = ({ children = null as any }) => {
     }
   }
 
-  async function claimEmissions(
-    voteTokenAddress: string,
-    sim: boolean
-  ) {
+  async function claimEmissions(voteTokenAddress: string, sim: boolean) {
     try {
       if (connected && walletAddress) {
         let txOptions: TxOptions = {
@@ -990,7 +989,7 @@ export const WalletProvider = ({ children = null as any }) => {
         let votesClient = new BondingVotesContract(voteTokenAddress);
 
         let withdrawOperation = votesClient.claim({
-          address: walletAddress
+          address: walletAddress,
         });
         const submission = invokeOperation<xdr.ScVal>(
           walletAddress,
@@ -1025,7 +1024,6 @@ export const WalletProvider = ({ children = null as any }) => {
       throw e;
     }
   }
-
 
   async function getUserVoteByProposalId(
     proposalId: number,

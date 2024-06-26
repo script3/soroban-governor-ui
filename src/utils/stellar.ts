@@ -145,7 +145,31 @@ export async function invokeOperation<T>(
   return result;
 }
 
-export function parseResultFromXDRString(result: string) {
+export function parseResultFromXDRString(result: string): any {
   const val = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
   return val;
 }
+
+export function parseErrorFromSimError(error: string): string {
+  if (error.includes("Event log")) {
+    return error.substring(0, error.indexOf("Event log"));
+  } else {
+    return error.length > 100 ? error.substring(0, 100) + "..." : error;
+  }
+}
+
+export const jsonReplacer = (key: any, value: any) => {
+  if (value instanceof Map) {
+    return {
+      dataType: "Map",
+      value: Array.from(value.entries()),
+    };
+  } else if (typeof value == "bigint") {
+    return {
+      dataType: "BigInt",
+      value: value.toString(),
+    };
+  } else {
+    return value;
+  }
+};

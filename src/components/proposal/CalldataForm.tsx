@@ -10,63 +10,91 @@ import { useEffect } from "react";
 export interface CalldataFormProps {
   calldata: Calldata;
   isAuth: boolean;
-  setCalldata: (updateFunction: (prevState: Calldata) => Calldata) => void;
+  onChange: (calldata: Calldata) => void;
 }
 
 export function CalldataForm({
   calldata,
   isAuth,
-  setCalldata,
+  onChange,
 }: CalldataFormProps) {
+
+  function handleContractIdChange(new_value: string) {
+    onChange(new Calldata(
+      new_value, 
+      calldata.function, 
+      calldata.args, 
+      calldata.auths
+    ));
+  }
+
+  function handleFunctionChange(new_value: string) {
+    onChange(new Calldata(
+      calldata.contract_id, 
+      new_value, 
+      calldata.args, 
+      calldata.auths
+    ));
+  }
+
   function handleAddTypedInput() {
-    setCalldata((prevState) => ({
-      ...prevState,
-      args: [...prevState.args, new Val("", { type: "" })],
-      convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
-    }));
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function, 
+      [...calldata.args, new Val("", { type: "" })], 
+      calldata.auths)
+    );
   }
 
   function handleRemoveTypedInput() {
-    setCalldata((prevState) => {
-      const newArgs = prevState.args.slice(0, prevState.args.length - 1);
-      return {
-        ...prevState,
-        args: newArgs,
-        convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
-      };
-    });
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function, 
+      calldata.args.slice(0, calldata.args.length - 1), 
+      calldata.auths)
+    );
   }
 
   function handleAddAuth() {
-    setCalldata((prevState) => ({
-      ...prevState,
-      auths: [...prevState.auths, new Calldata("", "", [], [])],
-      convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
-    }));
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function,
+      calldata.args,
+      [...calldata.auths, new Calldata("", "", [], [])]
+    ));
   }
 
   function handleRemoveAuth() {
-    setCalldata((prevState) => {
-      const newAuths = prevState.auths.slice(0, prevState.auths.length - 1);
-      return {
-        ...prevState,
-        auths: newAuths,
-        convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
-      };
-    });
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function,
+      calldata.args,
+      calldata.auths.slice(0, calldata.auths.length - 1)
+    ));
   }
 
   function handleInputChange(index: number, newValue: Val) {
-    setCalldata((prevState: Calldata): Calldata => {
-      const newArgs: Val[] = [...prevState.args];
-      newArgs[index] = newValue;
-      return {
-        ...prevState,
-        args: newArgs,
-        convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
-      };
-    });
+    const newArgs: Val[] = [...calldata.args];
+    newArgs[index] = newValue;
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function, 
+      newArgs, 
+      calldata.auths
+    ));
   }
+
+  function handleAuthChange(index: number, newAuth: Calldata) {
+    const newAuths: Calldata[] = [...calldata.auths];
+    newAuths[index] = newAuth;
+    onChange(new Calldata(
+      calldata.contract_id, 
+      calldata.function, 
+      calldata.args, 
+      newAuths
+    ));
+  }
+
   return (
     <>
       <Typography.Small className="text-snapLink !my-2 ">
@@ -76,16 +104,7 @@ export function CalldataForm({
         error={isContractId(calldata.contract_id) === false}
         placeholder={"Enter Contract Id"}
         value={calldata.contract_id}
-        onChange={function (new_value: string): void {
-          setCalldata((prevState: Calldata) => {
-            return {
-              ...prevState,
-              contract_id: new_value,
-              convertValsToScVals:
-                prevState.convertValsToScVals.bind(prevState),
-            };
-          });
-        }}
+        onChange={handleContractIdChange}
       ></Input>
       <Typography.Small className="text-snapLink !my-2 ">
         Function Name
@@ -94,16 +113,7 @@ export function CalldataForm({
         error={calldata.function === ""}
         placeholder={"Enter Function Name"}
         value={calldata.function}
-        onChange={function (new_value: string): void {
-          setCalldata((prevState) => {
-            return {
-              ...prevState,
-              function: new_value,
-              convertValsToScVals:
-                prevState.convertValsToScVals.bind(prevState),
-            };
-          });
-        }}
+        onChange={handleFunctionChange}
       ></Input>
 
       <Typography.Small className="text-snapLink !my-2 ">Args</Typography.Small>
@@ -135,20 +145,7 @@ export function CalldataForm({
           <CalldataForm
             isAuth={true}
             calldata={arg}
-            setCalldata={function (
-              updateFunction: (prevState: Calldata) => Calldata
-            ): void {
-              setCalldata((prevState) => {
-                const newAuths = [...prevState.auths];
-                newAuths[index] = updateFunction(newAuths[index]);
-                return {
-                  ...prevState,
-                  auths: newAuths,
-                  convertValsToScVals:
-                    prevState.convertValsToScVals.bind(prevState),
-                };
-              });
-            }}
+            onChange={(new_value) => handleAuthChange(index, new_value)}
           />
         </Container>
       ))}

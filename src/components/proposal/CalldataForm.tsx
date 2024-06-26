@@ -5,6 +5,7 @@ import { Button } from "../common/Button";
 import { TypedInput } from "../common/TypedInput";
 import { Calldata, Val } from "@script3/soroban-governor-sdk";
 import { isContractId } from "@/utils/validation";
+import { useEffect } from "react";
 
 export interface CalldataFormProps {
   calldata: Calldata;
@@ -20,7 +21,7 @@ export function CalldataForm({
   function handleAddTypedInput() {
     setCalldata((prevState) => ({
       ...prevState,
-      args: [...prevState.args, new Val("", "")],
+      args: [...prevState.args, new Val("", { type: "" })],
       convertValsToScVals: prevState.convertValsToScVals.bind(prevState),
     }));
   }

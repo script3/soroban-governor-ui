@@ -24,10 +24,12 @@ export function TypedInput({
   const baseTypeRef = useRef(null);
   function handleValueChange(e: ChangeEvent<HTMLInputElement>) {
     const new_value = e.target.value;
+
     onChange(new Val(new_value, value.type));
   }
   function handleTypeChange(type: string) {
-    onChange(new Val(value.value, type));
+    value.type = { type: type };
+    onChange(value);
   }
 
   return (
@@ -48,7 +50,10 @@ export function TypedInput({
         className="input w-full border-none bg-transparent focus:border-none outline-none z-10"
         onChange={handleValueChange}
       />
-      <TypeSelectorDropdown value={value.type} onChange={handleTypeChange} />
+      <TypeSelectorDropdown
+        value={value.type.type}
+        onChange={handleTypeChange}
+      />
       {!!errorMessage && (
         <Typography.Tiny className="text-red">{errorMessage}</Typography.Tiny>
       )}

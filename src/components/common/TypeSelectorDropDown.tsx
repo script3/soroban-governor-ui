@@ -20,14 +20,12 @@ export function TypeSelectorDropdown({ value, onChange }: TypeProps) {
     "i64",
     "i128",
     "i256",
-    "map",
     "string",
     "symbol",
     "u32",
     "u64",
     "u128",
     "u256",
-    "vec",
   ];
 
   const ref = React.useRef<HTMLDivElement>(null);

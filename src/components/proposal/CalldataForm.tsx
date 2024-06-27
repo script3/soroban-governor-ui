@@ -20,79 +20,79 @@ export function CalldataForm({
 }: CalldataFormProps) {
 
   function handleContractIdChange(new_value: string) {
-    onChange(new Calldata(
-      new_value, 
-      calldata.function, 
-      calldata.args, 
-      calldata.auths
-    ));
+    onChange({
+      contract_id: new_value,
+      function: calldata.function,
+      args: calldata.args,
+      auths: calldata.auths,
+    });
   }
 
   function handleFunctionChange(new_value: string) {
-    onChange(new Calldata(
-      calldata.contract_id, 
-      new_value, 
-      calldata.args, 
-      calldata.auths
-    ));
+    onChange({
+      contract_id: calldata.contract_id,
+      function: new_value,
+      args: calldata.args,
+      auths: calldata.auths,
+    });
   }
 
   function handleAddTypedInput() {
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function, 
-      [...calldata.args, new Val("", { type: "" })], 
-      calldata.auths)
-    );
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: [...calldata.args, { value: "", type: { type: "" }}],
+      auths: calldata.auths,
+    });
   }
 
   function handleRemoveTypedInput() {
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function, 
-      calldata.args.slice(0, calldata.args.length - 1), 
-      calldata.auths)
-    );
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: calldata.args.slice(0, calldata.args.length - 1),
+      auths: calldata.auths,
+    });
   }
 
   function handleAddAuth() {
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function,
-      calldata.args,
-      [...calldata.auths, new Calldata("", "", [], [])]
-    ));
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: calldata.args,
+      auths: [...calldata.auths, { contract_id: "", function: "", args: [], auths: [] }],
+    });
   }
 
   function handleRemoveAuth() {
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function,
-      calldata.args,
-      calldata.auths.slice(0, calldata.auths.length - 1)
-    ));
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: calldata.args,
+      auths: calldata.auths.slice(0, calldata.auths.length - 1),
+    });
   }
 
   function handleInputChange(index: number, newValue: Val) {
     const newArgs: Val[] = [...calldata.args];
     newArgs[index] = newValue;
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function, 
-      newArgs, 
-      calldata.auths
-    ));
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: newArgs,
+      auths: calldata.auths,
+    });
   }
 
   function handleAuthChange(index: number, newAuth: Calldata) {
     const newAuths: Calldata[] = [...calldata.auths];
     newAuths[index] = newAuth;
-    onChange(new Calldata(
-      calldata.contract_id, 
-      calldata.function, 
-      calldata.args, 
-      newAuths
-    ));
+    onChange({
+      contract_id: calldata.contract_id,
+      function: calldata.function,
+      args: calldata.args,
+      auths: newAuths,
+    });
   }
 
   return (

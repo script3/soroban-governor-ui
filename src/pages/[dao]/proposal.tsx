@@ -8,9 +8,7 @@ import {
   classByProposalAction,
   classByStatus,
 } from "@/constants";
-
 import { shortenAddress } from "@/utils/shortenAddress";
-
 import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { useState } from "react";
 import { Button } from "@/components/common/Button";
@@ -22,7 +20,6 @@ import { VoteListItem } from "@/components/proposal/VoteListItem";
 import { copyToClipboard } from "@/utils/string";
 import { Tooltip } from 'react-tooltip'
 import Image from "next/image";
-
 import { useRouter } from "next/router";
 import {
   useCurrentBlockNumber,
@@ -297,7 +294,7 @@ export default function Proposal() {
               <Container>
                 <ProposalAction
                   governorSettings={governorSettings as GovernorSettings}
-                  proposal={proposal}
+                  action={proposal.action}
                 />
               </Container>
             )}

@@ -3,24 +3,23 @@ import { Box } from "@/components/common/Box";
 
 import Typography from "@/components/common/Typography";
 import { ProposalActionEnum } from "@/constants";
-import { Governor, Proposal } from "@/types";
-import { Calldata, GovernorSettings } from "@script3/soroban-governor-sdk";
+import { Calldata, GovernorSettings, type ProposalAction } from "@script3/soroban-governor-sdk";
 import { stringify } from "json5";
 import Image from "next/image";
 import { DisplayCalldata } from "./DisplayCalldata";
 
 export function ProposalAction({
-  proposal,
+  action,
   governorSettings,
 }: {
-  proposal: Proposal;
+  action: ProposalAction;
   governorSettings: GovernorSettings;
 }) {
-  const proposalType = proposal.action.tag;
+  const proposalType = action.tag;
 
   switch (proposalType) {
     case ProposalActionEnum.CALLDATA:
-      const calldata = proposal.action.values as any as Calldata;
+      const calldata = action.values as any as Calldata;
 
       return <DisplayCalldata calldata={calldata} />;
     case ProposalActionEnum.UPGRADE:
@@ -29,7 +28,7 @@ export function ProposalAction({
           <Typography.P className="mb-2">Proposed WASM hash:</Typography.P>
           <Box className="p-4 box-border">
             <code className="whitespace-pre-wrap word-break p-1 ">
-              {(proposal.action.values as any).toString("hex")}
+              {(action.values as any).toString("hex")}
             </code>
           </Box>
         </Container>
@@ -60,7 +59,7 @@ export function ProposalAction({
           </Typography.P>
           <Box className="p-4 box-border">
             <code className="whitespace-pre-wrap word-break p-1 ">
-              {stringify(proposal.action?.values, null, 8)}
+              {stringify(action?.values, null, 8)}
             </code>
           </Box>
         </Container>
@@ -73,7 +72,7 @@ export function ProposalAction({
           </Typography.P>
           <Box className="p-4 box-border">
             <code className="whitespace-pre-wrap word-break p-1 ">
-              {proposal.action.values}
+              {action.values}
             </code>
           </Box>
         </Container>

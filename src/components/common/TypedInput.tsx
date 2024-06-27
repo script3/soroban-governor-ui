@@ -21,15 +21,21 @@ export function TypedInput({
   errorMessage,
 }: TypedInputProps) {
   const baseInputRef = useRef(null);
-  const baseTypeRef = useRef(null);
+
   function handleValueChange(e: ChangeEvent<HTMLInputElement>) {
     const new_value = e.target.value;
-
-    onChange(new Val(new_value, value.type));
+    if (value.type.type === "i32" || value.type.type === "u32") {
+      onChange({ value: Number(new_value), type: value.type });
+    } else if (value.type.type === "boolean" && new_value.toLowerCase() === "true" || new_value.toLowerCase() === "false") {
+      onChange({ value: new_value.toLowerCase() === "true", type: value.type });
+    } else {
+      onChange({ value: new_value, type: value.type});
+    }
   }
+
   function handleTypeChange(type: string) {
-    value.type = { type: type };
-    onChange(value);
+    const new_type = { type: type };
+    onChange({ value: value.value, type: new_type });
   }
 
   return (

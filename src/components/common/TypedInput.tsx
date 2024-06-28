@@ -26,7 +26,7 @@ export function TypedInput({
     const new_value = e.target.value;
     if (value.type.type === "i32" || value.type.type === "u32") {
       onChange({ value: Number(new_value), type: value.type });
-    } else if (value.type.type === "boolean" && new_value.toLowerCase() === "true" || new_value.toLowerCase() === "false") {
+    } else if (value.type.type === "boolean" && (new_value.toLowerCase() === "true" || new_value.toLowerCase() === "false")) {
       onChange({ value: new_value.toLowerCase() === "true", type: value.type });
     } else {
       onChange({ value: new_value, type: value.type});

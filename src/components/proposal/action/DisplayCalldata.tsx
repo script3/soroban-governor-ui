@@ -3,6 +3,7 @@ import Typography from "@/components/common/Typography";
 import { Calldata } from "@script3/soroban-governor-sdk";
 import { Container } from "@/components/common/BaseContainer";
 import ExpandableComponent from "@/components/common/ExpanableContainer";
+import { jsonReplacer } from "@/utils/stellar";
 
 export function DisplayCalldata({ calldata }: { calldata: Calldata }) {
   return (
@@ -20,13 +21,19 @@ export function DisplayCalldata({ calldata }: { calldata: Calldata }) {
         </code>
       </Box>
       <Typography.P className="mb-2">Arguments:</Typography.P>
-      {calldata.args.map((arg, index) => (
-        <Box key={"arg" + index} className="p-4 box-border">
-          <code className="whitespace-pre-wrap word-break !p-0 leading-7 text-left justify-start ">
-            {arg.toString()}
-          </code>
-        </Box>
-      ))}
+      {calldata.args.map((arg, index) => {
+        let real_arg = arg as any;
+        let arg_as_string = typeof real_arg === "object" ? 
+          JSON.stringify(real_arg, jsonReplacer, 2) : 
+          (real_arg?.toString() ?? real_arg);
+        return (
+          <Box key={"arg" + index} className="p-4 box-border">
+            <code className="whitespace-pre-wrap word-break !p-0 leading-7 text-left justify-start ">
+              {arg_as_string}
+            </code>
+          </Box>
+        );
+      })}
       <Typography.P className="mb-2">Auths:</Typography.P>
       <code className="whitespace-pre-wrap word-break !p-0 ">
         {calldata.auths.length > 0 ? (

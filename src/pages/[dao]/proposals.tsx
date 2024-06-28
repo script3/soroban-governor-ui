@@ -50,6 +50,7 @@ function Proposals() {
     );
   }, [searchValue, proposals]);
 
+  const isOldYBXGovernor = governor?.address === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
 
   return (
     <Container slim className="flex flex-col gap-4">
@@ -57,6 +58,19 @@ function Proposals() {
         <Typography.Huge className="hidden lg:block text-white w-full mb-4">
           Proposals
         </Typography.Huge>
+        {isOldYBXGovernor && (
+          <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2 w-full">
+            <Image
+              src="/icons/report.svg"
+              width={28}
+              height={28}
+              alt={"close"}
+            />
+            <Typography.P className="text-warning">
+              {"This DAO is being sunset. Please unbond your tokens.\n\n"}
+            </Typography.P>
+          </Container>
+        )}
         <div className="flex w-full  md:w-60">
           <Input
             icon={

@@ -57,7 +57,7 @@ function ManageVotes() {
   const { data: emisConfig } = useEmissionConfig(governor?.voteTokenAddress, governor?.isWrappedAsset);
   const { data: claimAmount, refetch: refetchClaimAmount } = useClaimAmount(governor?.voteTokenAddress, emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0));
 
-  const isOldYBXGovernor = governor?.address === "CCD366MT4KWNVCW62UMRTBOFYU2J776VAGOQIHQGJEIGUDLB47ICJP4I";
+  const isOldYBXGovernor = governor?.address === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
 
   function handleWrapClick() {
     if (governor) {
@@ -166,7 +166,6 @@ function ManageVotes() {
         <Typography.Huge>Your Votes</Typography.Huge>
         {governor?.isWrappedAsset === true && (
           <Container>
-            {/* TODO: Add in when proposals appear like they will pass
             {isOldYBXGovernor && (
               <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2">
                 <Image
@@ -179,8 +178,7 @@ function ManageVotes() {
                   {"This DAO is being sunset. Please unbond your tokens.\n\n"}
                 </Typography.P>
               </Container>
-            )} */}
-
+            )}
             <Typography.P>
               This space uses a bonded token for voting. You can get bonded
               tokens by bonding the corresponding Stellar asset. A bonded token

@@ -26,6 +26,7 @@ export function TypeSelectorDropdown({ value, onChange }: TypeProps) {
     "u64",
     "u128",
     "u256",
+    "xdr"
   ];
 
   const ref = React.useRef<HTMLDivElement>(null);

@@ -52,14 +52,16 @@ export function isCalldataString(str: string): boolean {
 
 export function parseCallData(calldataObj: any): Calldata | null {
   if (isCalldata(calldataObj)) {
-    return new Calldata(
-      calldataObj.contract_id,
-      calldataObj.function,
-      calldataObj.args.map((arg: any) => new Val(arg.value, arg.type)),
-      calldataObj.auths
+    return {
+      contract_id: calldataObj.contract_id,
+      function: calldataObj.function,
+      args: calldataObj.args.map((arg: any): Val => {
+        return { value: arg.value, type: arg.type };
+      }),
+      auths: calldataObj.auths
         .map((auth: any) => parseCallData(auth))
-        .filter((auth: any) => auth !== null) as Calldata[]
-    );
+        .filter((auth: any) => auth !== null) as Calldata[],
+    };
   }
 
   return null;

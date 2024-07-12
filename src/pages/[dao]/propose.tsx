@@ -1,10 +1,3 @@
-import { GetStaticPaths, GetStaticProps } from "next";
-import { Account, Address, Contract, SorobanRpc, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
-import { parse, stringify,  } from "json5";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { Calldata, GovernorSettings, calldataToAuthInvocation, valToScVal } from "@script3/soroban-governor-sdk";
 import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
@@ -15,28 +8,54 @@ import { Loader } from "@/components/common/Loader";
 import MarkdownTextArea from "@/components/common/MarkdownTextArea";
 import { RadioButton } from "@/components/common/RadioButton";
 import { TextArea } from "@/components/common/TextArea";
+import ToggleComponent from "@/components/common/Toggle";
 import Typography from "@/components/common/Typography";
 import { CalldataForm } from "@/components/proposal/CalldataForm";
-import ToggleComponent from "@/components/common/Toggle";
 import { SettingsForm } from "@/components/proposal/SettingsForm";
 import {
   CALLDATA_PLACEHOLDER,
   ProposalActionEnum,
   classByProposalAction,
 } from "@/constants";
+import { useGovernor } from "@/hooks/api";
+import {
+  RPC_DEBOUNCE_DELAY,
+  useDebouncedState,
+} from "@/hooks/useDebouncedState";
 import { useWallet } from "@/hooks/wallet";
 import {
+  jsonReplacer,
+  parseErrorFromSimError,
+  parseResultFromXDRString,
+} from "@/utils/stellar";
+import {
+  isAddress,
   isCalldata,
   isCalldataString,
-  isValidGovernorSettings,
-  isAddress,
-  parseCallData,
   isMaxTimeExceeded,
+  isValidGovernorSettings,
+  parseCallData,
 } from "@/utils/validation";
+import {
+  Calldata,
+  GovernorSettings,
+  calldataToAuthInvocation,
+  valToScVal,
+} from "@script3/soroban-governor-sdk";
+import {
+  Account,
+  Address,
+  Contract,
+  SorobanRpc,
+  TransactionBuilder,
+  xdr,
+} from "@stellar/stellar-sdk";
+import { parse, stringify } from "json5";
+import { GetStaticPaths, GetStaticProps } from "next";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import governors from "../../../public/governors/governors.json";
-import { RPC_DEBOUNCE_DELAY, useDebouncedState } from "@/hooks/useDebouncedState";
-import { jsonReplacer, parseErrorFromSimError, parseResultFromXDRString } from "@/utils/stellar";
-import { useGovernor } from "@/hooks/api";
 
 const TYPE_FORM = "Form";
 const TYPE_JSON = "Json";
@@ -55,9 +74,10 @@ export default function CreateProposal() {
 
   const [calldataSimSuccess, setCalldataSimSuccess] = useState<boolean>(false);
   const [calldataSimResult, setCalldataSimResult] = useState<string>("");
-  const [calldataAuthSuccess, setCalldataAuthSuccess] = useState<boolean>(false);
+  const [calldataAuthSuccess, setCalldataAuthSuccess] =
+    useState<boolean>(false);
   const [callAuthResult, setCalldataAuthResult] = useState<string>("");
-  
+
   useDebouncedState(calldata, RPC_DEBOUNCE_DELAY, handleSimCalldata);
 
   const [governorSettings, setGovernorSettings] = useState<GovernorSettings>({
@@ -77,7 +97,11 @@ export default function CreateProposal() {
 
   const currentGovernor = useGovernor(params.dao as string);
 
-  const isCalldataDisabled = proposalAction !== ProposalActionEnum.CALLDATA || !isCalldata(calldata) || !isCalldataString(jsonCalldata) || !calldataSimSuccess;
+  const isCalldataDisabled =
+    proposalAction === ProposalActionEnum.CALLDATA &&
+    (!isCalldata(calldata) ||
+      !isCalldataString(jsonCalldata) ||
+      !calldataSimSuccess);
   const isSettingsDisabled =
     proposalAction === ProposalActionEnum.SETTINGS &&
     (!governorSettings ||
@@ -86,7 +110,6 @@ export default function CreateProposal() {
     proposalAction === ProposalActionEnum.COUNCIL &&
     (!councilAddress || !isAddress(councilAddress));
 
-  
   function handleSetCalldataString(calldataString: string) {
     setJsonCalldata(calldataString);
     if (isCalldataString(calldataString)) {
@@ -167,20 +190,26 @@ export default function CreateProposal() {
   async function handleSimCalldata(calldata: Calldata) {
     try {
       if (isCalldata(calldata)) {
-        let account = new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "1");
-        let tx = new TransactionBuilder(account, 
-            { 
-              fee: "1000", 
-              timebounds: { 
-                minTime: 0, 
-                maxTime: 0 
-              },
-              networkPassphrase: network.passphrase
-          })
-          .addOperation(new Contract(calldata.contract_id).call(
-            calldata.function, 
-            ...calldata.args.map((arg) => xdr.ScVal.fromXDR(valToScVal(arg).toXDR()))
-          ))
+        let account = new Account(
+          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+          "1"
+        );
+        let tx = new TransactionBuilder(account, {
+          fee: "1000",
+          timebounds: {
+            minTime: 0,
+            maxTime: 0,
+          },
+          networkPassphrase: network.passphrase,
+        })
+          .addOperation(
+            new Contract(calldata.contract_id).call(
+              calldata.function,
+              ...calldata.args.map((arg) =>
+                xdr.ScVal.fromXDR(valToScVal(arg).toXDR())
+              )
+            )
+          )
           .build();
         let server = new SorobanRpc.Server(network.rpc, network.opts);
         let result = await server.simulateTransaction(tx);
@@ -191,12 +220,18 @@ export default function CreateProposal() {
           let authResult = "No authorizations required.";
           try {
             if (currentGovernor !== undefined) {
-              let governor_sc_address_xdr = new Address(currentGovernor.address).toScAddress().toXDR("base64");
-              let contract_auth = result.result?.auth?.find((auth) => 
-                auth.credentials().address().address().toXDR("base64") === governor_sc_address_xdr
+              let governor_sc_address_xdr = new Address(currentGovernor.address)
+                .toScAddress()
+                .toXDR("base64");
+              let contract_auth = result.result?.auth?.find(
+                (auth) =>
+                  auth.credentials().address().address().toXDR("base64") ===
+                  governor_sc_address_xdr
               );
               if (contract_auth !== undefined) {
-                let auth_invocation_xdr = contract_auth.rootInvocation().toXDR("base64");
+                let auth_invocation_xdr = contract_auth
+                  .rootInvocation()
+                  .toXDR("base64");
                 let calldata_invocation_xdr =
                   calldataToAuthInvocation(calldata).toXDR("base64");
                 if (auth_invocation_xdr !== calldata_invocation_xdr) {
@@ -210,7 +245,7 @@ export default function CreateProposal() {
             }
           } catch (e) {
             validAuths = false;
-            authResult = `Auth was unable to be validate.`
+            authResult = `Auth was unable to be validate.`;
           }
           setCalldataAuthSuccess(validAuths);
           setCalldataAuthResult(authResult);
@@ -220,7 +255,13 @@ export default function CreateProposal() {
             retval = parseResultFromXDRString(retval_xdr);
           }
           setCalldataSimSuccess(true);
-          setCalldataSimResult(`Successfully simulated. ${retval === "" ? "No return value detected." : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`}`);
+          setCalldataSimResult(
+            `Successfully simulated. ${
+              retval === ""
+                ? "No return value detected."
+                : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
+            }`
+          );
         } else if (SorobanRpc.Api.isSimulationRestore(result)) {
           setCalldataSimSuccess(false);
           setCalldataSimResult(`Simulation hit expired ledger entries.`);
@@ -228,18 +269,20 @@ export default function CreateProposal() {
           setCalldataAuthResult("");
         } else {
           setCalldataSimSuccess(false);
-          setCalldataSimResult(`Simulation failed: ${parseErrorFromSimError(result.error)}`);
+          setCalldataSimResult(
+            `Simulation failed: ${parseErrorFromSimError(result.error)}`
+          );
           setCalldataAuthSuccess(false);
           setCalldataAuthResult("");
         }
       } else {
-        setCalldataSimSuccess(false)
+        setCalldataSimSuccess(false);
         setCalldataSimResult("");
         setCalldataAuthSuccess(false);
         setCalldataAuthResult("");
       }
     } catch (e: any) {
-      setCalldataSimSuccess(false)
+      setCalldataSimSuccess(false);
       setCalldataSimResult("Failed to build transaction");
       setCalldataAuthSuccess(false);
       setCalldataAuthResult("");
@@ -377,7 +420,14 @@ export default function CreateProposal() {
                 ) : (
                   <CalldataForm
                     isAuth={false}
-                    calldata={calldata ?? { contract_id: "", function: "", args: [], auths: [] }}
+                    calldata={
+                      calldata ?? {
+                        contract_id: "",
+                        function: "",
+                        args: [],
+                        auths: [],
+                      }
+                    }
                     onChange={handleSetCalldata}
                   />
                 )}
@@ -488,7 +538,6 @@ export default function CreateProposal() {
     </Container>
   );
 }
-
 
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };

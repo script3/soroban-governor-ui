@@ -4,9 +4,11 @@ import {
   EmissionConfig,
   GovernorContract,
   GovernorSettings,
+  Proposal,
   TokenVotesContract,
   VoteCount,
   VotesContract,
+  Option,
 } from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 import { Network, TxOptions, invokeOperation } from "./stellar";
@@ -204,6 +206,55 @@ export async function getUserVoteForProposal(
     throw result.unwrapErr();
   }
   return result.unwrap() as VoteSupport;
+}
+
+export async function getProposal(
+  network: Network,
+  contractId: string,
+  proposalId: number
+): Promise<Proposal | undefined> {
+  const txOptions = getSimTxParams(network);
+  const contract = new GovernorContract(contractId);
+  const operation = contract.getProposal({
+    proposal_id: proposalId,
+  });
+  const result = (
+    await invokeOperation<Option<Proposal>>(
+      PUBKEY,
+      FALSE_SIGN,
+      network,
+      txOptions,
+      (result: string) => {
+        return scValToNative(
+          xdr.ScVal.fromXDR(result, "base64")
+        ) as Option<Proposal>;
+      },
+      operation
+    )
+  ).result;
+
+  if (result.isErr()) {
+    throw result.unwrapErr();
+  }
+  return result.unwrap();
+}
+
+export async function getNextPropId(
+  network: Network,
+  contractId: string
+): Promise<number | undefined> {
+  let rpc = new SorobanRpc.Server(network.rpc, network.opts);
+  let contract_entry = await rpc.getContractData(
+    contractId,
+    xdr.ScVal.scvSymbol("PropId"),
+    SorobanRpc.Durability.Persistent
+  );
+  if (contract_entry.val) {
+    let data = contract_entry.val.contractData().val();
+    let propId = scValToNative(data) as number;
+    return propId;
+  }
+  return undefined;
 }
 
 //********** Votes **********//

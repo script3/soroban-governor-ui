@@ -19,7 +19,6 @@ import {
   getNextPropId,
   getPastVotingPower,
   getProposal,
-  getProposalVotes,
   getUserVoteForProposal,
   getVotingPower,
 } from "@/utils/contractReader";
@@ -32,9 +31,9 @@ import {
   EmissionConfig,
   GovernorSettings,
 } from "@script3/soroban-governor-sdk";
-
 const DEFAULT_STALE_TIME = 20 * 1000;
-
+const ONE_DAY_LEDGERS = 17280;
+const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
 export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
   const { network } = useWallet();
   return useQuery({
@@ -125,115 +124,65 @@ export function useProposals(
 
   async function loadProposals(): Promise<Proposal[]> {
     if (paramsDefined) {
-      const proposals = (
-        await fetchProposalsByGovernor(governorAddress)
-      ).reverse();
-      const updatedProposals: Proposal[] = [];
-      let proposalsToCheck = 5;
-      let nextProposalId = (await getNextPropId(network, governorAddress)) ?? 0;
-      let id = proposals[0] ? proposals[0].id : nextProposalId - 1;
+      let proposals = (await fetchProposalsByGovernor(governorAddress)).sort(
+        ({ id: a }, { id: b }) => b - a
+      );
+      let lastProposalId =
+        ((await getNextPropId(network, governorAddress)) ?? 0) - 1;
+      let currPropIndex = 0;
 
-      // fetch proposals from ledger if not available in indexer
-      for (let i = id; i < nextProposalId - 1; i++) {
-        let voteCount = await getProposalVotes(network, governorAddress, i);
-        let proposalFromLedger = await getProposal(network, governorAddress, i);
-        if (proposalFromLedger) {
-          updatedProposals.push({
-            id: proposalFromLedger.id,
-            status: proposalFromLedger.data.status as number,
-            title: proposalFromLedger.config.title,
-            description: proposalFromLedger.config.description,
-            action: proposalFromLedger.config.action,
-            proposer: proposalFromLedger.data.creator,
-            vote_start: proposalFromLedger.data.vote_start,
-            vote_end: proposalFromLedger.data.vote_end,
-            eta: proposalFromLedger.data.eta,
-            vote_count: voteCount,
-          });
-        }
-      }
+      for (let propId = lastProposalId; propId >= 0; propId--) {
+        let nextProp = proposals.at(currPropIndex);
 
-      for (let proposal of proposals) {
-        // Check if there are more proposals to fetch
-        if (proposalsToCheck > 0) {
-          if (proposal.id === id) {
-            proposalsToCheck--;
-            id = proposal.id - 1;
+        if (nextProp) {
+          let isActive =
+            nextProp.status === ProposalStatusExt.Open ||
+            (nextProp.status === ProposalStatusExt.Successful &&
+              nextProp.action.tag !== "Snapshot");
+
+          if (propId == nextProp.id) {
+            if (isActive) {
+              let fromRPC = await getProposal(
+                network,
+                governorAddress,
+                propId,
+                currentBlock
+              );
+              if (fromRPC) {
+                proposals[currPropIndex] = fromRPC;
+              } else {
+                break;
+              }
+            } else if (
+              nextProp.vote_start + MAX_PROPOSAL_LIFETIME <
+              currentBlock
+            ) {
+              break;
+            }
+            currPropIndex++;
           } else {
-            for (let i = id; i > proposal.id; i--) {
-              let voteCount = await getProposalVotes(
+            for (
+              let missingPropId = nextProp.id + 1;
+              missingPropId <= propId;
+              missingPropId++
+            ) {
+              let fromRPC = await getProposal(
                 network,
                 governorAddress,
-                proposal.id
+                missingPropId,
+                currentBlock
               );
-              let proposalFromLedger = await getProposal(
-                network,
-                governorAddress,
-                proposal.id
-              );
-              if (proposalFromLedger) {
-                console.log("adding proposal from ledger");
-                updatedProposals.push({
-                  id: proposalFromLedger.id,
-                  status: proposalFromLedger.data.status as number,
-                  title: proposalFromLedger.config.title,
-                  description: proposalFromLedger.config.description,
-                  action: proposalFromLedger.config.action,
-                  proposer: proposalFromLedger.data.creator,
-                  vote_start: proposalFromLedger.data.vote_start,
-                  vote_end: proposalFromLedger.data.vote_end,
-                  eta: proposalFromLedger.data.eta,
-                  vote_count: voteCount,
-                });
+              if (fromRPC) {
+                proposals.splice(currPropIndex + 1, 0, fromRPC);
+                currPropIndex++;
+              } else {
+                break;
               }
             }
-            id = proposal.id - 1;
-            proposalsToCheck--;
           }
         }
-        if (
-          proposal.status === ProposalStatusExt.Open ||
-          (proposal.status === ProposalStatusExt.Successful &&
-            proposal.action.tag !== "Snapshot")
-        ) {
-          // fetch voteCount from ledger - current vote count not available from indexer
-          let voteCount = await getProposalVotes(
-            network,
-            governorAddress,
-            proposal.id
-          );
-          let proposalFromLedger = await getProposal(
-            network,
-            governorAddress,
-            proposal.id
-          );
-          if (proposalFromLedger) {
-            proposal = {
-              id: proposalFromLedger.id,
-              status: proposalFromLedger.data.status as number,
-              title: proposalFromLedger.config.title,
-              description: proposalFromLedger.config.description,
-              action: proposalFromLedger.config.action,
-              proposer: proposalFromLedger.data.creator,
-              vote_start: proposalFromLedger.data.vote_start,
-              vote_end: proposalFromLedger.data.vote_end,
-              eta: proposalFromLedger.data.eta,
-              vote_count: voteCount,
-            };
-          }
-          // update status to frontend status
-          if (
-            proposal.vote_start < currentBlock &&
-            proposal.vote_end > currentBlock
-          ) {
-            proposal.status = ProposalStatusExt.Active;
-          } else if (proposal.vote_start > currentBlock) {
-            proposal.status = ProposalStatusExt.Pending;
-          }
-        }
-        updatedProposals.push(proposal);
       }
-      return updatedProposals.sort(({ id: a }, { id: b }) => b - a);
+      return proposals;
     } else {
       return [];
     }
@@ -265,48 +214,36 @@ export function useProposal(
       return null;
     }
     let proposal = await fetchProposalById(governorAddress, proposalId);
+
     if (!proposal) {
-      return null;
+      proposal = await getProposal(
+        network,
+        governorAddress,
+        proposalId,
+        currentBlock
+      );
+      if (proposal) {
+        return proposal;
+      } else {
+        return null;
+      }
     }
-    if (
+    let isActive =
       proposal.status === ProposalStatusExt.Open ||
       (proposal.status === ProposalStatusExt.Successful &&
-        proposal.action.tag !== "Snapshot")
-    ) {
-      // fetch voteCount from ledger - current vote count not available from indexer
-      let voteCount = await getProposalVotes(
-        network,
-        governorAddress,
-        proposal.id
-      );
-      let proposalFromLedger = await getProposal(
-        network,
-        governorAddress,
-        proposal.id
-      );
-      if (proposalFromLedger) {
-        proposal = {
-          id: proposalFromLedger.id,
-          status: proposalFromLedger.data.status as number,
-          title: proposalFromLedger.config.title,
-          description: proposalFromLedger.config.description,
-          action: proposalFromLedger.config.action,
-          proposer: proposalFromLedger.data.creator,
-          vote_start: proposalFromLedger.data.vote_start,
-          vote_end: proposalFromLedger.data.vote_end,
-          eta: proposalFromLedger.data.eta,
-          vote_count: voteCount,
-        };
-      }
+        proposal.action.tag !== "Snapshot");
 
-      // update status to frontend status
-      if (
-        proposal.vote_start <= currentBlock &&
-        proposal.vote_end > currentBlock
-      ) {
-        proposal.status = ProposalStatusExt.Active;
-      } else if (proposal.vote_start > currentBlock) {
-        proposal.status = ProposalStatusExt.Pending;
+    if (isActive) {
+      let fromRPC = await getProposal(
+        network,
+        governorAddress,
+        proposal.id,
+        currentBlock
+      );
+      if (fromRPC) {
+        proposal = fromRPC;
+      } else {
+        return null;
       }
     }
     return proposal;

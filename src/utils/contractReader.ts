@@ -1,4 +1,9 @@
-import { VoteSupport, oldSettingsSpec } from "@/types";
+import {
+  VoteSupport,
+  oldSettingsSpec,
+  Proposal as FlattenedProposal,
+  ProposalStatusExt,
+} from "@/types";
 import {
   BondingVotesContract,
   EmissionConfig,
@@ -211,32 +216,63 @@ export async function getUserVoteForProposal(
 export async function getProposal(
   network: Network,
   contractId: string,
-  proposalId: number
-): Promise<Proposal | undefined> {
-  const txOptions = getSimTxParams(network);
-  const contract = new GovernorContract(contractId);
-  const operation = contract.getProposal({
-    proposal_id: proposalId,
-  });
-  const result = (
-    await invokeOperation<Option<Proposal>>(
-      PUBKEY,
-      FALSE_SIGN,
-      network,
-      txOptions,
-      (result: string) => {
-        return scValToNative(
-          xdr.ScVal.fromXDR(result, "base64")
-        ) as Option<Proposal>;
-      },
-      operation
-    )
-  ).result;
+  proposalId: number,
+  currentBlock: number
+): Promise<FlattenedProposal | undefined> {
+  try {
+    const txOptions = getSimTxParams(network);
+    const contract = new GovernorContract(contractId);
+    const operation = contract.getProposal({
+      proposal_id: proposalId,
+    });
+    const [result, voteCount] = await Promise.all([
+      invokeOperation<Option<Proposal>>(
+        PUBKEY,
+        FALSE_SIGN,
+        network,
+        txOptions,
+        (result: string) => {
+          return scValToNative(
+            xdr.ScVal.fromXDR(result, "base64")
+          ) as Option<Proposal>;
+        },
+        operation
+      ),
+      getProposalVotes(network, contractId, proposalId),
+    ]);
 
-  if (result.isErr()) {
-    throw result.unwrapErr();
+    if (result.result.isErr()) {
+      throw result.result.unwrapErr();
+    }
+
+    let proposal = result.result.unwrap();
+    if (proposal) {
+      let flattenedProposal: FlattenedProposal = {
+        id: proposal.id,
+        status: proposal.data.status as number as ProposalStatusExt,
+        title: proposal.config.title,
+        description: proposal.config.description,
+        action: proposal.config.action,
+        proposer: proposal.data.creator,
+        vote_start: proposal.data.vote_start,
+        vote_end: proposal.data.vote_end,
+        eta: proposal.data.eta,
+        vote_count: voteCount,
+      };
+      if (
+        flattenedProposal.vote_start < currentBlock &&
+        flattenedProposal.vote_end > currentBlock
+      ) {
+        flattenedProposal.status = ProposalStatusExt.Active;
+      } else if (flattenedProposal.vote_start > currentBlock) {
+        flattenedProposal.status = ProposalStatusExt.Pending;
+      }
+
+      return flattenedProposal;
+    }
+  } catch {
+    return undefined;
   }
-  return result.unwrap();
 }
 
 export async function getNextPropId(

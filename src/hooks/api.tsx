@@ -5,10 +5,6 @@ import {
   Vote,
   VoteSupport,
 } from "@/types";
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import { useWallet } from "./wallet";
-import governors from "../../public/governors/governors.json";
-import { Address, SorobanRpc } from "@stellar/stellar-sdk";
 import {
   getBalance,
   getClaimAmount,
@@ -31,6 +27,10 @@ import {
   EmissionConfig,
   GovernorSettings,
 } from "@script3/soroban-governor-sdk";
+import { Address, SorobanRpc } from "@stellar/stellar-sdk";
+import { UseQueryResult, useQuery } from "@tanstack/react-query";
+import governors from "../../public/governors/governors.json";
+import { useWallet } from "./wallet";
 const DEFAULT_STALE_TIME = 20 * 1000;
 const ONE_DAY_LEDGERS = 17280;
 const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
@@ -132,16 +132,15 @@ export function useProposals(
       let currPropIndex = 0;
 
       for (let propId = lastProposalId; propId >= 0; propId--) {
-        let nextProp = proposals.at(currPropIndex);
+        let indexerProp = proposals[currPropIndex];
 
-        if (nextProp) {
-          let isActive =
-            nextProp.status === ProposalStatusExt.Open ||
-            (nextProp.status === ProposalStatusExt.Successful &&
-              nextProp.action.tag !== "Snapshot");
-
-          if (propId == nextProp.id) {
-            if (isActive) {
+        if (indexerProp !== undefined) {
+          if (propId === indexerProp.id) {
+            if (
+              indexerProp.status === ProposalStatusExt.Open ||
+              (indexerProp.status === ProposalStatusExt.Successful &&
+                indexerProp.action.tag !== "Snapshot")
+            ) {
               let fromRPC = await getProposal(
                 network,
                 governorAddress,
@@ -154,30 +153,25 @@ export function useProposals(
                 break;
               }
             } else if (
-              nextProp.vote_start + MAX_PROPOSAL_LIFETIME <
+              indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
               currentBlock
             ) {
               break;
             }
             currPropIndex++;
           } else {
-            for (
-              let missingPropId = nextProp.id + 1;
-              missingPropId <= propId;
-              missingPropId++
-            ) {
-              let fromRPC = await getProposal(
-                network,
-                governorAddress,
-                missingPropId,
-                currentBlock
-              );
-              if (fromRPC) {
-                proposals.splice(currPropIndex + 1, 0, fromRPC);
-                currPropIndex++;
-              } else {
-                break;
-              }
+            // propId does not exist. Insert it.
+            let fromRPC = await getProposal(
+              network,
+              governorAddress,
+              propId,
+              currentBlock
+            );
+            if (fromRPC) {
+              proposals.splice(currPropIndex, 0, fromRPC);
+              currPropIndex++;
+            } else {
+              break;
             }
           }
         }

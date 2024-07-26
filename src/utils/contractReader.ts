@@ -1,19 +1,19 @@
 import {
-  VoteSupport,
-  oldSettingsSpec,
   Proposal as FlattenedProposal,
   ProposalStatusExt,
+  VoteSupport,
+  oldSettingsSpec,
 } from "@/types";
 import {
   BondingVotesContract,
   EmissionConfig,
   GovernorContract,
   GovernorSettings,
+  Option,
   Proposal,
   TokenVotesContract,
   VoteCount,
   VotesContract,
-  Option,
 } from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 import { Network, TxOptions, invokeOperation } from "./stellar";
@@ -232,9 +232,18 @@ export async function getProposal(
         network,
         txOptions,
         (result: string) => {
-          return scValToNative(
-            xdr.ScVal.fromXDR(result, "base64")
-          ) as Option<Proposal>;
+          // TODO: Contract Spec parsing with option is broken, and scValToNative
+          //       builds a slightly different object for the "ProposalAction" type.
+          if (result === "AAAAAQ==") {
+            return undefined;
+          } else {
+            let proposal = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
+            proposal.config.action = {
+              tag: proposal.config.action[0],
+              values: proposal.config.action[1],
+            };
+            return proposal as Proposal;
+          }
         },
         operation
       ),
@@ -270,7 +279,8 @@ export async function getProposal(
 
       return flattenedProposal;
     }
-  } catch {
+  } catch (e) {
+    console.error("Unable to load proposal", proposalId, e);
     return undefined;
   }
 }

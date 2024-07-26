@@ -39,6 +39,8 @@ const FALSE_SIGN = (txXdr: string): any => txXdr;
 // zero address - won't get fetched. Just needs to be a valid keypair
 const PUBKEY = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
 
+const ONLY_V0_GOV = "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
+
 //********** Common **********//
 
 /**
@@ -90,7 +92,7 @@ export async function getGovernorSettings(
   const contract = new GovernorContract(contractId);
   const operation = contract.settings();
   let safe_parser =
-    contractId === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
+    contractId === ONLY_V0_GOV
       ? (result: string): GovernorSettings =>
           oldSettingsSpec.funcResToNative("settings", result)
       : GovernorContract.parsers.settings;
@@ -289,18 +291,24 @@ export async function getNextPropId(
   network: Network,
   contractId: string
 ): Promise<number | undefined> {
-  let rpc = new SorobanRpc.Server(network.rpc, network.opts);
-  let contract_entry = await rpc.getContractData(
-    contractId,
-    xdr.ScVal.scvSymbol("PropId"),
-    SorobanRpc.Durability.Persistent
-  );
-  if (contract_entry.val) {
-    let data = contract_entry.val.contractData().val();
-    let propId = scValToNative(data) as number;
-    return propId;
+  try {
+    let rpc = new SorobanRpc.Server(network.rpc, network.opts);
+    let ledgerKey = contractId === ONLY_V0_GOV ? "ProposalId" : "PropId";
+    let contract_entry = await rpc.getContractData(
+      contractId,
+      xdr.ScVal.scvSymbol(ledgerKey),
+      SorobanRpc.Durability.Persistent
+    );
+    if (contract_entry.val) {
+      let data = contract_entry.val.contractData().val();
+      let propId = scValToNative(data) as number;
+      return propId;
+    }
+    return undefined;
+  } catch (e) {
+    console.error("Unable to load next proposal id", e);
+    return undefined;
   }
-  return undefined;
 }
 
 //********** Votes **********//

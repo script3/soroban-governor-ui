@@ -1,9 +1,16 @@
-import { VoteSupport, oldSettingsSpec } from "@/types";
+import {
+  Proposal as FlattenedProposal,
+  ProposalStatusExt,
+  VoteSupport,
+  oldSettingsSpec,
+} from "@/types";
 import {
   BondingVotesContract,
   EmissionConfig,
   GovernorContract,
   GovernorSettings,
+  Option,
+  Proposal,
   TokenVotesContract,
   VoteCount,
   VotesContract,
@@ -204,6 +211,96 @@ export async function getUserVoteForProposal(
     throw result.unwrapErr();
   }
   return result.unwrap() as VoteSupport;
+}
+
+export async function getProposal(
+  network: Network,
+  contractId: string,
+  proposalId: number,
+  currentBlock: number
+): Promise<FlattenedProposal | undefined> {
+  try {
+    const txOptions = getSimTxParams(network);
+    const contract = new GovernorContract(contractId);
+    const operation = contract.getProposal({
+      proposal_id: proposalId,
+    });
+    const [result, voteCount] = await Promise.all([
+      invokeOperation<Option<Proposal>>(
+        PUBKEY,
+        FALSE_SIGN,
+        network,
+        txOptions,
+        (result: string) => {
+          // TODO: Contract Spec parsing with option is broken, and scValToNative
+          //       builds a slightly different object for the "ProposalAction" type.
+          if (result === "AAAAAQ==") {
+            return undefined;
+          } else {
+            let proposal = scValToNative(xdr.ScVal.fromXDR(result, "base64"));
+            proposal.config.action = {
+              tag: proposal.config.action[0],
+              values: proposal.config.action[1],
+            };
+            return proposal as Proposal;
+          }
+        },
+        operation
+      ),
+      getProposalVotes(network, contractId, proposalId),
+    ]);
+
+    if (result.result.isErr()) {
+      throw result.result.unwrapErr();
+    }
+
+    let proposal = result.result.unwrap();
+    if (proposal) {
+      let flattenedProposal: FlattenedProposal = {
+        id: proposal.id,
+        status: proposal.data.status as number as ProposalStatusExt,
+        title: proposal.config.title,
+        description: proposal.config.description,
+        action: proposal.config.action,
+        proposer: proposal.data.creator,
+        vote_start: proposal.data.vote_start,
+        vote_end: proposal.data.vote_end,
+        eta: proposal.data.eta,
+        vote_count: voteCount,
+      };
+      if (
+        flattenedProposal.vote_start < currentBlock &&
+        flattenedProposal.vote_end > currentBlock
+      ) {
+        flattenedProposal.status = ProposalStatusExt.Active;
+      } else if (flattenedProposal.vote_start > currentBlock) {
+        flattenedProposal.status = ProposalStatusExt.Pending;
+      }
+
+      return flattenedProposal;
+    }
+  } catch (e) {
+    console.error("Unable to load proposal", proposalId, e);
+    return undefined;
+  }
+}
+
+export async function getNextPropId(
+  network: Network,
+  contractId: string
+): Promise<number | undefined> {
+  let rpc = new SorobanRpc.Server(network.rpc, network.opts);
+  let contract_entry = await rpc.getContractData(
+    contractId,
+    xdr.ScVal.scvSymbol("PropId"),
+    SorobanRpc.Durability.Persistent
+  );
+  if (contract_entry.val) {
+    let data = contract_entry.val.contractData().val();
+    let propId = scValToNative(data) as number;
+    return propId;
+  }
+  return undefined;
 }
 
 //********** Votes **********//

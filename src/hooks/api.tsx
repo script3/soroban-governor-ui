@@ -1,14 +1,39 @@
-import { Governor, Proposal, ProposalStatusExt, Vote, VoteSupport } from "@/types";
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import { useWallet } from "./wallet";
-import governors from "../../public/governors/governors.json";
+import {
+  Governor,
+  Proposal,
+  ProposalStatusExt,
+  Vote,
+  VoteSupport,
+} from "@/types";
+import {
+  getBalance,
+  getClaimAmount,
+  getDelegate,
+  getEmissionConfig,
+  getGovernorCouncil,
+  getGovernorSettings,
+  getNextPropId,
+  getPastVotingPower,
+  getProposal,
+  getUserVoteForProposal,
+  getVotingPower,
+} from "@/utils/contractReader";
+import {
+  fetchProposalById,
+  fetchProposalsByGovernor,
+  fetchVotesByProposal,
+} from "@/utils/graphql";
+import {
+  EmissionConfig,
+  GovernorSettings,
+} from "@script3/soroban-governor-sdk";
 import { Address, SorobanRpc } from "@stellar/stellar-sdk";
-import { getBalance, getClaimAmount, getDelegate, getEmissionConfig, getGovernorCouncil, getGovernorSettings, getPastVotingPower, getProposalVotes, getUserVoteForProposal, getVotingPower } from "@/utils/contractReader";
-import { fetchProposalById, fetchProposalsByGovernor, fetchVotesByProposal } from "@/utils/graphql";
-import { EmissionConfig, GovernorSettings } from "@script3/soroban-governor-sdk";
-
+import { UseQueryResult, useQuery } from "@tanstack/react-query";
+import governors from "../../public/governors/governors.json";
+import { useWallet } from "./wallet";
 const DEFAULT_STALE_TIME = 20 * 1000;
-
+const ONE_DAY_LEDGERS = 17280;
+const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
 export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
   const { network } = useWallet();
   return useQuery({
@@ -23,7 +48,7 @@ export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
 }
 
 export function useWalletBalance(
-  tokenAddress: string | undefined,
+  tokenAddress: string | undefined
 ): UseQueryResult<bigint> {
   const { network, walletAddress, connected } = useWallet();
   return useQuery({
@@ -36,7 +61,7 @@ export function useWalletBalance(
         return BigInt(0);
       }
       return await getBalance(network, tokenAddress, walletAddress);
-    }
+    },
   });
 }
 
@@ -52,7 +77,7 @@ export function useGovernor(governorId: string): Governor | undefined {
 
 export function useGovernorSettings(
   governorId: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<GovernorSettings> {
   const { network } = useWallet();
 
@@ -62,7 +87,7 @@ export function useGovernorSettings(
     enabled: governorId !== undefined && enabled,
     queryFn: async () => {
       if (governorId) {
-        return await getGovernorSettings(network, governorId)
+        return await getGovernorSettings(network, governorId);
       }
     },
   });
@@ -70,7 +95,7 @@ export function useGovernorSettings(
 
 export function useGovernorCouncil(
   governorId: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<Address> {
   const { network } = useWallet();
 
@@ -80,7 +105,7 @@ export function useGovernorCouncil(
     enabled: governorId !== undefined && enabled,
     queryFn: async () => {
       if (governorId) {
-        return await getGovernorCouncil(network, governorId)
+        return await getGovernorCouncil(network, governorId);
       }
     },
   });
@@ -91,30 +116,67 @@ export function useGovernorCouncil(
 export function useProposals(
   governorAddress: string | undefined,
   currentBlock: number | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<Proposal[]> {
   const { network } = useWallet();
-  const paramsDefined = governorAddress !== undefined && currentBlock !== undefined;
+  const paramsDefined =
+    governorAddress !== undefined && currentBlock !== undefined;
 
   async function loadProposals(): Promise<Proposal[]> {
     if (paramsDefined) {
-      const proposals = await fetchProposalsByGovernor(governorAddress);
-      const updatedProposals: Proposal[] = [];
-      for (let proposal of proposals) {
-        if (proposal.status === ProposalStatusExt.Open) {
-          // fetch voteCount from ledger - current vote count not available from indexer
-          let temp = await getProposalVotes(network, governorAddress, proposal.id);
-          proposal.vote_count = temp;
-          // update status to frontend status
-          if (proposal.vote_start < currentBlock && proposal.vote_end > currentBlock) {
-            proposal.status = ProposalStatusExt.Active;
-          } else if (proposal.vote_start > currentBlock) {
-            proposal.status = ProposalStatusExt.Pending;
+      let proposals = (await fetchProposalsByGovernor(governorAddress)).sort(
+        ({ id: a }, { id: b }) => b - a
+      );
+      let lastProposalId =
+        ((await getNextPropId(network, governorAddress)) ?? 0) - 1;
+      let currPropIndex = 0;
+
+      for (let propId = lastProposalId; propId >= 0; propId--) {
+        let indexerProp = proposals[currPropIndex];
+
+        if (indexerProp !== undefined) {
+          if (propId === indexerProp.id) {
+            if (
+              indexerProp.status === ProposalStatusExt.Open ||
+              (indexerProp.status === ProposalStatusExt.Successful &&
+                indexerProp.action.tag !== "Snapshot")
+            ) {
+              let fromRPC = await getProposal(
+                network,
+                governorAddress,
+                propId,
+                currentBlock
+              );
+              if (fromRPC) {
+                proposals[currPropIndex] = fromRPC;
+              } else {
+                break;
+              }
+            } else if (
+              indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
+              currentBlock
+            ) {
+              break;
+            }
+            currPropIndex++;
+          } else {
+            // propId does not exist. Insert it.
+            let fromRPC = await getProposal(
+              network,
+              governorAddress,
+              propId,
+              currentBlock
+            );
+            if (fromRPC) {
+              proposals.splice(currPropIndex, 0, fromRPC);
+              currPropIndex++;
+            } else {
+              break;
+            }
           }
         }
-        updatedProposals.push(proposal);
       }
-      return updatedProposals.sort(({ id: a }, { id: b }) => b - a);
+      return proposals;
     } else {
       return [];
     }
@@ -133,27 +195,49 @@ export function useProposal(
   governorAddress: string | undefined,
   proposalId: number | undefined,
   currentBlock: number | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<Proposal> {
   const { network } = useWallet();
-  const paramsDefined = governorAddress !== undefined && proposalId !== undefined && currentBlock !== undefined;
+  const paramsDefined =
+    governorAddress !== undefined &&
+    proposalId !== undefined &&
+    currentBlock !== undefined;
 
   async function loadProposal(): Promise<Proposal | null> {
     if (!paramsDefined) {
       return null;
     }
     let proposal = await fetchProposalById(governorAddress, proposalId);
+
     if (!proposal) {
-      return null;
+      proposal = await getProposal(
+        network,
+        governorAddress,
+        proposalId,
+        currentBlock
+      );
+      if (proposal) {
+        return proposal;
+      } else {
+        return null;
+      }
     }
-    if (proposal.status === ProposalStatusExt.Open) {
-      // fetch voteCount from ledger - current vote count not available from indexer
-      proposal.vote_count = await getProposalVotes(network, governorAddress, proposal.id);
-      // update status to frontend status
-      if (proposal.vote_start <= currentBlock && proposal.vote_end > currentBlock) {
-        proposal.status = ProposalStatusExt.Active;
-      } else if (proposal.vote_start > currentBlock) {
-        proposal.status = ProposalStatusExt.Pending;
+    let isActive =
+      proposal.status === ProposalStatusExt.Open ||
+      (proposal.status === ProposalStatusExt.Successful &&
+        proposal.action.tag !== "Snapshot");
+
+    if (isActive) {
+      let fromRPC = await getProposal(
+        network,
+        governorAddress,
+        proposal.id,
+        currentBlock
+      );
+      if (fromRPC) {
+        proposal = fromRPC;
+      } else {
+        return null;
       }
     }
     return proposal;
@@ -172,9 +256,10 @@ export function useProposal(
 export function useVotes(
   governorAddress: string | undefined,
   proposalId: number | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<Vote[]> {
-  const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
+  const paramsDefined =
+    governorAddress !== undefined && proposalId !== undefined;
 
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
@@ -183,7 +268,7 @@ export function useVotes(
     queryKey: ["votes", governorAddress, proposalId],
     queryFn: () => {
       if (paramsDefined) {
-        return fetchVotesByProposal(governorAddress, proposalId)
+        return fetchVotesByProposal(governorAddress, proposalId);
       } else {
         return [];
       }
@@ -193,7 +278,7 @@ export function useVotes(
 
 export function useVotingPower(
   voteTokenAddress: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<bigint> {
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
@@ -218,16 +303,15 @@ export function useVotingPowerByLedger(
   enabled: boolean = true
 ): UseQueryResult<bigint> {
   const { network, walletAddress, connected } = useWallet();
-  const paramsDefined = voteTokenAddress !== undefined && ledger !== undefined && currentLedger !== undefined;
+  const paramsDefined =
+    voteTokenAddress !== undefined &&
+    ledger !== undefined &&
+    currentLedger !== undefined;
 
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
-    queryKey: [
-      "votingPowerByProposal",
-      ledger,
-      connected,
-    ],
+    queryKey: ["votingPowerByProposal", ledger, connected],
     queryFn: async () => {
       if (!paramsDefined || !connected || walletAddress === "") {
         return BigInt(0);
@@ -237,7 +321,7 @@ export function useVotingPowerByLedger(
         voteTokenAddress,
         walletAddress,
         ledger,
-        currentLedger,
+        currentLedger
       );
     },
   });
@@ -246,12 +330,13 @@ export function useVotingPowerByLedger(
 export function useUserVoteByProposalId(
   governorAddress: string | undefined,
   proposalId: number | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ): UseQueryResult<VoteSupport | undefined> {
   const { network, walletAddress, connected } = useWallet();
-  const paramsDefined = governorAddress !== undefined && proposalId !== undefined;
+  const paramsDefined =
+    governorAddress !== undefined && proposalId !== undefined;
 
-  return  useQuery({
+  return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
     placeholderData: undefined,
@@ -264,7 +349,7 @@ export function useUserVoteByProposalId(
         network,
         governorAddress,
         proposalId,
-        walletAddress,
+        walletAddress
       );
     },
   });
@@ -272,7 +357,7 @@ export function useUserVoteByProposalId(
 
 export function useEmissionConfig(
   voteTokenAddress: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ) {
   const { network } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
@@ -280,7 +365,7 @@ export function useEmissionConfig(
   const placeholder: EmissionConfig = {
     eps: BigInt(0),
     expiration: BigInt(0),
-  }
+  };
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && enabled,
@@ -297,7 +382,7 @@ export function useEmissionConfig(
 
 export function useClaimAmount(
   voteTokenAddress: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ) {
   const { network, connected, walletAddress } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
@@ -318,7 +403,7 @@ export function useClaimAmount(
 
 export function useDelegate(
   voteTokenAddress: string | undefined,
-  enabled: boolean = true,
+  enabled: boolean = true
 ) {
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;

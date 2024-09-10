@@ -61,15 +61,7 @@ const getDateTimeFormatter = (options?: object) => {
     options || { dateStyle: "medium", timeStyle: "short" }
   );
 };
-const getNumberFormatter = (options?: object) => {
-  return new Intl.NumberFormat(
-    // currently we are using only english number formatting because other
-    // languages can result in very different string length, which we need to deal with.
-    // (en: 10.2k, de: 10.200)
-    "en", // 'en-US',
-    options || { notation: "standard" }
-  );
-};
+
 /**
  * predefined formatters
  */
@@ -78,18 +70,6 @@ const defaultRelativeTimeFormatter = getRelativeTimeFormatter();
 const longRelativeTimeFormatter = getRelativeTimeFormatter({
   style: "long",
   numeric: "always",
-});
-const defaultNumberFormatter = getNumberFormatter(
-  // format with two decimal places
-  { maximumFractionDigits: 2 }
-);
-const compactNumberFormatter = getNumberFormatter({
-  notation: "compact",
-  compactDisplay: "short",
-});
-const percentNumberFormatter = getNumberFormatter({
-  style: "percent",
-  maximumFractionDigits: 2,
 });
 
 /**
@@ -109,28 +89,9 @@ const formatRelativeTime = (
   return formatter.format(duration, unit);
 };
 
-// doesn't use Intl (yet), needs useI18n's t function, to translate the unit
-const formatDuration = (seconds: number) => {
-  const { duration, unit } = getDurationAndUnit(seconds);
-
-  return ` ${duration} ${unit}${duration !== 1 ? "s" : ""} }`;
-};
-
-const formatNumber = (number: number, formatter?: Intl.NumberFormat) => {
-  formatter = formatter || defaultNumberFormatter;
-
-  return formatter.format(number);
-};
-
-const formatCompactNumber = (number: number) =>
-  formatNumber(number, compactNumberFormatter);
-
-const formatPercentNumber = (number: number) =>
-  formatNumber(number, percentNumberFormatter);
-
 function getProposalDate(block: number, currentBlock: number) {
   const now = new Date();
-  const d = new Date(now.getTime() + (block - currentBlock) * 5000);
+  const d = new Date(now.getTime() + (block - currentBlock) * 5500);
   return d;
 }
 
@@ -143,7 +104,7 @@ const getRelativeProposalPeriod = (
   const startDate = new Date(
     now.getTime() + (startBlock - currentBlock) * 5000
   );
-  const endDate = new Date(now.getTime() + (endBlock - currentBlock) * 5000);
+  const endDate = new Date(now.getTime() + (endBlock - currentBlock) * 5500);
 
   if (endDate < now) {
     return `Ended ${formatRelativeTime(
@@ -163,37 +124,8 @@ const getRelativeProposalPeriod = (
   )}`;
 };
 
-const getPercentFractionDigits = (value: number) => {
-  const absValue = Math.abs(value);
-
-  if (absValue === 0) {
-    return 0;
-  }
-
-  let leadingZeros = 0;
-  let tempValue = absValue;
-  while (tempValue < 1) {
-    tempValue *= 10;
-    leadingZeros++;
-  }
-
-  return Math.max(1, Math.min(leadingZeros, 8));
-};
 function formatDate(d: Date) {
   return getDateTimeFormatter().format(d || Date.now());
 }
 
-export {
-  formatCompactNumber,
-  formatDate,
-  formatDuration,
-  formatNumber,
-  formatPercentNumber,
-  formatRelativeTime,
-  getNumberFormatter,
-  getPercentFractionDigits,
-  getProposalDate,
-  getRelativeProposalPeriod,
-  getRelativeTimeFormatter,
-  longRelativeTimeFormatter,
-};
+export { formatDate, getProposalDate, getRelativeProposalPeriod };

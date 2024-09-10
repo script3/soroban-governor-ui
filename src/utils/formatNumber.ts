@@ -49,11 +49,22 @@ export function toBalance(
   if (numValue === 0) {
     visibleDecimals = 0;
   } else {
-    if (numValue > 1) {
+    if (numValue >= 10) {
       visibleDecimals = 2;
     } else {
-      visibleDecimals = decimals ?? 7;
+      visibleDecimals = Math.min(decimals ?? 7, 7);
     }
+  }
+
+  if (numValue === 0) {
+    return "0";
+  }
+
+  const absValue = Math.abs(numValue);
+  if (absValue < 10) {
+    return numValue.toFixed(visibleDecimals);
+  } else if (absValue < 10000) {
+    return numValue.toFixed(2);
   }
 
   const minValue = 10 ** -(visibleDecimals as number);

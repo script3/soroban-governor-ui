@@ -1,10 +1,10 @@
 [
 
   {
-    "name": "XLM DAO",
+    "name": "Testnet XLM Governor",
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CAMGVZXFCBDMIZ67XTRFJBQDYIVNQ6ZAADYAR7OTIXYOV5FGQBBTNXQX",
-    "voteTokenAddress": "CATCZQWGI4BUR63JX5DXA5XWENNXWU4IHGEIMVHZ4FJ7IZVD2USYPRPU",
+    "address": "CASTSM5VVGN3UQIUPGZUM5OWXEOIGNL5OPKMVGRJBYC2C7DDJZXSKGFH",
+    "voteTokenAddress": "CDL3CHIKY3HIKW47CM355OA5BFBPNYPH6U5M73AQD2NCQMFIZDZS7R4W",
     "decimals": 7,
     "isWrappedAsset": true,
     "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
@@ -17,8 +17,8 @@
       "issuer":"GANZ2BKT4LQD2ZAF3KHXWMVS6YMWOXD4GYZOYT3GWWZJ4OSFGNU4MN4X"
     },
     "voteTokenMetadata":{
-      "name":"voteXLM",
-      "symbol":"voteXLM",
+      "name":"gXLM",
+      "symbol":"gXLM",
       "decimals":7,
       "icon":"/icons/token/soroban.svg"
     }

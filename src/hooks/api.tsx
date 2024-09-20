@@ -133,34 +133,13 @@ export function useProposals(
 
       for (let propId = lastProposalId; propId >= 0; propId--) {
         let indexerProp = proposals[currPropIndex];
-
-        if (indexerProp !== undefined) {
-          if (propId === indexerProp.id) {
-            if (
-              indexerProp.status === ProposalStatusExt.Open ||
-              (indexerProp.status === ProposalStatusExt.Successful &&
-                indexerProp.action.tag !== "Snapshot")
-            ) {
-              let fromRPC = await getProposal(
-                network,
-                governorAddress,
-                propId,
-                currentBlock
-              );
-              if (fromRPC) {
-                proposals[currPropIndex] = fromRPC;
-              } else {
-                break;
-              }
-            } else if (
-              indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
-              currentBlock
-            ) {
-              break;
-            }
-            currPropIndex++;
-          } else {
-            // propId does not exist. Insert it.
+        if (indexerProp !== undefined && indexerProp.id === propId) {
+          // check if proposal needs to be updated from chain
+          if (
+            indexerProp.status === ProposalStatusExt.Open ||
+            (indexerProp.status === ProposalStatusExt.Successful &&
+              indexerProp.action.tag !== "Snapshot")
+          ) {
             let fromRPC = await getProposal(
               network,
               governorAddress,
@@ -168,11 +147,30 @@ export function useProposals(
               currentBlock
             );
             if (fromRPC) {
-              proposals.splice(currPropIndex, 0, fromRPC);
-              currPropIndex++;
+              proposals[currPropIndex] = fromRPC;
             } else {
               break;
             }
+          } else if (
+            indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
+            currentBlock
+          ) {
+            break;
+          }
+          currPropIndex++;
+        } else {
+          // propId does not exist. Insert it.
+          let fromRPC = await getProposal(
+            network,
+            governorAddress,
+            propId,
+            currentBlock
+          );
+          if (fromRPC) {
+            proposals.splice(currPropIndex, 0, fromRPC);
+            currPropIndex++;
+          } else {
+            break;
           }
         }
       }

@@ -1,12 +1,11 @@
-import { Inter } from "next/font/google";
 import { Container } from "@/components/common/BaseContainer";
 
 import { DAOCard } from "@/components/common/DAOCard";
 import { Input } from "@/components/common/Input";
 
 import Typography from "@/components/common/Typography";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { useGovernors } from "@/hooks/api";
 
@@ -38,6 +37,11 @@ export default function Home() {
       </Container>
       <Container className="w-full grid sm:grid-cols-3 lg:grid-cols-4 gap-4 ">
         {governors
+          ?.filter(
+            (dao) =>
+              dao.address !==
+              "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
+          )
           ?.filter((dao) => new RegExp(searchValue, "ig").test(dao.name))
           .map((dao, i) => (
             <DAOCard

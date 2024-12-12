@@ -78,7 +78,7 @@ export default function Proposal() {
     ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount))
     : [];
 
-  const { data: userVote } = useUserVoteByProposalId(
+  const { data: userVote, refetch: refetchUserVote } = useUserVoteByProposalId(
     currentGovernor?.address,
     proposal?.id
   );
@@ -138,6 +138,7 @@ export default function Proposal() {
           }
           refetch();
           refetchVotes();
+          refetchUserVote();
         }
       );
     }

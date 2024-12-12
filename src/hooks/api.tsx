@@ -350,16 +350,17 @@ export function useUserVoteByProposalId(
     enabled: paramsDefined && connected && enabled,
     placeholderData: undefined,
     queryKey: ["userVoteByProposalId", proposalId, walletAddress],
-    queryFn: async () => {
+    queryFn: async (): Promise<VoteSupport | undefined> => {
       if (!paramsDefined || !connected || walletAddress === "") {
         return undefined;
       }
-      return await getUserVoteForProposal(
+      let entry = await getUserVoteForProposal(
         network,
         governorAddress,
         proposalId,
         walletAddress
       );
+      return entry.entry;
     },
   });
 }

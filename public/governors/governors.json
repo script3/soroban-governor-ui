@@ -1,48 +1,26 @@
 [
+
   {
-    "name": "YieldBlox (Old)",
-    "logo": "https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
-    "address": "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV",
-    "voteTokenAddress": "CAFF3RXWOUGDIYRNGAFKW3KHYD5X6GJ5OHHKYLWSM7XONCIRWGQA66C5",
+    "name": "Testnet XLM Governor",
+    "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
+    "address": "CBNXL2UA2SSEIVXT7TSB32H5UO6IQP7NL7KC4GT47S3UX4FR67QR6GNE",
+    "voteTokenAddress": "CA26HDSU7DLCE3LXI6SAXARWXEGVWJUXNFWB6QSFSPYRATICBKIZWBIM",
     "decimals": 7,
     "isWrappedAsset": true,
-    "underlyingTokenAddress":"CBRP2VD3CZLEQIQZ4JMBXGA5AC2U6JE26YU5CCIOICIZCVWPGBO2QRUB",
+    "underlyingTokenAddress":"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
     "underlyingTokenMetadata":{
-      "name":"YBX",
-      "symbol":"YBX",
+      "name":"XLM",
+      "symbol":"XLM",
       "decimals":7,
-      "domain":"script3.io",
-      "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
-      "issuer":"GBUYYBXWCLT2MOSSHRFCKMEDFOVSCAXNIEW424GLN666OEXHAAWBDYMX"
+      "domain":"stellar.org",
+      "icon":"/icons/token/xlm.svg",
+      "issuer":"GANZ2BKT4LQD2ZAF3KHXWMVS6YMWOXD4GYZOYT3GWWZJ4OSFGNU4MN4X"
     },
     "voteTokenMetadata":{
-      "name":"gYBX",
-      "symbol":"gYBX",
+      "name":"gXLM",
+      "symbol":"gXLM",
       "decimals":7,
-      "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png"
-    }
-  },
-  {
-    "name": "YieldBlox",
-    "logo": "https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
-    "address": "CANSYFVMIP7JVYEZQ463Y2I2VLEVNLDJJ4QNZTDBGLOOGKURPTW4A6FQ",
-    "voteTokenAddress": "CAZ2U7Z2LS3N72NKMOR34HOV4WFDCMA2TPWD3KU4EA2VKZARFPMLF3LI",
-    "decimals": 7,
-    "isWrappedAsset": true,
-    "underlyingTokenAddress":"CBRP2VD3CZLEQIQZ4JMBXGA5AC2U6JE26YU5CCIOICIZCVWPGBO2QRUB",
-    "underlyingTokenMetadata":{
-      "name":"YBX",
-      "symbol":"YBX",
-      "decimals":7,
-      "domain":"script3.io",
-      "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
-      "issuer":"GBUYYBXWCLT2MOSSHRFCKMEDFOVSCAXNIEW424GLN666OEXHAAWBDYMX"
-    },
-    "voteTokenMetadata":{
-      "name":"gYBX",
-      "symbol":"gYBX",
-      "decimals":7,
-      "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png"
+      "icon":"/icons/token/soroban.svg"
     }
   }
 ]

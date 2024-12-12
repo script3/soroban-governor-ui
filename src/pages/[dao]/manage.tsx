@@ -4,25 +4,32 @@ import { Button } from "@/components/common/Button";
 import { Chip } from "@/components/common/Chip";
 import { Input } from "@/components/common/Input";
 import { Loader } from "@/components/common/Loader";
+import { RestoreButton } from "@/components/common/RestoreButton";
 import Typography from "@/components/common/Typography";
 import {
-  useDelegate,
-  useGovernor,
-  useWalletBalance,
-  useVotingPower,
-  useEmissionConfig,
   useClaimAmount,
+  useDelegate,
+  useEmissionConfig,
+  useGovernor,
+  useVotingPower,
+  useWalletBalance,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
-import { bigintToString, scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
+import {
+  bigintToString,
+  scaleNumberToBigInt,
+  toBalance,
+} from "@/utils/formatNumber";
 import { shortenAddress } from "@/utils/shortenAddress";
+import { isRestoreResponse } from "@/utils/stellar";
 import { getTokenExplorerUrl } from "@/utils/token";
+import { rpc } from "@stellar/stellar-sdk";
+import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import governors from "../../../public/governors/governors.json";
-import { GetStaticPaths, GetStaticProps } from "next";
 
 function ManageVotes() {
   const [toWrap, setToWrap] = useState<string>("");
@@ -37,27 +44,54 @@ function ManageVotes() {
     isLoading,
     walletAddress,
     delegate,
+    restore,
   } = useWallet();
   const router = useRouter();
   const params = router.query;
   const governor = useGovernor(params.dao as string);
-  const { data: delegateAddress, refetch: refetchDelegate } = useDelegate(
-    governor?.voteTokenAddress,
+  const { data: delegateAddressEntry, refetch: refetchDelegate } = useDelegate(
+    governor?.voteTokenAddress
   );
+  const delegateAddress = delegateAddressEntry?.entry;
   const hasDelegate = connected && delegateAddress !== walletAddress;
 
-  const { data: voteTokenBalance, refetch: refetchTokenBalance } = useWalletBalance(
-    governor?.voteTokenAddress,
-  );
-  const { data: votingPower, refetch: refetchVotingPower } = useVotingPower(
-    governor?.voteTokenAddress,
-  );
-  const { data: underlyingTokenBalance, refetch: refetchUnderlying } = useWalletBalance(governor?.underlyingTokenAddress);
+  const { data: voteTokenBalanceEntry, refetch: refetchTokenBalance } =
+    useWalletBalance(governor?.voteTokenAddress);
+  const voteTokenBalance = voteTokenBalanceEntry?.entry;
+  const { data: votingPowerEntry, refetch: refetchVotingPower } =
+    useVotingPower(governor?.voteTokenAddress);
+  const votingPower = votingPowerEntry?.entry;
 
-  const { data: emisConfig } = useEmissionConfig(governor?.voteTokenAddress, governor?.isWrappedAsset);
-  const { data: claimAmount, refetch: refetchClaimAmount } = useClaimAmount(governor?.voteTokenAddress, emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0));
+  const { data: underlyingTokenBalanceEntry, refetch: refetchUnderlying } =
+    useWalletBalance(governor?.underlyingTokenAddress);
+  const underlyingTokenBalance = underlyingTokenBalanceEntry?.entry;
 
-  const isOldYBXGovernor = governor?.address === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
+  const { data: emisConfig } = useEmissionConfig(
+    governor?.voteTokenAddress,
+    governor?.isWrappedAsset
+  );
+  const { data: claimAmountSim, refetch: refetchClaimAmount } = useClaimAmount(
+    governor?.voteTokenAddress,
+    emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)
+  );
+  const claimAmount = claimAmountSim?.entry;
+
+  const isOldYBXGovernor =
+    governor?.address ===
+    "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
+
+  const [restoreDelegateSim, setRestoreDelegateSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(delegateAddressEntry?.restoreResponse);
+  const [restoreWrapSim, setRestoreWrapSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(undefined);
+  const [restoreUnwrapSim, setRestoreUnwrapSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(undefined);
+  const [restoreClaimSim, setRestoreClaimSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(claimAmountSim?.restoreResponse);
 
   function handleWrapClick() {
     if (governor) {
@@ -66,14 +100,18 @@ function ManageVotes() {
         return;
       } else {
         const amount = scaleNumberToBigInt(toWrap, governor.decimals);
-        wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
+        wrapToken(governor?.voteTokenAddress, amount).then((res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreWrapSim(res);
+          } else {
+            setRestoreWrapSim(undefined);
+          }
           refetchTokenBalance();
           refetchUnderlying();
           refetchVotingPower();
           if (emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)) {
             refetchClaimAmount();
           }
-          
           setToUnwrap("");
           setToWrap("");
         });
@@ -88,7 +126,12 @@ function ManageVotes() {
         return;
       } else {
         const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-        unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+        unwrapToken(governor.voteTokenAddress, amount).then((res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreUnwrapSim(res);
+          } else {
+            setRestoreUnwrapSim(undefined);
+          }
           refetchUnderlying();
           refetchTokenBalance();
           refetchVotingPower();
@@ -104,8 +147,12 @@ function ManageVotes() {
 
   function handleClaim() {
     if (governor) {
-      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-      claimEmissions(governor.voteTokenAddress, false).then((res) => {
+      claimEmissions(governor.voteTokenAddress).then((res) => {
+        if (isRestoreResponse(res)) {
+          setRestoreClaimSim(res);
+        } else {
+          setRestoreClaimSim(undefined);
+        }
         refetchUnderlying();
         refetchTokenBalance();
         refetchVotingPower();
@@ -122,7 +169,12 @@ function ManageVotes() {
         connect();
         return;
       } else {
-        delegate(governor.voteTokenAddress, newDelegate, false).then(() => {
+        delegate(governor.voteTokenAddress, newDelegate).then((res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreDelegateSim(res);
+          } else {
+            setRestoreDelegateSim(undefined);
+          }
           setNewDelegate("");
           refetchDelegate();
           refetchVotingPower();
@@ -137,12 +189,37 @@ function ManageVotes() {
         connect();
         return;
       } else {
-        delegate(governor.voteTokenAddress, walletAddress, false).then(() => {
+        delegate(governor.voteTokenAddress, walletAddress).then((res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreDelegateSim(res);
+          } else {
+            setRestoreDelegateSim(undefined);
+          }
           setNewDelegate("");
           refetchDelegate();
           refetchVotingPower();
         });
       }
+    }
+  }
+
+  function handleRestore(
+    sim: rpc.Api.SimulateTransactionRestoreResponse | undefined
+  ) {
+    if (connected && sim !== undefined) {
+      restore(sim).then(() => {
+        setRestoreClaimSim(undefined);
+        setRestoreDelegateSim(undefined);
+        setRestoreWrapSim(undefined);
+        setRestoreUnwrapSim(undefined);
+        refetchUnderlying();
+        refetchTokenBalance();
+        refetchVotingPower();
+        if (emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)) {
+          refetchClaimAmount();
+        }
+        refetchDelegate();
+      });
     }
   }
 
@@ -167,7 +244,10 @@ function ManageVotes() {
         {governor?.isWrappedAsset === true && (
           <Container>
             {isOldYBXGovernor && (
-              <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2">
+              <Container
+                slim
+                className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
+              >
                 <Image
                   src="/icons/report.svg"
                   width={28}
@@ -252,6 +332,17 @@ function ManageVotes() {
                   Delegated
                 </Chip>
               )}
+              {!!votingPowerEntry && !!votingPowerEntry.restoreResponse && (
+                <Button
+                  className="min-w-[70px] rounded-full px-[12px] justify-center items-center flex text-tiny h-[24px] w-fit leading-[23px] !bg-transparent border border-warning text-warning hover:border-white hover:text-white"
+                  onClick={() =>
+                    handleRestore(votingPowerEntry.restoreResponse!)
+                  }
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader /> : "Restore"}
+                </Button>
+              )}
             </Container>
           </Container>
           <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
@@ -268,30 +359,46 @@ function ManageVotes() {
                   Delegated
                 </Chip>
               )}
+              {!!voteTokenBalanceEntry &&
+                !!voteTokenBalanceEntry.restoreResponse && (
+                  <Button
+                    className="min-w-[70px] rounded-full px-[12px] justify-center items-center flex text-tiny h-[24px] w-fit leading-[23px] !bg-transparent border border-warning text-warning hover:border-white hover:text-white"
+                    onClick={() =>
+                      handleRestore(voteTokenBalanceEntry.restoreResponse!)
+                    }
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader /> : "Restore"}
+                  </Button>
+                )}
             </Container>
           </Container>
-          {governor?.isWrappedAsset === true && claimAmount !== undefined && claimAmount > BigInt(0) && (
-            <>
-              <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
-                <Typography.Tiny className="text-snapLink">
-                  Emissions
-                </Typography.Tiny>
-                <Container slim className="flex flex-col justify-center">
-                  <Typography.P>
-                    {toBalance(claimAmount, governor?.decimals || 7)}{" "}
-                    {governor?.voteTokenMetadata?.symbol}
-                  </Typography.P>
+          {governor?.isWrappedAsset === true &&
+            (restoreClaimSim !== undefined ||
+              (claimAmount !== undefined && claimAmount > BigInt(0))) && (
+              <>
+                <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
+                  <Typography.Tiny className="text-snapLink">
+                    Emissions
+                  </Typography.Tiny>
+                  <Container slim className="flex flex-col justify-center">
+                    <Typography.P>
+                      {toBalance(claimAmount, governor?.decimals || 7)}{" "}
+                      {governor?.voteTokenMetadata?.symbol}
+                    </Typography.P>
+                  </Container>
                 </Container>
-              </Container>
-                <Button
-                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder"
-                onClick={handleClaim}
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader /> : "Claim"}
-              </Button>
-            </>
-          )}
+                <RestoreButton
+                  className="!w-full rounded-b-xl rounded-t-none flex bg-white text-snapBorder"
+                  onClick={handleClaim}
+                  onRestore={() => handleRestore(restoreClaimSim)}
+                  simResult={restoreClaimSim}
+                  isLoading={isLoading}
+                >
+                  {isLoading ? <Loader /> : "Claim"}
+                </RestoreButton>
+              </>
+            )}
         </Box>
         {governor?.isWrappedAsset === true && (
           <>
@@ -317,16 +424,22 @@ function ManageVotes() {
                   onChange={setToWrap}
                   value={toWrap}
                   type="number"
-                  max={bigintToString(underlyingTokenBalance ?? BigInt(0), governor?.decimals || 7)}
+                  max={bigintToString(
+                    underlyingTokenBalance ?? BigInt(0),
+                    governor?.decimals || 7
+                  )}
                 />
               </Container>
-              <Button
-                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
+              <RestoreButton
+                className="!w-full rounded-b-xl rounded-t-none flex bg-white text-snapBorder active:opacity-50 "
                 onClick={handleWrapClick}
-                disabled={isLoading || (connected && !toWrap)}
+                onRestore={() => handleRestore(restoreWrapSim)}
+                simResult={restoreWrapSim}
+                disabled={connected && !toWrap}
+                isLoading={isLoading}
               >
-                {isLoading ? <Loader /> : connected ? "Bond" : "Connect wallet"}
-              </Button>
+                {connected ? "Bond" : "Connect wallet"}
+              </RestoreButton>
             </Box>
             {voteTokenBalance && voteTokenBalance > BigInt(0) && (
               <Box className="pt-3 !px-0 flex gap-3 flex-col ">
@@ -350,80 +463,87 @@ function ManageVotes() {
                     onChange={setToUnwrap}
                     value={toUnwrap}
                     type="number"
-                    max={bigintToString(voteTokenBalance ?? BigInt(0), governor?.decimals || 7)}
+                    max={bigintToString(
+                      voteTokenBalance ?? BigInt(0),
+                      governor?.decimals || 7
+                    )}
                   />
                 </Container>
-                <Button
-                  className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder active:opacity-50 "
+                <RestoreButton
+                  className="!w-full rounded-b-xl rounded-t-none flex bg-white text-snapBorder active:opacity-50 "
                   onClick={handleUnwrapClick}
-                  disabled={isLoading || (connected && !toUnwrap)}
+                  onRestore={() => handleRestore(restoreUnwrapSim)}
+                  simResult={restoreUnwrapSim}
+                  disabled={connected && !toUnwrap}
+                  isLoading={isLoading}
                 >
-                  {isLoading ? <Loader /> : connected ? "Unbond" : "Connect wallet"}
-                </Button>
+                  {connected ? "Unbond" : "Connect wallet"}
+                </RestoreButton>
               </Box>
             )}
           </>
         )}
         {connected && <Typography.Big>Delegate</Typography.Big>}
-        {connected && !hasDelegate && (
-          <Box className="!p-0 flex gap-3 flex-col ">
-            <Container className="flex flex-col justify-center p-3 pb-0 ">
-              <Typography.Small className="text-snapLink">To</Typography.Small>
-            </Container>
-            <Container className="w-full flex flex-col gap-3">
-              <Input
-                className=" flex"
-                placeholder="Address"
-                onChange={setNewDelegate}
-                value={newDelegate}
-              />
-            </Container>
-            <Button
-              className="!w-full rounded-b-xl rounded-t-none flex !bg-secondary text-snapBorder active:opacity-50 "
-              onClick={handleDelegateClick}
-              disabled={
-                isLoading ||
-                (connected && !newDelegate) ||
-                (connected && newDelegate.toString().length < 56)
-              }
-            >
-              {isLoading ? (
-                <Loader />
-              ) : connected ? (
-                "Delegate"
-              ) : (
-                "Connect wallet"
-              )}
-            </Button>
-          </Box>
-        )}
-        {connected && hasDelegate && delegateAddress && (
-          <Box className="!p-0 flex gap-3 flex-col ">
-            <Container className="flex flex-col justify-center p-4 border-b border-snapBorder">
-              <Typography.Small>Your delegate</Typography.Small>
-            </Container>
-            <Container className="w-full flex flex-row justify-between gap-3">
-              <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
-              <Typography.P>
-                {toBalance(voteTokenBalance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
-                {"delegated votes"}
-              </Typography.P>
-            </Container>
-            <Button
-              className="!w-full rounded-b-xl rounded-t-none flex !bg-[#49222b] text-red-500 border-red-700 active:opacity-50 "
-              onClick={handleRemoveDelegateClick}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader />
-              ) : connected ? (
-                "Rescind delegation"
-              ) : (
-                "Connect wallet"
-              )}
-            </Button>
-          </Box>
-        )}
+        {connected &&
+          ((!!restoreDelegateSim && delegateAddress === undefined) ||
+            !hasDelegate) && (
+            <Box className="!p-0 flex gap-3 flex-col ">
+              <Container className="flex flex-col justify-center p-3 pb-0 ">
+                <Typography.Small className="text-snapLink">
+                  To
+                </Typography.Small>
+              </Container>
+              <Container className="w-full flex flex-col gap-3">
+                <Input
+                  className=" flex"
+                  placeholder="Address"
+                  onChange={setNewDelegate}
+                  value={newDelegate}
+                />
+              </Container>
+              <RestoreButton
+                className="!w-full rounded-b-xl rounded-t-none flex !bg-secondary text-snapBorder active:opacity-50 "
+                onClick={handleDelegateClick}
+                onRestore={() => handleRestore(restoreDelegateSim)}
+                simResult={restoreDelegateSim}
+                disabled={
+                  (connected && !newDelegate) ||
+                  (connected && newDelegate.toString().length < 56)
+                }
+                isLoading={isLoading}
+              >
+                {connected ? "Delegate" : "Connect wallet"}
+              </RestoreButton>
+            </Box>
+          )}
+        {connected &&
+          ((hasDelegate && delegateAddress) ||
+            (!!restoreDelegateSim && !!delegateAddress)) && (
+            <Box className="!p-0 flex gap-3 flex-col ">
+              <Container className="flex flex-col justify-center p-4 border-b border-snapBorder">
+                <Typography.Small>Your delegate</Typography.Small>
+              </Container>
+              <Container className="w-full flex flex-row justify-between gap-3">
+                <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
+                <Typography.P>
+                  {toBalance(
+                    voteTokenBalance,
+                    governor?.voteTokenMetadata?.decimals || 7
+                  )}{" "}
+                  {"delegated votes"}
+                </Typography.P>
+              </Container>
+              <RestoreButton
+                className="!w-full rounded-b-xl rounded-t-none flex !bg-[#49222b] text-red-500 border-red-700 active:opacity-50 "
+                onClick={handleRemoveDelegateClick}
+                onRestore={() => handleRestore(restoreDelegateSim)}
+                simResult={restoreDelegateSim}
+                isLoading={isLoading}
+              >
+                {connected ? "Rescind delegation" : "Connect wallet"}
+              </RestoreButton>
+            </Box>
+          )}
       </Container>
     </Container>
   );

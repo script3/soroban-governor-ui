@@ -46,8 +46,8 @@ import {
   Account,
   Address,
   Contract,
-  SorobanRpc,
   TransactionBuilder,
+  rpc,
   xdr,
 } from "@stellar/stellar-sdk";
 import { parse, stringify } from "json5";
@@ -124,7 +124,7 @@ export default function CreateProposal() {
   }
 
   async function handleProposal(action: string) {
-    let newProposalId: bigint | undefined = undefined;
+    let newProposalId;
     switch (action) {
       case ProposalActionEnum.CALLDATA:
         const callDataToPass = parseCallData(calldata);
@@ -137,7 +137,6 @@ export default function CreateProposal() {
               tag: action,
               values: [callDataToPass],
             },
-            false,
             params.dao as string
           );
         }
@@ -151,7 +150,6 @@ export default function CreateProposal() {
               tag: action,
               values: [councilAddress],
             },
-            false,
             params.dao as string
           );
         }
@@ -165,7 +163,6 @@ export default function CreateProposal() {
               tag: action,
               values: [governorSettings],
             },
-            false,
             params.dao as string
           );
         }
@@ -177,12 +174,15 @@ export default function CreateProposal() {
             tag: action,
             values: undefined as any,
           },
-          false,
           params.dao as string
         );
     }
 
-    if (!(newProposalId as any).result?.error) {
+    if (
+      newProposalId !== undefined &&
+      "status" in newProposalId &&
+      newProposalId.status === rpc.Api.GetTransactionStatus.SUCCESS
+    ) {
       router.push(`/${params.dao}/proposals/`);
     }
   }
@@ -211,9 +211,9 @@ export default function CreateProposal() {
             )
           )
           .build();
-        let server = new SorobanRpc.Server(network.rpc, network.opts);
+        let server = new rpc.Server(network.rpc, network.opts);
         let result = await server.simulateTransaction(tx);
-        if (SorobanRpc.Api.isSimulationSuccess(result)) {
+        if (rpc.Api.isSimulationSuccess(result)) {
           // attempt to validate that the auth is OK for the Governor by validating the authorization entry
           // returned by the simulation
           let validAuths = true;
@@ -262,7 +262,7 @@ export default function CreateProposal() {
                 : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
             }`
           );
-        } else if (SorobanRpc.Api.isSimulationRestore(result)) {
+        } else if (rpc.Api.isSimulationRestore(result)) {
           setCalldataSimSuccess(false);
           setCalldataSimResult(`Simulation hit expired ledger entries.`);
           setCalldataAuthSuccess(false);
@@ -544,6 +544,7 @@ export const getStaticProps = ((context) => {
 }) satisfies GetStaticProps<{
   dao: string;
 }>;
+
 export const getStaticPaths = (async () => {
   return {
     paths: governors.map((governor) => {

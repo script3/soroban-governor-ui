@@ -23,25 +23,27 @@ import {
   fetchProposalsByGovernor,
   fetchVotesByProposal,
 } from "@/utils/graphql";
+import { LedgerEntry } from "@/utils/stellar";
 import {
   EmissionConfig,
   GovernorSettings,
 } from "@script3/soroban-governor-sdk";
-import { Address, SorobanRpc } from "@stellar/stellar-sdk";
+import { Address, rpc } from "@stellar/stellar-sdk";
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import governors from "../../public/governors/governors.json";
 import { useWallet } from "./wallet";
 const DEFAULT_STALE_TIME = 20 * 1000;
 const ONE_DAY_LEDGERS = 17280;
 const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
+
 export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
   const { network } = useWallet();
   return useQuery({
     staleTime: 5 * 1000,
     queryKey: ["blockNumber"],
     queryFn: async () => {
-      const rpc = new SorobanRpc.Server(network.rpc);
-      const data = await rpc.getLatestLedger();
+      const stellarRpc = new rpc.Server(network.rpc);
+      const data = await stellarRpc.getLatestLedger();
       return data.sequence;
     },
   });
@@ -49,16 +51,16 @@ export function useCurrentBlockNumber(): UseQueryResult<number, Error> {
 
 export function useWalletBalance(
   tokenAddress: string | undefined
-): UseQueryResult<bigint> {
+): UseQueryResult<LedgerEntry<bigint>> {
   const { network, walletAddress, connected } = useWallet();
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: connected && tokenAddress !== undefined,
-    placeholderData: BigInt(0),
+    placeholderData: { entry: BigInt(0) },
     queryKey: ["balance", tokenAddress, walletAddress],
-    queryFn: async (): Promise<bigint> => {
+    queryFn: async (): Promise<LedgerEntry<bigint>> => {
       if (tokenAddress === undefined || !connected || walletAddress === "") {
-        return BigInt(0);
+        return { entry: BigInt(0) };
       }
       return await getBalance(network, tokenAddress, walletAddress);
     },
@@ -146,8 +148,8 @@ export function useProposals(
               propId,
               currentBlock
             );
-            if (fromRPC) {
-              proposals[currPropIndex] = fromRPC;
+            if (fromRPC?.entry) {
+              proposals[currPropIndex] = fromRPC.entry;
             } else {
               break;
             }
@@ -166,8 +168,8 @@ export function useProposals(
             propId,
             currentBlock
           );
-          if (fromRPC) {
-            proposals.splice(currPropIndex, 0, fromRPC);
+          if (fromRPC?.entry) {
+            proposals.splice(currPropIndex, 0, fromRPC.entry);
             currPropIndex++;
           } else {
             break;
@@ -185,7 +187,14 @@ export function useProposals(
     enabled: paramsDefined && enabled,
     placeholderData: [],
     queryKey: ["proposals", governorAddress],
-    queryFn: loadProposals,
+    queryFn: async () => {
+      try {
+        return await loadProposals();
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
+    },
   });
 }
 
@@ -208,14 +217,14 @@ export function useProposal(
     let proposal = await fetchProposalById(governorAddress, proposalId);
 
     if (!proposal) {
-      proposal = await getProposal(
+      let fromRPC = await getProposal(
         network,
         governorAddress,
         proposalId,
         currentBlock
       );
-      if (proposal) {
-        return proposal;
+      if (fromRPC?.entry) {
+        return fromRPC.entry;
       } else {
         return null;
       }
@@ -232,8 +241,8 @@ export function useProposal(
         proposal.id,
         currentBlock
       );
-      if (fromRPC) {
-        proposal = fromRPC;
+      if (fromRPC?.entry) {
+        proposal = fromRPC?.entry;
       } else {
         return null;
       }
@@ -277,17 +286,18 @@ export function useVotes(
 export function useVotingPower(
   voteTokenAddress: string | undefined,
   enabled: boolean = true
-): UseQueryResult<bigint> {
+): UseQueryResult<LedgerEntry<bigint>> {
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
 
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
+    placeholderData: { entry: BigInt(0) },
     queryKey: ["votingPower", voteTokenAddress, walletAddress],
-    queryFn: async () => {
+    queryFn: async (): Promise<LedgerEntry<bigint>> => {
       if (!paramsDefined || !connected || walletAddress === "") {
-        return BigInt(0);
+        return { entry: BigInt(0) };
       }
       return await getVotingPower(network, voteTokenAddress, walletAddress);
     },
@@ -299,7 +309,7 @@ export function useVotingPowerByLedger(
   ledger: number | undefined,
   currentLedger: number | undefined,
   enabled: boolean = true
-): UseQueryResult<bigint> {
+): UseQueryResult<LedgerEntry<bigint>> {
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined =
     voteTokenAddress !== undefined &&
@@ -309,10 +319,11 @@ export function useVotingPowerByLedger(
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
+    placeholderData: { entry: BigInt(0) },
     queryKey: ["votingPowerByProposal", ledger, connected],
-    queryFn: async () => {
+    queryFn: async (): Promise<LedgerEntry<bigint>> => {
       if (!paramsDefined || !connected || walletAddress === "") {
-        return BigInt(0);
+        return { entry: BigInt(0) };
       }
       return await getPastVotingPower(
         network,
@@ -339,16 +350,17 @@ export function useUserVoteByProposalId(
     enabled: paramsDefined && connected && enabled,
     placeholderData: undefined,
     queryKey: ["userVoteByProposalId", proposalId, walletAddress],
-    queryFn: async () => {
+    queryFn: async (): Promise<VoteSupport | undefined> => {
       if (!paramsDefined || !connected || walletAddress === "") {
         return undefined;
       }
-      return await getUserVoteForProposal(
+      let entry = await getUserVoteForProposal(
         network,
         governorAddress,
         proposalId,
         walletAddress
       );
+      return entry.entry;
     },
   });
 }
@@ -381,7 +393,7 @@ export function useEmissionConfig(
 export function useClaimAmount(
   voteTokenAddress: string | undefined,
   enabled: boolean = true
-) {
+): UseQueryResult<LedgerEntry<bigint>> {
   const { network, connected, walletAddress } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
 
@@ -402,7 +414,7 @@ export function useClaimAmount(
 export function useDelegate(
   voteTokenAddress: string | undefined,
   enabled: boolean = true
-) {
+): UseQueryResult<LedgerEntry<string>> {
   const { network, walletAddress, connected } = useWallet();
   const paramsDefined = voteTokenAddress !== undefined;
 

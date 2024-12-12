@@ -2,13 +2,13 @@ import {
   Account,
   Address,
   Contract,
-  SorobanRpc,
-  TransactionBuilder,
+  rpc,
   scValToNative,
+  TransactionBuilder,
 } from "@stellar/stellar-sdk";
 
 export async function getTokenBalance(
-  stellar_rpc: SorobanRpc.Server,
+  stellar_rpc: rpc.Server,
   network_passphrase: string,
   token_id: string,
   address: Address
@@ -26,15 +26,15 @@ export async function getTokenBalance(
   tx_builder.addOperation(
     new Contract(token_id).call("balance", address.toScVal())
   );
-  const result: SorobanRpc.Api.SimulateTransactionResponse =
+  const result: rpc.Api.SimulateTransactionResponse =
     await stellar_rpc.simulateTransaction(tx_builder.build());
   const scval_result = result;
   if (scval_result == undefined) {
     console.error(`Error: unable to fetch balance for token: ${token_id}`);
   }
-  if (SorobanRpc.Api.isSimulationSuccess(result)) {
+  if (rpc.Api.isSimulationSuccess(result)) {
     let resultScVal = (
-      scval_result as SorobanRpc.Api.SimulateTransactionSuccessResponse
+      scval_result as rpc.Api.SimulateTransactionSuccessResponse
     ).result?.retval;
     if (resultScVal == undefined) {
       console.error(`Error: unable to fetch balance for token: ${token_id}`);
@@ -48,8 +48,9 @@ export async function getTokenBalance(
   }
 }
 
-
 export function getTokenExplorerUrl(assetId: string, symbol: string) {
-  const isNative = symbol === "XLM"
-  return `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/asset/${symbol}${isNative ? "" : `-${assetId}`}`
+  const isNative = symbol === "XLM";
+  return `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/asset/${symbol}${
+    isNative ? "" : `-${assetId}`
+  }`;
 }

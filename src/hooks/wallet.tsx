@@ -1,34 +1,32 @@
-import { DUMMY_ADDRESS } from "@/constants";
 import {
-  TxOptions,
-  invokeOperation,
-  parseResultFromXDRString,
-} from "@/utils/operation";
-import {
+  AlbedoModule,
   FreighterModule,
   ISupportedWallet,
+  LobstrModule,
   StellarWalletsKit,
   WalletNetwork,
   XBULL_ID,
   xBullModule,
-  LobstrModule,
-  AlbedoModule,
-} from "@creit.tech/stellar-wallets-kit/build";
+} from "@creit.tech/stellar-wallets-kit/index";
 
-import React, { useContext, useEffect, useState } from "react";
 import {
-  ContractError,
-  ContractResult,
-  ProposalAction,
-  VoteCount,
-  GovernorContract,
-  TokenVotesContract,
   BondingVotesContract,
-  GovernorSettings,
+  ContractError,
   ContractErrorType,
+  GovernorContract,
+  parseError,
+  ProposalAction,
+  TokenVotesContract,
 } from "@script3/soroban-governor-sdk";
-import { Address, SorobanRpc, xdr } from "@stellar/stellar-sdk";
-import { getTokenBalance as getBalance } from "@/utils/token";
+import {
+  BASE_FEE,
+  Operation,
+  rpc,
+  Transaction,
+  TransactionBuilder,
+  xdr,
+} from "@stellar/stellar-sdk";
+import React, { useContext, useEffect, useState } from "react";
 import { useLocalStorageState } from "./useLocalStorageState";
 
 export interface IWalletContext {
@@ -46,81 +44,34 @@ export interface IWalletContext {
   connect: () => Promise<void>;
   disconnect: () => void;
   clearLastTx: () => void;
-  submitTransaction: <T>(submission: Promise<any>) => Promise<T | undefined>;
-  rpcServer: () => SorobanRpc.Server;
+  rpcServer: () => rpc.Server;
   vote: (
     proposalId: number,
     support: number,
-    sim: boolean,
     governorAddress: string
-  ) => Promise<bigint | undefined>;
-  getGovernorSettings: (
-    governorAddress: string
-  ) => Promise<GovernorSettings | undefined>;
+  ) => Promise<void>;
   createProposal: (
     title: string,
     description: string,
     action: ProposalAction,
-    sim: boolean,
     governorAddress: string
-  ) => Promise<bigint | undefined>;
+  ) => Promise<number | undefined>;
   executeProposal: (
     proposalId: number,
-    governorAddress: string,
-    sim?: boolean
-  ) => Promise<bigint | undefined>;
-  closeProposal: (
-    proposalId: number,
-    governorAddress: string,
-    sim?: boolean
-  ) => Promise<bigint | undefined>;
+    governorAddress: string
+  ) => Promise<void>;
+  closeProposal: (proposalId: number, governorAddress: string) => Promise<void>;
   cancelProposal: (
     proposalId: number,
-    governorAddress: string,
-    sim?: boolean
-  ) => Promise<bigint | undefined>;
-  getVoteTokenBalance: (
-    voteTokenAddress: string,
-    sim: boolean
-  ) => Promise<bigint>;
-  getTokenBalance: (tokenAddress: string) => Promise<bigint>;
-  getVotingPowerByProposal: (
-    voteTokenAddress: string,
-    proposalStart: number,
-    currentBlockNumber: number,
-    sim: boolean
-  ) => Promise<bigint>;
-  getVotingPower: (voteTokenAddress: string) => Promise<bigint>;
-  getTotalVotesByProposal: (
-    proposalId: number,
-    governorAddress: string,
-    sim?: boolean
-  ) => Promise<VoteCount | ContractError | undefined>;
-  wrapToken: (
-    voteTokenAddress: string,
-    amount: bigint,
-    sim: boolean
-  ) => Promise<bigint>;
-  unwrapToken: (
-    voteTokenAddress: string,
-    amount: bigint,
-    sim: boolean
-  ) => Promise<bigint>;
-  claimEmissions: (voteTokenAddress: string, sim: boolean) => Promise<bigint>;
-  getUserVoteByProposalId: (
-    proposalId: number,
-    governorAddress: string,
-    sim: boolean
-  ) => Promise<number | undefined>;
-  getDelegate: (
-    voteTokenAddress: string,
-    sim: boolean
-  ) => Promise<string | undefined>;
+    governorAddress: string
+  ) => Promise<void>;
+  wrapToken: (voteTokenAddress: string, amount: bigint) => Promise<void>;
+  unwrapToken: (voteTokenAddress: string, amount: bigint) => Promise<void>;
+  claimEmissions: (voteTokenAddress: string) => Promise<void>;
   delegate: (
     voteTokenAddress: string,
-    addressToDelegate: string,
-    sim: boolean
-  ) => Promise<bigint | undefined>;
+    addressToDelegate: string
+  ) => Promise<void>;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -141,8 +92,20 @@ export enum TxStatus {
 interface Network {
   rpc: string;
   passphrase: string;
-  opts?: SorobanRpc.Server.Options;
+  opts?: rpc.Server.Options;
 }
+
+const walletKit: StellarWalletsKit = new StellarWalletsKit({
+  network: (process.env.NEXT_PUBLIC_PASSPHRASE ||
+    "Test SDF Network ; September 2015") as WalletNetwork,
+  selectedWalletId: XBULL_ID,
+  modules: [
+    new xBullModule(),
+    new FreighterModule(),
+    new LobstrModule(),
+    new AlbedoModule(),
+  ],
+});
 
 const WalletContext = React.createContext<IWalletContext | undefined>(
   undefined
@@ -173,20 +136,6 @@ export const WalletProvider = ({ children = null as any }) => {
   // wallet state
   const [walletAddress, setWalletAddress] = useState<string>("");
 
-  const walletKit: StellarWalletsKit = new StellarWalletsKit({
-    network: network.passphrase as WalletNetwork,
-    selectedWalletId:
-      autoConnect !== undefined && autoConnect !== "false"
-        ? autoConnect
-        : XBULL_ID,
-    modules: [
-      new xBullModule(),
-      new FreighterModule(),
-      new LobstrModule(),
-      new AlbedoModule(),
-    ],
-  });
-
   useEffect(() => {
     if (!connected && !!autoConnect && autoConnect !== "false") {
       // @dev: timeout ensures chrome has the ability to load extensions
@@ -216,7 +165,7 @@ export const WalletProvider = ({ children = null as any }) => {
    */
   async function handleSetWalletAddress() {
     try {
-      const publicKey = await walletKit.getPublicKey();
+      const { address: publicKey } = await walletKit.getAddress();
       setWalletAddress(publicKey);
       setConnected(true);
     } catch (e: any) {
@@ -256,7 +205,7 @@ export const WalletProvider = ({ children = null as any }) => {
   }
 
   function rpcServer() {
-    return new SorobanRpc.Server(network.rpc, network.opts);
+    return new rpc.Server(network.rpc, network.opts);
   }
 
   /**
@@ -269,10 +218,9 @@ export const WalletProvider = ({ children = null as any }) => {
     if (connected) {
       setTxStatus(TxStatus.SIGNING);
       try {
-        let { result } = await walletKit.signTx({
-          xdr: xdr,
-          publicKeys: [walletAddress],
-          network: network.passphrase as WalletNetwork,
+        let { signedTxXdr: result } = await walletKit.signTransaction(xdr, {
+          address: walletAddress,
+          networkPassphrase: network.passphrase as WalletNetwork,
         });
         setTxStatus(TxStatus.SUBMITTING);
         return result;
@@ -295,902 +243,259 @@ export const WalletProvider = ({ children = null as any }) => {
   async function vote(
     proposalId: number,
     support: number,
-    sim: boolean,
     governorAddress: string
   ) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let governorClient = new GovernorContract(governorAddress);
         let voteOperation = governorClient.vote({
           voter: walletAddress,
           proposal_id: proposalId,
           support,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.vote,
-          voteOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission, {
-            notificationMode: "modal",
-            notificationTitle: "Your vote is in!",
-            successMessage: "Your vote has been submitted successfully",
-          });
-        }
-      } else {
-        return;
+        await submitOperation(voteOperation, {
+          notificationMode: "modal",
+          notificationTitle: "Your vote is in!",
+          successMessage: "Your vote has been submitted successfully",
+        });
       }
     } catch (e) {
-      throw e;
+      console.error("Error invoking vote: ", e);
     }
   }
 
-  async function getGovernorSettings(governorAddress: string) {
-    try {
-      let txOptions: TxOptions = {
-        sim: true,
-        pollingInterval: 1000,
-        timeout: 15000,
-        builderOptions: {
-          fee: "10000",
-          timebounds: {
-            minTime: 0,
-            maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-          },
-          networkPassphrase: network.passphrase,
-        },
-      };
-      let governorClient = new GovernorContract(governorAddress);
-      let voteOperation = governorClient.settings();
-      const submission = invokeOperation<xdr.ScVal>(
-        DUMMY_ADDRESS,
-        sign,
-        network,
-        txOptions,
-        GovernorContract.parsers.settings,
-        voteOperation
-      );
-      const sub = await submission;
-      if (sub instanceof ContractResult) {
-        return sub.result.unwrap();
-      }
-      return sub;
-    } catch (e) {
-      console.log("Error getting governor settings: ", e);
-      throw e;
-    }
-  }
-
-  /**
-   * 
-    creator: Address,
-    calldata: Calldata,
-    sub_calldata: Vec<SubCalldata>,
-    title: String,
-    description: String,
-
-   */
   async function createProposal(
     title: string,
     description: string,
     action: ProposalAction,
-    sim: boolean,
     governorAddress: string
-  ) {
+  ): Promise<number | undefined> {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let governorClient = new GovernorContract(governorAddress);
-
         let proposeOperation = governorClient.propose({
           creator: walletAddress,
           title,
           description,
           action,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.propose,
-          proposeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          const result = await submitTransaction<bigint>(submission, {
-            notificationMode: "flash",
-            notificationTitle: "Proposal created",
-            successMessage: "Proposal created",
-            failureMessage: "Failed to create proposal",
-          });
-          return result;
+        const submission = await submitOperation(proposeOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Proposal created",
+          successMessage: "Proposal created",
+          failureMessage: "Failed to create proposal",
+        });
+        if (
+          submission?.status === rpc.Api.GetTransactionStatus.SUCCESS &&
+          submission.returnValue !== undefined
+        ) {
+          return GovernorContract.parsers.propose(
+            submission.returnValue.toXDR("base64")
+          );
         }
       } else {
-        return;
+        return undefined;
       }
     } catch (e) {
-      console.log("Error creating proposal: ", e);
-      throw e;
+      console.error("Error creating proposal: ", e);
     }
   }
 
-  async function executeProposal(
-    proposalId: number,
-    governorAddress: string,
-    sim = false
-  ) {
+  async function executeProposal(proposalId: number, governorAddress: string) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let governorClient = new GovernorContract(governorAddress);
 
         let executeOperation = governorClient.execute({
           proposal_id: proposalId,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.execute,
-          executeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          const result = await submitTransaction<bigint>(submission, {
-            notificationMode: "flash",
-            notificationTitle: "Proposal executed",
-            successMessage: "Proposal executed",
-            failureMessage: "Failed to execute proposal",
-          });
-          return result || BigInt(0);
-        }
-      } else {
-        return;
+        await submitOperation(executeOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Proposal executed",
+          successMessage: "Proposal executed",
+          failureMessage: "Failed to execute proposal",
+        });
       }
     } catch (e) {
-      console.log("Error executing proposal: ", e);
-      throw e;
+      console.error("Error executing proposal: ", e);
     }
   }
 
-  async function closeProposal(
-    proposalId: number,
-    governorAddress: string,
-    sim = false
-  ) {
+  async function closeProposal(proposalId: number, governorAddress: string) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let governorClient = new GovernorContract(governorAddress);
-
         let closeOperation = governorClient.close({
           proposal_id: proposalId,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.close,
-          closeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          const result = await submitTransaction<bigint>(submission, {
-            notificationMode: "flash",
-            notificationTitle: "Proposal closed",
-            successMessage: "Proposal closed",
-            failureMessage: "Failed to close proposal",
-          });
-          return result || BigInt(0);
-        }
-      } else {
-        return;
+        await submitOperation(closeOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Proposal closed",
+          successMessage: "Proposal closed",
+          failureMessage: "Failed to close proposal",
+        });
       }
     } catch (e) {
-      console.log("Error closing proposal: ", e);
-      throw e;
+      console.error("Error closing proposal: ", e);
     }
   }
 
-  async function cancelProposal(
-    proposalId: number,
-    governorAddress: string,
-    sim = false
-  ) {
+  async function cancelProposal(proposalId: number, governorAddress: string) {
     try {
       if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let governorClient = new GovernorContract(governorAddress);
         let cancelOperation = governorClient.cancel({
           from: walletAddress,
           proposal_id: proposalId,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.cancel,
-          cancelOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          const result = await submitTransaction<bigint>(submission, {
-            notificationMode: "flash",
-            notificationTitle: "Proposal cancelled",
-            successMessage: "Proposal cancelled",
-            failureMessage: "Failed to cancel proposal",
-          });
-          return result || BigInt(0);
-        }
-      } else {
-        return;
-      }
-    } catch (e) {
-      console.log("Error cancelling proposal: ", e);
-      throw e;
-    }
-  }
-
-  async function getTotalVotesByProposal(
-    proposalId: number,
-    governorAddress: string,
-    sim = true
-  ) {
-    try {
-      let txOptions: TxOptions = {
-        sim,
-        pollingInterval: 1000,
-        timeout: 15000,
-        builderOptions: {
-          fee: "10000",
-          timebounds: {
-            minTime: 0,
-            maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-          },
-          networkPassphrase: network.passphrase,
-        },
-      };
-      let governorClient = new GovernorContract(governorAddress);
-
-      let proposeOperation = governorClient.getProposalVotes({
-        proposal_id: proposalId,
-      });
-      const submission = invokeOperation<xdr.ScVal>(
-        DUMMY_ADDRESS,
-        sign,
-        network,
-        txOptions,
-        parseResultFromXDRString,
-        proposeOperation
-      );
-      const sub = await submission;
-      if (sub instanceof ContractResult) {
-        return sub.result.unwrap() as VoteCount;
-      }
-      return sub;
-    } catch (e) {
-      console.log("Error getting votes by proposal: ", e);
-      throw e;
-    }
-  }
-
-  async function getVoteTokenBalance(voteTokenAddress: string, sim: boolean) {
-    try {
-      if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
-        let votesClient = new TokenVotesContract(voteTokenAddress);
-
-        let votesOperation = votesClient.balance({
-          id: walletAddress,
+        await submitOperation(cancelOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Proposal cancelled",
+          successMessage: "Proposal cancelled",
+          failureMessage: "Failed to cancel proposal",
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          TokenVotesContract.parsers.balance,
-          votesOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission) || BigInt(0);
-        }
-      } else {
-        return BigInt(0);
       }
     } catch (e) {
-      console.log("Error getting vote token balance: ", e);
-      throw e;
+      console.error("Error cancelling proposal: ", e);
     }
   }
 
-  async function getTokenBalance(tokenAddress: string) {
-    try {
-      if (connected) {
-        const balance = await getBalance(
-          rpcServer(),
-          network.passphrase,
-          tokenAddress,
-          new Address(walletAddress)
-        );
-        return balance;
-      } else {
-        return BigInt(0);
-      }
-    } catch (e) {
-      console.log("Error getting token balance: ", e);
-      throw e;
-    }
-  }
-
-  async function getVotingPowerByProposal(
-    voteTokenAddress: string,
-    proposalStart?: number,
-    currentBlockNumber?: number,
-    sim: boolean = true
-  ) {
-    try {
-      if (connected) {
-        const txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
-        const votesClient = new TokenVotesContract(voteTokenAddress);
-        let proposeOperation;
-        let proposalIsPast = false;
-        if (
-          proposalStart &&
-          currentBlockNumber &&
-          currentBlockNumber > proposalStart
-        ) {
-          proposalIsPast = true;
-          proposeOperation = votesClient.getPastVotes({
-            user: walletAddress,
-            sequence: proposalStart,
-          });
-        } else {
-          proposeOperation = votesClient.getVotes({
-            account: walletAddress,
-          });
-        }
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          proposalIsPast
-            ? TokenVotesContract.votes_parsers.getPastVotes
-            : TokenVotesContract.votes_parsers.getVotes,
-          proposeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission) || BigInt(0);
-        }
-      } else {
-        return BigInt(0);
-      }
-    } catch (e) {
-      console.log("Error getting voting power : ", e);
-      throw e;
-    }
-  }
-
-  async function getVotingPower(voteTokenAddress: string, sim: boolean = true) {
-    try {
-      if (connected) {
-        const txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
-        const votesClient = new TokenVotesContract(voteTokenAddress);
-        const proposeOperation = votesClient.getVotes({
-          account: walletAddress,
-        });
-
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          TokenVotesContract.votes_parsers.getVotes,
-          proposeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission) || BigInt(0);
-        }
-      } else {
-        return BigInt(0);
-      }
-    } catch (e) {
-      console.log("Error getting voting power : ", e);
-      throw e;
-    }
-  }
-
-  async function wrapToken(
-    voteTokenAddress: string,
-    amount: bigint,
-    sim: boolean
-  ) {
+  async function wrapToken(voteTokenAddress: string, amount: bigint) {
     try {
       if (connected && walletAddress) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let votesClient = new BondingVotesContract(voteTokenAddress);
         let proposeOperation = votesClient.deposit({
           from: walletAddress,
           amount,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          BondingVotesContract.parsers.deposit,
-          proposeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return (
-            submitTransaction<bigint>(submission, {
-              notificationMode: "flash",
-              notificationTitle: "Tokens successfully bonded",
-              successMessage: "Tokens successfully bonded",
-              failureMessage: "Failed to bond tokens",
-            }) || BigInt(0)
-          );
-        }
-      } else {
-        return BigInt(0);
+        await submitOperation(proposeOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Tokens successfully bonded",
+          successMessage: "Tokens successfully bonded",
+          failureMessage: "Failed to bond tokens",
+        });
       }
     } catch (e) {
-      console.log("Error bonding token: ", e);
-      throw e;
+      console.error("Error bonding token: ", e);
     }
   }
 
-  async function unwrapToken(
-    voteTokenAddress: string,
-    amount: bigint,
-    sim: boolean
-  ) {
+  async function unwrapToken(voteTokenAddress: string, amount: bigint) {
     try {
       if (connected && walletAddress) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let votesClient = new BondingVotesContract(voteTokenAddress);
-
         let withdrawOperation = votesClient.withdraw({
           from: walletAddress,
           amount,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          BondingVotesContract.parsers.withdraw,
-          withdrawOperation
-        );
-        if (sim) {
-          const sub = await submission;
-
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return (
-            submitTransaction<bigint>(submission, {
-              notificationMode: "flash",
-              notificationTitle: "Tokens successfully unbonded",
-              successMessage: "Tokens successfully unbonded",
-              failureMessage: "Failed to unbond tokens",
-            }) || BigInt(0)
-          );
-        }
-      } else {
-        return BigInt(0);
+        await submitOperation(withdrawOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Tokens successfully unbonded",
+          successMessage: "Tokens successfully unbonded",
+          failureMessage: "Failed to unbond tokens",
+        });
       }
     } catch (e) {
-      console.log("Error unbonding token: ", e);
-      throw e;
+      console.error("Error unbonding token: ", e);
     }
   }
 
-  async function claimEmissions(voteTokenAddress: string, sim: boolean) {
+  async function claimEmissions(voteTokenAddress: string) {
     try {
       if (connected && walletAddress) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let votesClient = new BondingVotesContract(voteTokenAddress);
-
-        let withdrawOperation = votesClient.claim({
+        let claimOperation = votesClient.claim({
           address: walletAddress,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          BondingVotesContract.parsers.claim,
-          withdrawOperation
-        );
-        if (sim) {
-          const sub = await submission;
-
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return (
-            submitTransaction<bigint>(submission, {
-              notificationMode: "flash",
-              notificationTitle: "Emissions successfully claimed",
-              successMessage: "Emissions successfully claimed",
-              failureMessage: "Failed to claim emissions",
-            }) || BigInt(0)
-          );
-        }
-      } else {
-        return BigInt(0);
-      }
-    } catch (e) {
-      console.log("Error claiming emissions: ", e);
-      throw e;
-    }
-  }
-
-  async function getUserVoteByProposalId(
-    proposalId: number,
-    governorAddress: string,
-    sim: boolean
-  ) {
-    try {
-      if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
-        let governorClient = new GovernorContract(governorAddress);
-        let voteOperation = governorClient.getVote({
-          voter: walletAddress,
-          proposal_id: proposalId,
+        await submitOperation(claimOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Emissions successfully claimed",
+          successMessage: "Emissions successfully claimed",
+          failureMessage: "Failed to claim emissions",
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          GovernorContract.parsers.getVote,
-          voteOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission) || BigInt(0);
-        }
-      } else {
-        return;
       }
     } catch (e) {
-      throw e;
+      console.error("Error claiming emissions: ", e);
     }
   }
 
-  async function getDelegate(voteTokenAddress: string, sim: boolean = true) {
-    try {
-      if (connected) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
-        let voteClient = new TokenVotesContract(voteTokenAddress);
-        let voteOperation = voteClient.getDelegate({
-          account: walletAddress,
-        });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          TokenVotesContract.votes_parsers.getDelegate,
-          voteOperation
-        );
-
-        const sub = await submission;
-        if (sub instanceof ContractResult) {
-          return sub.result.unwrap();
-        }
-        return sub;
-      } else {
-        return;
-      }
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async function delegate(
-    voteTokenAddress: string,
-    addressToDelegate: string,
-    sim: boolean
-  ) {
+  async function delegate(voteTokenAddress: string, addressToDelegate: string) {
     try {
       if (connected && walletAddress) {
-        let txOptions: TxOptions = {
-          sim,
-          pollingInterval: 1000,
-          timeout: 15000,
-          builderOptions: {
-            fee: "10000",
-            timebounds: {
-              minTime: 0,
-              maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
-            },
-            networkPassphrase: network.passphrase,
-          },
-        };
         let votesClient = new TokenVotesContract(voteTokenAddress);
-        let proposeOperation = votesClient.delegate({
+        let delegateOperation = votesClient.delegate({
           account: walletAddress,
           delegatee: addressToDelegate,
         });
-        const submission = invokeOperation<xdr.ScVal>(
-          walletAddress,
-          sign,
-          network,
-          txOptions,
-          TokenVotesContract.votes_parsers.delegate,
-          proposeOperation
-        );
-        if (sim) {
-          const sub = await submission;
-          if (sub instanceof ContractResult) {
-            return sub.result.unwrap();
-          }
-          return sub;
-        } else {
-          return submitTransaction<bigint>(submission, {
-            notificationMode: "flash",
-            notificationTitle: "Succesfully delegated",
-            successMessage: "Succesfully delegated",
-          });
-        }
-      } else {
-        return;
+        await submitOperation(delegateOperation, {
+          notificationMode: "flash",
+          notificationTitle: "Succesfully delegated",
+          successMessage: "Succesfully delegated",
+          failureMessage: "Failed to delegate",
+        });
       }
     } catch (e) {
-      console.log("Error delegating token: ", e);
-      throw e;
+      console.error("Error delegating votes: ", e);
     }
   }
 
-  async function submitTransaction<T>(
-    submission: Promise<any>,
+  async function submitTransaction(
+    transaction: Transaction,
     options: {
       notificationMode?: string;
       notificationTitle?: string;
       successMessage?: string;
       failureMessage?: string;
     } = {}
-  ): Promise<T | undefined> {
+  ): Promise<rpc.Api.GetSuccessfulTransactionResponse | undefined> {
     try {
-      // submission calls `sign` internally which handles setting TxStatus
+      const stellarRpc = rpcServer();
       setCleanTxMessage(undefined);
-      setTxStatus(TxStatus.BUILDING);
-      let result = await submission;
-      setTxHash(result.hash);
-      const isOk = result.result.isOk();
+      setTxStatus(TxStatus.SUBMITTING);
       setNotificationMode("flash");
-      if (isOk) {
-        console.log("Successfully submitted transaction: ", result.hash);
+      setTxHash(transaction.hash().toString("hex"));
+
+      let send_tx_response = await stellarRpc.sendTransaction(transaction);
+      let curr_time = Date.now();
+
+      // Attempt to send the transaction and poll for the result
+      while (
+        send_tx_response.status !== "PENDING" &&
+        Date.now() - curr_time < 5000
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        send_tx_response = await stellarRpc.sendTransaction(transaction);
+      }
+      const hash = send_tx_response.hash;
+
+      if (send_tx_response.status !== "PENDING") {
+        let error = parseError(send_tx_response);
+        console.error("Failed to send transaction: ", hash, error);
+        setCleanTxMessage(
+          options.failureMessage
+            ? `${`${options.failureMessage} | ${
+                ContractErrorType[error.type]
+              }`} `
+            : ContractErrorType[error.type]
+        );
+        setTxStatus(TxStatus.FAIL);
+        setShowNotification(true);
+        return undefined;
+      }
+
+      let get_tx_response = await stellarRpc.getTransaction(hash);
+      curr_time = Date.now();
+      while (
+        get_tx_response.status === "NOT_FOUND" &&
+        Date.now() - curr_time < 10000
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        get_tx_response = await stellarRpc.getTransaction(hash);
+      }
+
+      setTxHash(hash);
+      if (get_tx_response.status === "SUCCESS") {
+        setTxStatus(TxStatus.SUCCESS);
         setNotificationMode(options.notificationMode || "flash");
         setShowNotification(true);
         setNotificationTitle(
@@ -1201,34 +506,118 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         setTxStatus(TxStatus.SUCCESS);
         setShowNotificationLink(true);
+
+        return get_tx_response;
       } else {
-        const error = result.result.error;
-        const message = ContractErrorType[error.type];
-        console.log({ error, result, type: error.type, message });
+        let error = parseError(get_tx_response);
         if (error.type < 0) {
           setShowNotificationLink(true);
         } else {
           setShowNotificationLink(false);
         }
-        console.log("Failed submitted transaction: ", result.hash);
+        setNotificationTitle("Transaction Failed");
         setCleanTxMessage(
           options.failureMessage
-            ? `${`${options.failureMessage} | ${message}`} `
-            : error.message
+            ? `${`${options.failureMessage} | ${
+                ContractErrorType[error.type]
+              }`} `
+            : ContractErrorType[error.type]
         );
-        setNotificationTitle("Transaction Failed");
         setTxStatus(TxStatus.FAIL);
         setShowNotification(true);
+        return undefined;
       }
-      return result;
     } catch (e: any) {
-      console.error("Failed submitting transaction: ", e);
+      console.error("Failed to submit transaction: ", e);
       setCleanTxMessage(options.failureMessage || e?.message);
       setNotificationTitle("Transaction Failed");
       setShowNotification(true);
       setTxStatus(TxStatus.FAIL);
       return undefined;
     }
+  }
+
+  async function submitOperation(
+    operation: string,
+    options: {
+      notificationMode?: string;
+      notificationTitle?: string;
+      successMessage?: string;
+      failureMessage?: string;
+    } = {}
+  ): Promise<rpc.Api.GetSuccessfulTransactionResponse | undefined> {
+    try {
+      setNotificationMode("flash");
+      const stellarRpc = rpcServer();
+      const account = await stellarRpc.getAccount(walletAddress);
+      const tx_builder = new TransactionBuilder(account, {
+        networkPassphrase: network.passphrase,
+        fee: BASE_FEE,
+        timebounds: {
+          minTime: 0,
+          maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,
+        },
+      }).addOperation(xdr.Operation.fromXDR(operation, "base64"));
+      const transaction = tx_builder.build();
+      const simResponse = await stellarRpc.simulateTransaction(transaction);
+      if (
+        rpc.Api.isSimulationSuccess(simResponse) &&
+        !rpc.Api.isSimulationRestore(simResponse)
+      ) {
+        const assembled_tx = rpc
+          .assembleTransaction(transaction, simResponse)
+          .build();
+        const signedTx = await sign(assembled_tx.toXDR());
+        const tx = new Transaction(signedTx, network.passphrase);
+        return await submitTransaction(tx, options);
+      } else {
+        console.error("Failed to simulate transaction: ", simResponse);
+        let error = rpc.Api.isSimulationRestore(simResponse)
+          ? new ContractError(ContractErrorType.InvokeHostFunctionEntryArchived)
+          : parseError(simResponse);
+        setNotificationTitle("Simulation Failed");
+        setCleanTxMessage(
+          options.failureMessage
+            ? `${`${options.failureMessage} | ${
+                ContractErrorType[error.type]
+              }`} `
+            : ContractErrorType[error.type]
+        );
+        setShowNotification(true);
+        setTxStatus(TxStatus.FAIL);
+        return undefined;
+      }
+    } catch (e: any) {
+      console.error("Failed to submit transaction: ", e);
+      setCleanTxMessage(options.failureMessage || e?.message);
+      setNotificationTitle("Transaction Failed");
+      setShowNotification(true);
+      setTxStatus(TxStatus.FAIL);
+      return undefined;
+    }
+  }
+
+  async function restore(
+    sim: rpc.Api.SimulateTransactionRestoreResponse
+  ): Promise<void> {
+    const stellarRpc = rpcServer();
+    let account = await stellarRpc.getAccount(walletAddress);
+    setTxStatus(TxStatus.BUILDING);
+    let fee = parseInt(sim.restorePreamble.minResourceFee) + parseInt(BASE_FEE);
+    let restore_tx = new TransactionBuilder(account, { fee: fee.toString() })
+      .setNetworkPassphrase(network.passphrase)
+      .setTimeout(0)
+      .setSorobanData(sim.restorePreamble.transactionData.build())
+      .addOperation(Operation.restoreFootprint({}))
+      .build();
+    let signed_restore_tx = new Transaction(
+      await sign(restore_tx.toXDR()),
+      network.passphrase
+    );
+    await submitTransaction(signed_restore_tx, {
+      successMessage: "Successfully restored ledger entries",
+      failureMessage: "Failed to restore entries",
+    });
   }
 
   function clearLastTx() {
@@ -1263,25 +652,16 @@ export const WalletProvider = ({ children = null as any }) => {
         disconnect,
         clearLastTx,
         vote,
-        getGovernorSettings,
         createProposal,
         executeProposal,
         closeProposal,
         cancelProposal,
         rpcServer,
-        submitTransaction,
         setNetwork,
         closeNotification,
-        getVoteTokenBalance,
-        getVotingPower,
-        getVotingPowerByProposal,
-        getTokenBalance,
         wrapToken,
         unwrapToken,
         claimEmissions,
-        getUserVoteByProposalId,
-        getTotalVotesByProposal,
-        getDelegate,
         delegate,
         notificationMode,
         showNotification,

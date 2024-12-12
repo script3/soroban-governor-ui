@@ -1,4 +1,3 @@
-import DAOLayout from "@/layouts/dao";
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
@@ -11,10 +10,11 @@ import {
   classByProposalAction,
   classByStatus,
 } from "@/constants";
+import DAOLayout from "@/layouts/dao";
 
 import { getRelativeProposalPeriod } from "@/utils/date";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   useCurrentBlockNumber,
@@ -23,10 +23,13 @@ import {
   useProposals,
   useVotingPower,
 } from "@/hooks/api";
-import { toBalance } from "@/utils/formatNumber";
-import { useRouter } from "next/router";
-import { stripMarkdown } from "@/utils/string";
 import { useWallet } from "@/hooks/wallet";
+import { toBalance } from "@/utils/formatNumber";
+import { stripMarkdown } from "@/utils/string";
+import { GetStaticPaths, GetStaticProps } from "next";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import governors from "../../../public/governors/governors.json";
 
 function Proposals() {
   const router = useRouter();
@@ -36,21 +39,32 @@ function Proposals() {
 
   const { data: currentBlockNumber } = useCurrentBlockNumber();
   const governor = useGovernor(params.dao as string);
-  const { data: delegateAddress } = useDelegate(governor?.voteTokenAddress);
-  const hasDelegate = delegateAddress !== walletAddress;
-  const { data: votingPower } = useVotingPower(governor?.voteTokenAddress);
-  const { data: proposals } = useProposals(governor?.address, currentBlockNumber);
+  const { data: delegateAddressEntry, refetch: refetchDelegate } = useDelegate(
+    governor?.voteTokenAddress
+  );
+  const delegateAddress = delegateAddressEntry?.entry;
+  const hasDelegate = connected && delegateAddress !== walletAddress;
+  const { data: votingPowerEntry } = useVotingPower(governor?.voteTokenAddress);
+  const votingPower = votingPowerEntry?.entry ?? BigInt(0);
+  const { data: proposals } = useProposals(
+    governor?.address,
+    currentBlockNumber
+  );
 
   const [searchValue, setSearchValue] = useState<string>("");
 
   const filteredProposals = useMemo(() => {
     const searchLower = searchValue.toLowerCase();
-    return (proposals ?? []).filter(proposal =>
-        `${proposal.title} ${proposal.description} ${proposal.proposer}`.toLowerCase().includes(searchLower)
+    return (proposals ?? []).filter((proposal) =>
+      `${proposal.title} ${proposal.description} ${proposal.proposer}`
+        .toLowerCase()
+        .includes(searchLower)
     );
   }, [searchValue, proposals]);
 
-  const isOldYBXGovernor = governor?.address === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
+  const isOldYBXGovernor =
+    governor?.address ===
+    "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
 
   return (
     <Container slim className="flex flex-col gap-4">
@@ -59,7 +73,10 @@ function Proposals() {
           Proposals
         </Typography.Huge>
         {isOldYBXGovernor && (
-          <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2 w-full">
+          <Container
+            slim
+            className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2 w-full"
+          >
             <Image
               src="/icons/report.svg"
               width={28}
@@ -83,7 +100,7 @@ function Proposals() {
             }
             value={searchValue}
             placeholder="Search proposals"
-            onChange={e => setSearchValue(e)}
+            onChange={(e) => setSearchValue(e)}
           />
         </div>
 
@@ -139,11 +156,24 @@ function Proposals() {
       {/* proposals  */}
       <Container className="flex flex-col gap-4">
         {filteredProposals.map((proposal, ind) => {
-          const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
-          const percent_for = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count._for) / Number(total_votes) : 0;
-          const percent_against = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.against) / Number(total_votes) : 0;
-          const percent_abstain = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.abstain) / Number(total_votes) : 0;
-        
+          const total_votes = proposal
+            ? proposal.vote_count._for +
+              proposal.vote_count.against +
+              proposal.vote_count.abstain
+            : BigInt(0);
+          const percent_for =
+            proposal && total_votes > BigInt(0)
+              ? Number(proposal.vote_count._for) / Number(total_votes)
+              : 0;
+          const percent_against =
+            proposal && total_votes > BigInt(0)
+              ? Number(proposal.vote_count.against) / Number(total_votes)
+              : 0;
+          const percent_abstain =
+            proposal && total_votes > BigInt(0)
+              ? Number(proposal.vote_count.abstain) / Number(total_votes)
+              : 0;
+
           return (
             <Box
               key={`${proposal.id} ${ind}`}
@@ -180,11 +210,7 @@ function Proposals() {
                 </Typography.P>
                 <div className="flex flex-col gap-2">
                   {/* votes progress bar */}
-                  <ProgressWrapper
-                    percentage={
-                      percent_for
-                    }
-                  >
+                  <ProgressWrapper percentage={percent_for}>
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Yes</Typography.Medium>
                       <Container slim className="flex gap-2">
@@ -198,17 +224,15 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            percent_for > 0 ? (percent_for * 100).toFixed(2) : "0"
+                            percent_for > 0
+                              ? (percent_for * 100).toFixed(2)
+                              : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
                     </div>
                   </ProgressWrapper>
-                  <ProgressWrapper
-                    percentage={
-                      percent_against
-                    }
-                  >
+                  <ProgressWrapper percentage={percent_against}>
                     <div className="flex justify-between w-full">
                       <Typography.Medium>No</Typography.Medium>
                       <Container slim className="flex gap-2">
@@ -222,17 +246,15 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"
+                            percent_against > 0
+                              ? (percent_against * 100).toFixed(2)
+                              : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
                     </div>
                   </ProgressWrapper>
-                  <ProgressWrapper
-                    percentage={
-                      percent_abstain
-                    }
-                  >
+                  <ProgressWrapper percentage={percent_abstain}>
                     <div className="flex justify-between w-full">
                       <Typography.Medium>Abstain</Typography.Medium>
                       <Container slim className="flex gap-2">
@@ -246,7 +268,9 @@ function Proposals() {
                         </Typography.Medium>
                         <Typography.Medium>
                           {`${
-                            percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"
+                            percent_abstain > 0
+                              ? (percent_abstain * 100).toFixed(2)
+                              : "0"
                           }%`}
                         </Typography.Medium>
                       </Container>
@@ -255,11 +279,13 @@ function Proposals() {
                 </div>
                 <Typography.Tiny className="text-snapLink">
                   {/* X days remaining / ended X days ago  */}{" "}
-                  {currentBlockNumber ? getRelativeProposalPeriod(
-                    proposal.vote_start,
-                    proposal.vote_end,
-                    currentBlockNumber
-                  ): "unkown"}
+                  {currentBlockNumber
+                    ? getRelativeProposalPeriod(
+                        proposal.vote_start,
+                        proposal.vote_end,
+                        currentBlockNumber
+                      )
+                    : "unkown"}
                 </Typography.Tiny>
               </div>
             </Box>
@@ -273,9 +299,6 @@ function Proposals() {
 Proposals.getLayout = (page: any) => <DAOLayout>{page}</DAOLayout>;
 
 export default Proposals;
-import governors from "../../../public/governors/governors.json";
-import { GetStaticPaths, GetStaticProps } from "next";
-import Image from "next/image";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

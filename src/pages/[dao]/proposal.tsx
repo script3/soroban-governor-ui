@@ -1,26 +1,23 @@
 import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
+import { Button } from "@/components/common/Button";
 import { Chip } from "@/components/common/Chip";
+import { Loader } from "@/components/common/Loader";
+import { ProgressBar } from "@/components/common/ProgressBar";
+import { SelectableList } from "@/components/common/SelectableList";
+import { TabBar } from "@/components/common/Tab/TabBar";
 import Typography from "@/components/common/Typography";
+import { MarkdownPreview } from "@/components/MarkdownPreview";
+import { Modal } from "@/components/Modal";
+import { ProposalAction } from "@/components/proposal/action/ProposalAction";
+import { VoteListItem } from "@/components/proposal/VoteListItem";
+import { ViewMore } from "@/components/ViewMore";
 import {
   ProposalActionEnum,
   ProposalStatusText,
   classByProposalAction,
   classByStatus,
 } from "@/constants";
-import { shortenAddress } from "@/utils/shortenAddress";
-import { MarkdownPreview } from "@/components/MarkdownPreview";
-import { useState } from "react";
-import { Button } from "@/components/common/Button";
-import { ViewMore } from "@/components/ViewMore";
-import { formatDate, getProposalDate } from "@/utils/date";
-import { ProgressBar } from "@/components/common/ProgressBar";
-import { Modal } from "@/components/Modal";
-import { VoteListItem } from "@/components/proposal/VoteListItem";
-import { copyToClipboard } from "@/utils/string";
-import { Tooltip } from 'react-tooltip'
-import Image from "next/image";
-import { useRouter } from "next/router";
 import {
   useCurrentBlockNumber,
   useGovernor,
@@ -30,14 +27,17 @@ import {
   useVotes,
   useVotingPowerByLedger,
 } from "@/hooks/api";
-import { useWallet } from "@/hooks/wallet";
-import { SelectableList } from "@/components/common/SelectableList";
-import { toBalance } from "@/utils/formatNumber";
-import { Loader } from "@/components/common/Loader";
-import { ProposalStatusExt, VoteSupport } from "@/types";
 import { useTemporaryState } from "@/hooks/useTemporaryState";
-import { TabBar } from "@/components/common/Tab/TabBar";
-import { ProposalAction } from "@/components/proposal/action/ProposalAction";
+import { useWallet } from "@/hooks/wallet";
+import { ProposalStatusExt, VoteSupport } from "@/types";
+import { formatDate, getProposalDate } from "@/utils/date";
+import { toBalance } from "@/utils/formatNumber";
+import { shortenAddress } from "@/utils/shortenAddress";
+import { copyToClipboard } from "@/utils/string";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { Tooltip } from "react-tooltip";
 
 export default function Proposal() {
   const router = useRouter();
@@ -63,43 +63,68 @@ export default function Proposal() {
     Number(params.id),
     currentBlockNumber,
     !!params.id && !!currentGovernor?.address
-  )
-  const { data: governorSettings } = useGovernorSettings(currentGovernor?.address, proposal?.action?.tag === ProposalActionEnum.SETTINGS);
+  );
+  const { data: governorSettings } = useGovernorSettings(
+    currentGovernor?.address,
+    proposal?.action?.tag === ProposalActionEnum.SETTINGS
+  );
 
-  const { data: tempVotes, refetch: refetchVotes } = useVotes(currentGovernor?.address, proposal?.id);
-  const votes = tempVotes ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount)) : [];
+  const { data: tempVotes, refetch: refetchVotes } = useVotes(
+    currentGovernor?.address,
+    proposal?.id
+  );
+  const votes = tempVotes
+    ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount))
+    : [];
 
   const { data: userVote } = useUserVoteByProposalId(
     currentGovernor?.address,
     proposal?.id
   );
 
-  const { data: votingPower } = useVotingPowerByLedger(
+  const { data: votingPowerEntry } = useVotingPowerByLedger(
     currentGovernor?.voteTokenAddress,
     proposal?.vote_start,
-    currentBlockNumber,
+    currentBlockNumber
   );
+  const votingPower = votingPowerEntry?.entry ?? BigInt(0);
 
   const [isFullView, setIsFullView] = useState(false);
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
-  const isExecutable = proposal !== undefined && proposal.status === ProposalStatusExt.Successful &&
+  const isExecutable =
+    proposal !== undefined &&
+    proposal.status === ProposalStatusExt.Successful &&
     proposal.action.tag !== ProposalActionEnum.SNAPSHOT &&
-    currentBlockNumber ? proposal.eta <= currentBlockNumber : false;
-  const total_votes = proposal ? proposal.vote_count._for + proposal.vote_count.against + proposal.vote_count.abstain : BigInt(0);
-  const percent_for = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count._for) / Number(total_votes) : 0;
-  const percent_against = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.against) / Number(total_votes) : 0;
-  const percent_abstain = proposal && total_votes > BigInt(0) ? Number(proposal.vote_count.abstain) / Number(total_votes) : 0;
+    currentBlockNumber
+      ? proposal.eta <= currentBlockNumber
+      : false;
+  const total_votes = proposal
+    ? proposal.vote_count._for +
+      proposal.vote_count.against +
+      proposal.vote_count.abstain
+    : BigInt(0);
+  const percent_for =
+    proposal && total_votes > BigInt(0)
+      ? Number(proposal.vote_count._for) / Number(total_votes)
+      : 0;
+  const percent_against =
+    proposal && total_votes > BigInt(0)
+      ? Number(proposal.vote_count.against) / Number(total_votes)
+      : 0;
+  const percent_abstain =
+    proposal && total_votes > BigInt(0)
+      ? Number(proposal.vote_count.abstain) / Number(total_votes)
+      : 0;
 
   function handleVote() {
-    if (selectedSupport !== null && proposal !== undefined && currentGovernor !== undefined) {
-      vote(
-        proposal.id,
-        selectedSupport,
-        false,
-        currentGovernor.address
-      ).then(() => {
+    if (
+      selectedSupport !== null &&
+      proposal !== undefined &&
+      currentGovernor !== undefined
+    ) {
+      vote(proposal.id, selectedSupport, currentGovernor.address).then(() => {
         refetch();
         refetchVotes();
       });
@@ -426,9 +451,14 @@ export default function Proposal() {
                     Start date
                   </Typography.P>
                   <Typography.Small className="">
-                    {currentBlockNumber ? formatDate(
-                      getProposalDate(proposal?.vote_start, currentBlockNumber)
-                    ) : "unknown"}
+                    {currentBlockNumber
+                      ? formatDate(
+                          getProposalDate(
+                            proposal?.vote_start,
+                            currentBlockNumber
+                          )
+                        )
+                      : "unknown"}
                   </Typography.Small>
                 </Container>
                 <Container className="flex justify-between mb-2">
@@ -436,27 +466,30 @@ export default function Proposal() {
                     End date{" "}
                   </Typography.P>
                   <Typography.Small className="">
-                    {currentBlockNumber ? formatDate(
-                      getProposalDate(proposal?.vote_end, currentBlockNumber)
-                    ) : "unkown"}
+                    {currentBlockNumber
+                      ? formatDate(
+                          getProposalDate(
+                            proposal?.vote_end,
+                            currentBlockNumber
+                          )
+                        )
+                      : "unkown"}
                   </Typography.Small>
                 </Container>
                 {proposal.eta > 0 && (
-                    <Container className="flex justify-between mb-2">
-                      <Typography.P className=" text-snapLink">
-                        Execution unlocked{" "}
-                      </Typography.P>
-                      <Typography.Small className="">
-                        {currentBlockNumber ? formatDate(
-                          getProposalDate(
-                            proposal?.eta,
-                            currentBlockNumber
+                  <Container className="flex justify-between mb-2">
+                    <Typography.P className=" text-snapLink">
+                      Execution unlocked{" "}
+                    </Typography.P>
+                    <Typography.Small className="">
+                      {currentBlockNumber
+                        ? formatDate(
+                            getProposalDate(proposal?.eta, currentBlockNumber)
                           )
-                        ) : "unknown"}
-                      </Typography.Small>
-                    </Container>
-                  )
-                }
+                        : "unknown"}
+                    </Typography.Small>
+                  </Container>
+                )}
                 <Container className="flex justify-between mb-2">
                   <Typography.P className=" text-snapLink">ID </Typography.P>
                   <Typography.Small className="">
@@ -493,14 +526,14 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {percent_for > 0 ? (percent_for * 100).toFixed(2) : "0"}
+                          {percent_for > 0
+                            ? (percent_for * 100).toFixed(2)
+                            : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
-                    percentage={
-                      percent_for
-                    }
+                    percentage={percent_for}
                   />{" "}
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
@@ -522,14 +555,14 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {percent_against > 0 ? (percent_against * 100).toFixed(2) : "0"}
+                          {percent_against > 0
+                            ? (percent_against * 100).toFixed(2)
+                            : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
-                    percentage={
-                      percent_against
-                    }
+                    percentage={percent_against}
                   />{" "}
                   <ProgressBar
                     className="flex flex-col gap-2 mb-4"
@@ -551,14 +584,14 @@ export default function Proposal() {
                         </Typography.P>
                         <Typography.P>
                           {" "}
-                          {percent_abstain > 0 ? (percent_abstain * 100).toFixed(2) : "0"}
+                          {percent_abstain > 0
+                            ? (percent_abstain * 100).toFixed(2)
+                            : "0"}
                           %
                         </Typography.P>
                       </Container>
                     }
-                    percentage={
-                      percent_abstain
-                    }
+                    percentage={percent_abstain}
                   />{" "}
                 </Container>
               </Box>
@@ -590,9 +623,9 @@ export default function Proposal() {
   );
 }
 
-import governors from "../../../public/governors/governors.json";
-import { GetStaticPaths, GetStaticProps } from "next";
 import { GovernorSettings } from "@script3/soroban-governor-sdk";
+import { GetStaticPaths, GetStaticProps } from "next";
+import governors from "../../../public/governors/governors.json";
 export const getStaticProps = ((context) => {
   return { props: { dao: context.params?.dao?.toString() || "" } };
 }) satisfies GetStaticProps<{

@@ -6,23 +6,27 @@ import { Input } from "@/components/common/Input";
 import { Loader } from "@/components/common/Loader";
 import Typography from "@/components/common/Typography";
 import {
-  useDelegate,
-  useGovernor,
-  useWalletBalance,
-  useVotingPower,
-  useEmissionConfig,
   useClaimAmount,
+  useDelegate,
+  useEmissionConfig,
+  useGovernor,
+  useVotingPower,
+  useWalletBalance,
 } from "@/hooks/api";
 import { useWallet } from "@/hooks/wallet";
 import DAOLayout from "@/layouts/dao";
-import { bigintToString, scaleNumberToBigInt, toBalance } from "@/utils/formatNumber";
+import {
+  bigintToString,
+  scaleNumberToBigInt,
+  toBalance,
+} from "@/utils/formatNumber";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { getTokenExplorerUrl } from "@/utils/token";
+import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import governors from "../../../public/governors/governors.json";
-import { GetStaticPaths, GetStaticProps } from "next";
 
 function ManageVotes() {
   const [toWrap, setToWrap] = useState<string>("");
@@ -41,23 +45,36 @@ function ManageVotes() {
   const router = useRouter();
   const params = router.query;
   const governor = useGovernor(params.dao as string);
-  const { data: delegateAddress, refetch: refetchDelegate } = useDelegate(
-    governor?.voteTokenAddress,
+  const { data: delegateAddressEntry, refetch: refetchDelegate } = useDelegate(
+    governor?.voteTokenAddress
   );
+  const delegateAddress = delegateAddressEntry?.entry;
   const hasDelegate = connected && delegateAddress !== walletAddress;
 
-  const { data: voteTokenBalance, refetch: refetchTokenBalance } = useWalletBalance(
-    governor?.voteTokenAddress,
-  );
-  const { data: votingPower, refetch: refetchVotingPower } = useVotingPower(
-    governor?.voteTokenAddress,
-  );
-  const { data: underlyingTokenBalance, refetch: refetchUnderlying } = useWalletBalance(governor?.underlyingTokenAddress);
+  const { data: voteTokenBalanceEntry, refetch: refetchTokenBalance } =
+    useWalletBalance(governor?.voteTokenAddress);
+  const voteTokenBalance = voteTokenBalanceEntry?.entry;
+  const { data: votingPowerEntry, refetch: refetchVotingPower } =
+    useVotingPower(governor?.voteTokenAddress);
+  const votingPower = votingPowerEntry?.entry;
 
-  const { data: emisConfig } = useEmissionConfig(governor?.voteTokenAddress, governor?.isWrappedAsset);
-  const { data: claimAmount, refetch: refetchClaimAmount } = useClaimAmount(governor?.voteTokenAddress, emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0));
+  const { data: underlyingTokenBalanceEntry, refetch: refetchUnderlying } =
+    useWalletBalance(governor?.underlyingTokenAddress);
+  const underlyingTokenBalance = underlyingTokenBalanceEntry?.entry;
 
-  const isOldYBXGovernor = governor?.address === "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
+  const { data: emisConfig } = useEmissionConfig(
+    governor?.voteTokenAddress,
+    governor?.isWrappedAsset
+  );
+  const { data: claimAmountSim, refetch: refetchClaimAmount } = useClaimAmount(
+    governor?.voteTokenAddress,
+    emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)
+  );
+  const claimAmount = claimAmountSim?.entry;
+
+  const isOldYBXGovernor =
+    governor?.address ===
+    "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
 
   function handleWrapClick() {
     if (governor) {
@@ -66,14 +83,14 @@ function ManageVotes() {
         return;
       } else {
         const amount = scaleNumberToBigInt(toWrap, governor.decimals);
-        wrapToken(governor?.voteTokenAddress, amount, false).then((res) => {
+        wrapToken(governor?.voteTokenAddress, amount).then((res) => {
           refetchTokenBalance();
           refetchUnderlying();
           refetchVotingPower();
           if (emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)) {
             refetchClaimAmount();
           }
-          
+
           setToUnwrap("");
           setToWrap("");
         });
@@ -88,7 +105,7 @@ function ManageVotes() {
         return;
       } else {
         const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-        unwrapToken(governor.voteTokenAddress, amount, false).then((res) => {
+        unwrapToken(governor.voteTokenAddress, amount).then(() => {
           refetchUnderlying();
           refetchTokenBalance();
           refetchVotingPower();
@@ -104,8 +121,7 @@ function ManageVotes() {
 
   function handleClaim() {
     if (governor) {
-      const amount = scaleNumberToBigInt(toUnwrap, governor.decimals);
-      claimEmissions(governor.voteTokenAddress, false).then((res) => {
+      claimEmissions(governor.voteTokenAddress).then(() => {
         refetchUnderlying();
         refetchTokenBalance();
         refetchVotingPower();
@@ -122,7 +138,7 @@ function ManageVotes() {
         connect();
         return;
       } else {
-        delegate(governor.voteTokenAddress, newDelegate, false).then(() => {
+        delegate(governor.voteTokenAddress, newDelegate).then(() => {
           setNewDelegate("");
           refetchDelegate();
           refetchVotingPower();
@@ -137,7 +153,7 @@ function ManageVotes() {
         connect();
         return;
       } else {
-        delegate(governor.voteTokenAddress, walletAddress, false).then(() => {
+        delegate(governor.voteTokenAddress, walletAddress).then(() => {
           setNewDelegate("");
           refetchDelegate();
           refetchVotingPower();
@@ -167,7 +183,10 @@ function ManageVotes() {
         {governor?.isWrappedAsset === true && (
           <Container>
             {isOldYBXGovernor && (
-              <Container slim className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2">
+              <Container
+                slim
+                className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
+              >
                 <Image
                   src="/icons/report.svg"
                   width={28}
@@ -270,28 +289,30 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
-          {governor?.isWrappedAsset === true && claimAmount !== undefined && claimAmount > BigInt(0) && (
-            <>
-              <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
-                <Typography.Tiny className="text-snapLink">
-                  Emissions
-                </Typography.Tiny>
-                <Container slim className="flex flex-col justify-center">
-                  <Typography.P>
-                    {toBalance(claimAmount, governor?.decimals || 7)}{" "}
-                    {governor?.voteTokenMetadata?.symbol}
-                  </Typography.P>
+          {governor?.isWrappedAsset === true &&
+            claimAmount !== undefined &&
+            claimAmount > BigInt(0) && (
+              <>
+                <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
+                  <Typography.Tiny className="text-snapLink">
+                    Emissions
+                  </Typography.Tiny>
+                  <Container slim className="flex flex-col justify-center">
+                    <Typography.P>
+                      {toBalance(claimAmount, governor?.decimals || 7)}{" "}
+                      {governor?.voteTokenMetadata?.symbol}
+                    </Typography.P>
+                  </Container>
                 </Container>
-              </Container>
                 <Button
-                className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder"
-                onClick={handleClaim}
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader /> : "Claim"}
-              </Button>
-            </>
-          )}
+                  className="!w-full rounded-b-xl rounded-t-none flex !bg-white text-snapBorder"
+                  onClick={handleClaim}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader /> : "Claim"}
+                </Button>
+              </>
+            )}
         </Box>
         {governor?.isWrappedAsset === true && (
           <>
@@ -317,7 +338,10 @@ function ManageVotes() {
                   onChange={setToWrap}
                   value={toWrap}
                   type="number"
-                  max={bigintToString(underlyingTokenBalance ?? BigInt(0), governor?.decimals || 7)}
+                  max={bigintToString(
+                    underlyingTokenBalance ?? BigInt(0),
+                    governor?.decimals || 7
+                  )}
                 />
               </Container>
               <Button
@@ -350,7 +374,10 @@ function ManageVotes() {
                     onChange={setToUnwrap}
                     value={toUnwrap}
                     type="number"
-                    max={bigintToString(voteTokenBalance ?? BigInt(0), governor?.decimals || 7)}
+                    max={bigintToString(
+                      voteTokenBalance ?? BigInt(0),
+                      governor?.decimals || 7
+                    )}
                   />
                 </Container>
                 <Button
@@ -358,7 +385,13 @@ function ManageVotes() {
                   onClick={handleUnwrapClick}
                   disabled={isLoading || (connected && !toUnwrap)}
                 >
-                  {isLoading ? <Loader /> : connected ? "Unbond" : "Connect wallet"}
+                  {isLoading ? (
+                    <Loader />
+                  ) : connected ? (
+                    "Unbond"
+                  ) : (
+                    "Connect wallet"
+                  )}
                 </Button>
               </Box>
             )}
@@ -405,7 +438,10 @@ function ManageVotes() {
             <Container className="w-full flex flex-row justify-between gap-3">
               <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
               <Typography.P>
-                {toBalance(voteTokenBalance, governor?.voteTokenMetadata?.decimals || 7)}{" "}
+                {toBalance(
+                  voteTokenBalance,
+                  governor?.voteTokenMetadata?.decimals || 7
+                )}{" "}
                 {"delegated votes"}
               </Typography.P>
             </Container>

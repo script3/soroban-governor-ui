@@ -124,7 +124,7 @@ export default function CreateProposal() {
   }
 
   async function handleProposal(action: string) {
-    let newProposalId: number | undefined = undefined;
+    let newProposalId;
     switch (action) {
       case ProposalActionEnum.CALLDATA:
         const callDataToPass = parseCallData(calldata);
@@ -178,7 +178,11 @@ export default function CreateProposal() {
         );
     }
 
-    if (newProposalId !== undefined) {
+    if (
+      newProposalId !== undefined &&
+      "status" in newProposalId &&
+      newProposalId.status === rpc.Api.GetTransactionStatus.SUCCESS
+    ) {
       router.push(`/${params.dao}/proposals/`);
     }
   }

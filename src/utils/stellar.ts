@@ -73,6 +73,19 @@ export function parseErrorFromSimError(error: string): string {
   }
 }
 
+export function isRestoreResponse(
+  response:
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+): response is rpc.Api.SimulateTransactionRestoreResponse {
+  return (
+    response !== undefined &&
+    "restorePreamble" in response &&
+    !!response.restorePreamble.transactionData
+  );
+}
+
 export const jsonReplacer = (key: any, value: any) => {
   if (value instanceof Map) {
     return {

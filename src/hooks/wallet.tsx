@@ -45,33 +45,83 @@ export interface IWalletContext {
   disconnect: () => void;
   clearLastTx: () => void;
   rpcServer: () => rpc.Server;
+  restore: (
+    restoreResponse: rpc.Api.SimulateTransactionRestoreResponse
+  ) => Promise<rpc.Api.GetSuccessfulTransactionResponse | undefined>;
   vote: (
     proposalId: number,
     support: number,
     governorAddress: string
-  ) => Promise<void>;
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
   createProposal: (
     title: string,
     description: string,
     action: ProposalAction,
     governorAddress: string
-  ) => Promise<number | undefined>;
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
   executeProposal: (
     proposalId: number,
     governorAddress: string
-  ) => Promise<void>;
-  closeProposal: (proposalId: number, governorAddress: string) => Promise<void>;
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
+  closeProposal: (
+    proposalId: number,
+    governorAddress: string
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
   cancelProposal: (
     proposalId: number,
     governorAddress: string
-  ) => Promise<void>;
-  wrapToken: (voteTokenAddress: string, amount: bigint) => Promise<void>;
-  unwrapToken: (voteTokenAddress: string, amount: bigint) => Promise<void>;
-  claimEmissions: (voteTokenAddress: string) => Promise<void>;
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
+  wrapToken: (
+    voteTokenAddress: string,
+    amount: bigint
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
+  unwrapToken: (
+    voteTokenAddress: string,
+    amount: bigint
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
+  claimEmissions: (
+    voteTokenAddress: string
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
   delegate: (
     voteTokenAddress: string,
     addressToDelegate: string
-  ) => Promise<void>;
+  ) => Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  >;
   setNetwork: (
     newUrl: string,
     newPassphrase: string,
@@ -140,6 +190,7 @@ export const WalletProvider = ({ children = null as any }) => {
     if (!connected && !!autoConnect && autoConnect !== "false") {
       // @dev: timeout ensures chrome has the ability to load extensions
       setTimeout(() => {
+        walletKit.setWallet(autoConnect);
         handleSetWalletAddress();
       }, 1000);
     }
@@ -244,7 +295,11 @@ export const WalletProvider = ({ children = null as any }) => {
     proposalId: number,
     support: number,
     governorAddress: string
-  ) {
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected) {
         let governorClient = new GovernorContract(governorAddress);
@@ -253,7 +308,7 @@ export const WalletProvider = ({ children = null as any }) => {
           proposal_id: proposalId,
           support,
         });
-        await submitOperation(voteOperation, {
+        return await submitOperation(voteOperation, {
           notificationMode: "modal",
           notificationTitle: "Your vote is in!",
           successMessage: "Your vote has been submitted successfully",
@@ -262,6 +317,7 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error invoking vote: ", e);
     }
+    return undefined;
   }
 
   async function createProposal(
@@ -269,7 +325,11 @@ export const WalletProvider = ({ children = null as any }) => {
     description: string,
     action: ProposalAction,
     governorAddress: string
-  ): Promise<number | undefined> {
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected) {
         let governorClient = new GovernorContract(governorAddress);
@@ -279,29 +339,27 @@ export const WalletProvider = ({ children = null as any }) => {
           description,
           action,
         });
-        const submission = await submitOperation(proposeOperation, {
+        return await submitOperation(proposeOperation, {
           notificationMode: "flash",
           notificationTitle: "Proposal created",
           successMessage: "Proposal created",
           failureMessage: "Failed to create proposal",
         });
-        if (
-          submission?.status === rpc.Api.GetTransactionStatus.SUCCESS &&
-          submission.returnValue !== undefined
-        ) {
-          return GovernorContract.parsers.propose(
-            submission.returnValue.toXDR("base64")
-          );
-        }
-      } else {
-        return undefined;
       }
     } catch (e) {
       console.error("Error creating proposal: ", e);
     }
+    return undefined;
   }
 
-  async function executeProposal(proposalId: number, governorAddress: string) {
+  async function executeProposal(
+    proposalId: number,
+    governorAddress: string
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected) {
         let governorClient = new GovernorContract(governorAddress);
@@ -309,7 +367,7 @@ export const WalletProvider = ({ children = null as any }) => {
         let executeOperation = governorClient.execute({
           proposal_id: proposalId,
         });
-        await submitOperation(executeOperation, {
+        return await submitOperation(executeOperation, {
           notificationMode: "flash",
           notificationTitle: "Proposal executed",
           successMessage: "Proposal executed",
@@ -319,16 +377,24 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error executing proposal: ", e);
     }
+    return undefined;
   }
 
-  async function closeProposal(proposalId: number, governorAddress: string) {
+  async function closeProposal(
+    proposalId: number,
+    governorAddress: string
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected) {
         let governorClient = new GovernorContract(governorAddress);
         let closeOperation = governorClient.close({
           proposal_id: proposalId,
         });
-        await submitOperation(closeOperation, {
+        return await submitOperation(closeOperation, {
           notificationMode: "flash",
           notificationTitle: "Proposal closed",
           successMessage: "Proposal closed",
@@ -338,9 +404,17 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error closing proposal: ", e);
     }
+    return undefined;
   }
 
-  async function cancelProposal(proposalId: number, governorAddress: string) {
+  async function cancelProposal(
+    proposalId: number,
+    governorAddress: string
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected) {
         let governorClient = new GovernorContract(governorAddress);
@@ -348,7 +422,7 @@ export const WalletProvider = ({ children = null as any }) => {
           from: walletAddress,
           proposal_id: proposalId,
         });
-        await submitOperation(cancelOperation, {
+        return await submitOperation(cancelOperation, {
           notificationMode: "flash",
           notificationTitle: "Proposal cancelled",
           successMessage: "Proposal cancelled",
@@ -358,9 +432,17 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error cancelling proposal: ", e);
     }
+    return undefined;
   }
 
-  async function wrapToken(voteTokenAddress: string, amount: bigint) {
+  async function wrapToken(
+    voteTokenAddress: string,
+    amount: bigint
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected && walletAddress) {
         let votesClient = new BondingVotesContract(voteTokenAddress);
@@ -368,7 +450,7 @@ export const WalletProvider = ({ children = null as any }) => {
           from: walletAddress,
           amount,
         });
-        await submitOperation(proposeOperation, {
+        return await submitOperation(proposeOperation, {
           notificationMode: "flash",
           notificationTitle: "Tokens successfully bonded",
           successMessage: "Tokens successfully bonded",
@@ -378,9 +460,17 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error bonding token: ", e);
     }
+    return undefined;
   }
 
-  async function unwrapToken(voteTokenAddress: string, amount: bigint) {
+  async function unwrapToken(
+    voteTokenAddress: string,
+    amount: bigint
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected && walletAddress) {
         let votesClient = new BondingVotesContract(voteTokenAddress);
@@ -388,7 +478,7 @@ export const WalletProvider = ({ children = null as any }) => {
           from: walletAddress,
           amount,
         });
-        await submitOperation(withdrawOperation, {
+        return await submitOperation(withdrawOperation, {
           notificationMode: "flash",
           notificationTitle: "Tokens successfully unbonded",
           successMessage: "Tokens successfully unbonded",
@@ -398,16 +488,23 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error unbonding token: ", e);
     }
+    return undefined;
   }
 
-  async function claimEmissions(voteTokenAddress: string) {
+  async function claimEmissions(
+    voteTokenAddress: string
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected && walletAddress) {
         let votesClient = new BondingVotesContract(voteTokenAddress);
         let claimOperation = votesClient.claim({
           address: walletAddress,
         });
-        await submitOperation(claimOperation, {
+        return await submitOperation(claimOperation, {
           notificationMode: "flash",
           notificationTitle: "Emissions successfully claimed",
           successMessage: "Emissions successfully claimed",
@@ -417,9 +514,17 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error claiming emissions: ", e);
     }
+    return undefined;
   }
 
-  async function delegate(voteTokenAddress: string, addressToDelegate: string) {
+  async function delegate(
+    voteTokenAddress: string,
+    addressToDelegate: string
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       if (connected && walletAddress) {
         let votesClient = new TokenVotesContract(voteTokenAddress);
@@ -427,7 +532,7 @@ export const WalletProvider = ({ children = null as any }) => {
           account: walletAddress,
           delegatee: addressToDelegate,
         });
-        await submitOperation(delegateOperation, {
+        return await submitOperation(delegateOperation, {
           notificationMode: "flash",
           notificationTitle: "Succesfully delegated",
           successMessage: "Succesfully delegated",
@@ -437,6 +542,7 @@ export const WalletProvider = ({ children = null as any }) => {
     } catch (e) {
       console.error("Error delegating votes: ", e);
     }
+    return undefined;
   }
 
   async function submitTransaction(
@@ -545,9 +651,14 @@ export const WalletProvider = ({ children = null as any }) => {
       successMessage?: string;
       failureMessage?: string;
     } = {}
-  ): Promise<rpc.Api.GetSuccessfulTransactionResponse | undefined> {
+  ): Promise<
+    | rpc.Api.GetSuccessfulTransactionResponse
+    | rpc.Api.SimulateTransactionRestoreResponse
+    | undefined
+  > {
     try {
       setNotificationMode("flash");
+      setTxStatus(TxStatus.BUILDING);
       const stellarRpc = rpcServer();
       const account = await stellarRpc.getAccount(walletAddress);
       const tx_builder = new TransactionBuilder(account, {
@@ -585,6 +696,9 @@ export const WalletProvider = ({ children = null as any }) => {
         );
         setShowNotification(true);
         setTxStatus(TxStatus.FAIL);
+        if (rpc.Api.isSimulationRestore(simResponse)) {
+          return simResponse;
+        }
         return undefined;
       }
     } catch (e: any) {
@@ -599,7 +713,7 @@ export const WalletProvider = ({ children = null as any }) => {
 
   async function restore(
     sim: rpc.Api.SimulateTransactionRestoreResponse
-  ): Promise<void> {
+  ): Promise<rpc.Api.GetSuccessfulTransactionResponse | undefined> {
     const stellarRpc = rpcServer();
     let account = await stellarRpc.getAccount(walletAddress);
     setTxStatus(TxStatus.BUILDING);
@@ -614,7 +728,7 @@ export const WalletProvider = ({ children = null as any }) => {
       await sign(restore_tx.toXDR()),
       network.passphrase
     );
-    await submitTransaction(signed_restore_tx, {
+    return await submitTransaction(signed_restore_tx, {
       successMessage: "Successfully restored ledger entries",
       failureMessage: "Failed to restore entries",
     });
@@ -651,6 +765,7 @@ export const WalletProvider = ({ children = null as any }) => {
         connect,
         disconnect,
         clearLastTx,
+        restore,
         vote,
         createProposal,
         executeProposal,

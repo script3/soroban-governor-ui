@@ -1,5 +1,4 @@
 import { MouseEvent } from "react";
-import Typography from "./Typography";
 
 export interface ButtonProps {
   onClick: (e: MouseEvent) => void;
@@ -34,4 +33,3 @@ export function Button({
     </button>
   );
 }
-``;

@@ -54,6 +54,7 @@ export default function Proposal() {
     executeProposal,
     closeProposal,
     cancelProposal,
+    restore,
   } = useWallet();
 
   const { data: currentBlockNumber } = useCurrentBlockNumber();
@@ -118,16 +119,27 @@ export default function Proposal() {
       ? Number(proposal.vote_count.abstain) / Number(total_votes)
       : 0;
 
+  const [restoreVoteSim, setRestoreVoteSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(votingPowerEntry?.restoreResponse);
+
   function handleVote() {
     if (
       selectedSupport !== null &&
       proposal !== undefined &&
       currentGovernor !== undefined
     ) {
-      vote(proposal.id, selectedSupport, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      vote(proposal.id, selectedSupport, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreVoteSim(res);
+          } else {
+            setRestoreVoteSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
@@ -152,6 +164,18 @@ export default function Proposal() {
   function handleCancel() {
     if (proposal !== undefined && currentGovernor !== undefined) {
       cancelProposal(proposal.id, currentGovernor.address).then(() => {
+        refetch();
+        refetchVotes();
+      });
+    }
+  }
+
+  function handleRestore(
+    sim: rpc.Api.SimulateTransactionRestoreResponse | undefined
+  ) {
+    if (connected && sim !== undefined) {
+      restore(sim).then(() => {
+        setRestoreVoteSim(undefined);
         refetch();
         refetchVotes();
       });
@@ -368,7 +392,7 @@ export default function Proposal() {
                       ]}
                       selected={userVote ?? selectedSupport}
                     />
-                    <Button
+                    <RestoreButton
                       onClick={() => {
                         if (connected && userVote === undefined) {
                           handleVote();
@@ -376,22 +400,18 @@ export default function Proposal() {
                           connect();
                         }
                       }}
+                      onRestore={() => handleRestore(restoreVoteSim)}
                       className="!bg-secondary px-16 !w-full"
                       disabled={
-                        isLoading ||
                         userVote !== undefined ||
                         proposal.status !== ProposalStatusExt.Active ||
                         votingPower === BigInt(0)
                       }
+                      simResult={restoreVoteSim}
+                      isLoading={isLoading}
                     >
-                      {isLoading ? (
-                        <Loader />
-                      ) : connected ? (
-                        "Vote"
-                      ) : (
-                        "Connect Wallet to Vote"
-                      )}
-                    </Button>
+                      {connected ? "Vote" : "Connect Wallet to Vote"}
+                    </RestoreButton>
                   </Container>
                 </Box>
               </Container>
@@ -623,7 +643,10 @@ export default function Proposal() {
   );
 }
 
+import { RestoreButton } from "@/components/common/RestoreButton";
+import { isRestoreResponse } from "@/utils/stellar";
 import { GovernorSettings } from "@script3/soroban-governor-sdk";
+import { rpc } from "@stellar/stellar-sdk";
 import { GetStaticPaths, GetStaticProps } from "next";
 import governors from "../../../public/governors/governors.json";
 export const getStaticProps = ((context) => {

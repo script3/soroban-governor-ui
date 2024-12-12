@@ -80,7 +80,7 @@ function ManageVotes() {
     governor?.address ===
     "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV";
 
-  const [restoreDegegateSim, setRestoreDelegateSim] = useState<
+  const [restoreDelegateSim, setRestoreDelegateSim] = useState<
     rpc.Api.SimulateTransactionRestoreResponse | undefined
   >(delegateAddressEntry?.restoreResponse);
   const [restoreWrapSim, setRestoreWrapSim] = useState<
@@ -485,7 +485,7 @@ function ManageVotes() {
         )}
         {connected && <Typography.Big>Delegate</Typography.Big>}
         {connected &&
-          ((!!restoreDegegateSim && delegateAddress === undefined) ||
+          ((!!restoreDelegateSim && delegateAddress === undefined) ||
             !hasDelegate) && (
             <Box className="!p-0 flex gap-3 flex-col ">
               <Container className="flex flex-col justify-center p-3 pb-0 ">
@@ -504,8 +504,8 @@ function ManageVotes() {
               <RestoreButton
                 className="!w-full rounded-b-xl rounded-t-none flex !bg-secondary text-snapBorder active:opacity-50 "
                 onClick={handleDelegateClick}
-                onRestore={() => handleRestore(restoreDegegateSim)}
-                simResult={restoreDegegateSim}
+                onRestore={() => handleRestore(restoreDelegateSim)}
+                simResult={restoreDelegateSim}
                 disabled={
                   (connected && !newDelegate) ||
                   (connected && newDelegate.toString().length < 56)
@@ -518,7 +518,7 @@ function ManageVotes() {
           )}
         {connected &&
           ((hasDelegate && delegateAddress) ||
-            (!!restoreDegegateSim && !!delegateAddress)) && (
+            (!!restoreDelegateSim && !!delegateAddress)) && (
             <Box className="!p-0 flex gap-3 flex-col ">
               <Container className="flex flex-col justify-center p-4 border-b border-snapBorder">
                 <Typography.Small>Your delegate</Typography.Small>
@@ -536,8 +536,8 @@ function ManageVotes() {
               <RestoreButton
                 className="!w-full rounded-b-xl rounded-t-none flex !bg-[#49222b] text-red-500 border-red-700 active:opacity-50 "
                 onClick={handleRemoveDelegateClick}
-                onRestore={() => handleRestore(restoreDegegateSim)}
-                simResult={restoreDegegateSim}
+                onRestore={() => handleRestore(restoreDelegateSim)}
+                simResult={restoreDelegateSim}
                 isLoading={isLoading}
               >
                 {connected ? "Rescind delegation" : "Connect wallet"}

@@ -89,7 +89,8 @@ export function useGovernorSettings(
     enabled: governorId !== undefined && enabled,
     queryFn: async () => {
       if (governorId) {
-        return await getGovernorSettings(network, governorId);
+        let settings_entry = await getGovernorSettings(network, governorId);
+        return settings_entry?.entry;
       }
     },
   });
@@ -107,7 +108,8 @@ export function useGovernorCouncil(
     enabled: governorId !== undefined && enabled,
     queryFn: async () => {
       if (governorId) {
-        return await getGovernorCouncil(network, governorId);
+        let council_entry = await getGovernorCouncil(network, governorId);
+        return council_entry?.entry;
       }
     },
   });

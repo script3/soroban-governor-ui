@@ -1,5 +1,4 @@
 [
-
   {
     "name": "Testnet XLM Governor",
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
@@ -21,6 +20,20 @@
       "symbol":"gXLM",
       "decimals":7,
       "icon":"/icons/token/soroban.svg"
+    }
+  },
+  {
+    "name": "Stellar Community Fund",
+    "logo": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png",
+    "address": "CBR37C6IPA4TYMP35RXSA6BOQWNKIVA4TWPK3QIBKNDCFYPG5B37PKYX",
+    "voteTokenAddress": "CA2H6HWWLZHGI2QDFP6MLSXXXXJGVX5VN3BRTX4EDBT4IPKNPLL2TL6D",
+    "decimals": 9,
+    "isWrappedAsset": false,
+    "voteTokenMetadata": {
+      "name": "SCF",
+      "symbol": "SCF",
+      "decimals": 9,
+      "icon": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png"
     }
   }
 ]

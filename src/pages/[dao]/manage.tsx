@@ -53,7 +53,10 @@ function ManageVotes() {
     governor?.voteTokenAddress
   );
   const delegateAddress = delegateAddressEntry?.entry;
-  const hasDelegate = connected && delegateAddress !== walletAddress;
+  const hasDelegate =
+    connected &&
+    delegateAddress !== undefined &&
+    delegateAddress !== walletAddress;
 
   const { data: voteTokenBalanceEntry, refetch: refetchTokenBalance } =
     useWalletBalance(governor?.voteTokenAddress);

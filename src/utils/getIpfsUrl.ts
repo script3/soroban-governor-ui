@@ -1,15 +1,15 @@
 export function getIpfsUrl(url: string) {
-  const gateway: any = process.env.VITE_IPFS_GATEWAY || "cloudflare-ipfs.com";
+  const gateway: any = process.env.VITE_IPFS_GATEWAY || "ipfs.4everland.io";
   return getUrl(url, gateway);
 }
 export const gateways = [
-  "cloudflare-ipfs.com",
   "cf-ipfs.com",
   "ipfs.io",
   "ipfs.fleek.co",
   "gateway.pinata.cloud",
   "dweb.link",
   "ipfs.infura.io",
+  "ipfs.4everland.io",
 ];
 
 export function getUrl(uri: string, gateway = gateways[0]) {

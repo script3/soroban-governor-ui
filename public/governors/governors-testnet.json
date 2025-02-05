@@ -25,8 +25,8 @@
   {
     "name": "Stellar Community Fund",
     "logo": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png",
-    "address": "CBR37C6IPA4TYMP35RXSA6BOQWNKIVA4TWPK3QIBKNDCFYPG5B37PKYX",
-    "voteTokenAddress": "CA2H6HWWLZHGI2QDFP6MLSXXXXJGVX5VN3BRTX4EDBT4IPKNPLL2TL6D",
+    "address": "CDFJXJIAM53XEJZBTLAW7OPY3LGHSV3PLXDL3DCWX7255TCKRGUPKOFG",
+    "voteTokenAddress": "CBI2YTI3NBDCNTONH4IH6TUGH5B5V7AJDJKG7AH6YPQTLN7KE7QKDKLO",
     "decimals": 9,
     "isWrappedAsset": false,
     "voteTokenMetadata": {

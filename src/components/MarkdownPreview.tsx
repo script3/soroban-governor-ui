@@ -1,9 +1,9 @@
 import { getIpfsUrl } from "@/utils/getIpfsUrl";
 import { copyToClipboard } from "@/utils/string";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Remarkable } from "remarkable";
 import { linkify } from "remarkable/linkify";
-import copy from "../../public/icons/copy.svg"
+import copy from "../../public/icons/copy.svg";
 import "viewerjs/dist/viewer.css";
 import Viewer from "viewerjs";
 
@@ -20,17 +20,24 @@ export function MarkdownPreview({
   body: string;
   className?: string;
 }) {
-  const bodyToRender = useMemo(() => {
-    // Add the ipfs gateway to markdown images that start with ipfs://
-    function replaceIpfsUrl(match: string, p1: string) {
-      return match.replace(p1, getIpfsUrl(p1) || "");
-    }
-    const toRender = body.replace(
-      /!\[.*?\]\((ipfs:\/\/[a-zA-Z0-9]+?)\)/g,
-      replaceIpfsUrl
-    );
+  const [bodyToRender, setBodyToRender] = useState("");
 
-    return remarkable.render(toRender);
+  useMemo(() => {
+    async function processBody() {
+      let ipfsHash = body.match(/ipfs:\/\/[a-zA-Z0-9]+/g);
+      let toRender = body;
+      if (ipfsHash) {
+        for (const hash of ipfsHash) {
+          try {
+            let ipfsUrl = await getIpfsUrl(hash);
+            toRender = toRender.replace(hash, ipfsUrl || "");
+          } catch (e) {}
+        }
+      }
+      setBodyToRender(remarkable.render(toRender));
+    }
+
+    processBody();
   }, [body]);
 
   useEffect(() => {

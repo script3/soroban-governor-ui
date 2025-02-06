@@ -9,7 +9,7 @@ export type TextAreaProps = {
 export function TextArea({
   value,
   onChange,
-  disabled,
+  disabled = false,
   placeholder,
   className,
   isError,
@@ -21,8 +21,12 @@ export function TextArea({
       disabled={disabled}
       placeholder={placeholder}
       className={`w-full h-40 p-4 border border-snapBorder ${
-        isError ? "!border-error focus:!border-red-800" : "border-snapBorder focus:border-snapLink"
-      } rounded-lg outline-none  ${className || ""} `}
+        isError
+          ? "!border-error focus:!border-red-800"
+          : "border-snapBorder focus:border-snapLink"
+      } rounded-lg outline-none  ${className || ""} ${
+        disabled ? "text-gray-400" : ""
+      }`}
     />
   );
 }

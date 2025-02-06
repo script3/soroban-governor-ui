@@ -39,7 +39,7 @@ import {
 import {
   Calldata,
   GovernorSettings,
-  calldataToAuthInvocation,
+  authInvocationToCalldata,
   valToScVal,
 } from "@script3/soroban-governor-sdk";
 import {
@@ -74,10 +74,9 @@ export default function CreateProposal() {
 
   const [calldataSimSuccess, setCalldataSimSuccess] = useState<boolean>(false);
   const [calldataSimResult, setCalldataSimResult] = useState<string>("");
-  const [calldataAuthSuccess, setCalldataAuthSuccess] =
-    useState<boolean>(false);
-  const [callAuthResult, setCalldataAuthResult] = useState<string>("");
-
+  const [simulatedCallDataAuth, setSimulatedCallDataAuth] = useState<
+    Calldata[] | undefined
+  >(undefined);
   useDebouncedState(calldata, RPC_DEBOUNCE_DELAY, handleSimCalldata);
 
   const [governorSettings, setGovernorSettings] = useState<GovernorSettings>({
@@ -113,14 +112,25 @@ export default function CreateProposal() {
   function handleSetCalldataString(calldataString: string) {
     setJsonCalldata(calldataString);
     if (isCalldataString(calldataString)) {
-      const calldataObj = parse(calldataString) as Calldata;
+      const calldataObj = parse<Calldata>(calldataString);
+      calldataObj.auths = [];
       setCalldata(calldataObj);
     }
   }
 
   function handleSetCalldata(calldataObj: Calldata) {
     setCalldata(calldataObj);
-    setJsonCalldata(stringify(calldataObj, null, 2));
+    setJsonCalldata(
+      stringify(
+        {
+          contract_id: calldataObj.contract_id,
+          function: calldataObj.function,
+          args: calldataObj.args,
+        },
+        null,
+        2
+      )
+    );
   }
 
   async function handleProposal(action: string) {
@@ -130,6 +140,9 @@ export default function CreateProposal() {
         const callDataToPass = parseCallData(calldata);
 
         if (callDataToPass !== null) {
+          if (simulatedCallDataAuth !== undefined) {
+            callDataToPass.auths = simulatedCallDataAuth;
+          }
           newProposalId = await createProposal(
             title,
             description,
@@ -214,10 +227,7 @@ export default function CreateProposal() {
         let server = new rpc.Server(network.rpc, network.opts);
         let result = await server.simulateTransaction(tx);
         if (rpc.Api.isSimulationSuccess(result)) {
-          // attempt to validate that the auth is OK for the Governor by validating the authorization entry
-          // returned by the simulation
-          let validAuths = true;
-          let authResult = "No authorizations required.";
+          // Set required auths from simulation
           try {
             if (currentGovernor !== undefined) {
               let governor_sc_address_xdr = new Address(currentGovernor.address)
@@ -229,26 +239,19 @@ export default function CreateProposal() {
                   governor_sc_address_xdr
               );
               if (contract_auth !== undefined) {
-                let auth_invocation_xdr = contract_auth
+                let simContractAuth = contract_auth
                   .rootInvocation()
-                  .toXDR("base64");
-                let calldata_invocation_xdr =
-                  calldataToAuthInvocation(calldata).toXDR("base64");
-                if (auth_invocation_xdr !== calldata_invocation_xdr) {
-                  validAuths = false;
-                  authResult = `Soroban authorized invocation does not match calldata. Expected: ${auth_invocation_xdr}`;
-                } else {
-                  validAuths = true;
-                  authResult = `Validated calldata authorizations.`;
-                }
+                  .subInvocations();
+                const authFromSim: Calldata[] = simContractAuth.map((auth) =>
+                  authInvocationToCalldata(auth.toXDR("base64"))
+                );
+                setSimulatedCallDataAuth(authFromSim);
               }
             }
           } catch (e) {
-            validAuths = false;
-            authResult = `Auth was unable to be validate.`;
+            console.error("Failed to simulate calldata execution", e);
           }
-          setCalldataAuthSuccess(validAuths);
-          setCalldataAuthResult(authResult);
+
           let retval_xdr = result.result?.retval?.toXDR("base64");
           let retval: any = "";
           if (retval_xdr && retval_xdr !== "AAAAAQ==") {
@@ -265,27 +268,23 @@ export default function CreateProposal() {
         } else if (rpc.Api.isSimulationRestore(result)) {
           setCalldataSimSuccess(false);
           setCalldataSimResult(`Simulation hit expired ledger entries.`);
-          setCalldataAuthSuccess(false);
-          setCalldataAuthResult("");
+          setSimulatedCallDataAuth([]);
         } else {
           setCalldataSimSuccess(false);
           setCalldataSimResult(
             `Simulation failed: ${parseErrorFromSimError(result.error)}`
           );
-          setCalldataAuthSuccess(false);
-          setCalldataAuthResult("");
+          setSimulatedCallDataAuth([]);
         }
       } else {
         setCalldataSimSuccess(false);
         setCalldataSimResult("");
-        setCalldataAuthSuccess(false);
-        setCalldataAuthResult("");
+        setSimulatedCallDataAuth([]);
       }
     } catch (e: any) {
       setCalldataSimSuccess(false);
       setCalldataSimResult("Failed to build transaction");
-      setCalldataAuthSuccess(false);
-      setCalldataAuthResult("");
+      setSimulatedCallDataAuth([]);
       console.error(e);
     }
   }
@@ -410,35 +409,56 @@ export default function CreateProposal() {
                   onChange={setInputStyle}
                 />
                 {inputStyle === TYPE_JSON ? (
-                  <TextArea
-                    isError={isCalldataDisabled}
-                    className="min-h-72"
-                    value={jsonCalldata}
-                    onChange={handleSetCalldataString}
-                    placeholder={CALLDATA_PLACEHOLDER}
-                  />
-                ) : (
-                  <CalldataForm
-                    isAuth={false}
-                    calldata={
-                      calldata ?? {
-                        contract_id: "",
-                        function: "",
-                        args: [],
-                        auths: [],
+                  <>
+                    <Typography.Small className="text-snapLink !my-2 ">
+                      Calldata
+                    </Typography.Small>
+                    <TextArea
+                      isError={isCalldataDisabled}
+                      className="min-h-72"
+                      value={jsonCalldata}
+                      onChange={handleSetCalldataString}
+                      placeholder={CALLDATA_PLACEHOLDER}
+                    />
+                    <Typography.Small className="text-snapLink !my-2 ">
+                      Auths
+                    </Typography.Small>
+                    <TextArea
+                      isError={isCalldataDisabled}
+                      className="min-h-72"
+                      value={
+                        jsonCalldata !== ""
+                          ? stringify(simulatedCallDataAuth, null, 2)
+                          : ""
                       }
-                    }
-                    onChange={handleSetCalldata}
-                  />
-                )}
-                {calldataAuthSuccess ? (
-                  <Typography.Small className="text-green-500 mt-4 whitespace-normal break-all">
-                    {callAuthResult}
-                  </Typography.Small>
+                      onChange={() => {}}
+                      placeholder={"No Auth Required"}
+                      disabled={true}
+                    />
+                  </>
                 ) : (
-                  <Typography.Small className="text-red-500 mt-4 whitespace-normal break-all">
-                    {callAuthResult}
-                  </Typography.Small>
+                  <>
+                    <CalldataForm
+                      isAuth={false}
+                      calldata={
+                        calldata ?? {
+                          contract_id: "",
+                          function: "",
+                          args: [],
+                          auths: [],
+                        }
+                      }
+                      onChange={handleSetCalldata}
+                    />
+                    {simulatedCallDataAuth?.map((auth, index) => (
+                      <CalldataForm
+                        key={index}
+                        calldata={auth}
+                        isAuth={true}
+                        onChange={() => {}}
+                      />
+                    ))}
+                  </>
                 )}
                 {calldataSimSuccess ? (
                   <Typography.Small className="text-green-500 mt-4 whitespace-pre-wrap break-all">

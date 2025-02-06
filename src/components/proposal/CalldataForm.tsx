@@ -5,7 +5,6 @@ import { Button } from "../common/Button";
 import { TypedInput } from "../common/TypedInput";
 import { Calldata, Val } from "@script3/soroban-governor-sdk";
 import { isContractId } from "@/utils/validation";
-import { useEffect } from "react";
 
 export interface CalldataFormProps {
   calldata: Calldata;
@@ -18,7 +17,6 @@ export function CalldataForm({
   isAuth,
   onChange,
 }: CalldataFormProps) {
-
   function handleContractIdChange(new_value: string) {
     onChange({
       contract_id: new_value,
@@ -41,7 +39,7 @@ export function CalldataForm({
     onChange({
       contract_id: calldata.contract_id,
       function: calldata.function,
-      args: [...calldata.args, { value: "", type: { type: "" }}],
+      args: [...calldata.args, { value: "", type: { type: "" } }],
       auths: calldata.auths,
     });
   }
@@ -52,24 +50,6 @@ export function CalldataForm({
       function: calldata.function,
       args: calldata.args.slice(0, calldata.args.length - 1),
       auths: calldata.auths,
-    });
-  }
-
-  function handleAddAuth() {
-    onChange({
-      contract_id: calldata.contract_id,
-      function: calldata.function,
-      args: calldata.args,
-      auths: [...calldata.auths, { contract_id: "", function: "", args: [], auths: [] }],
-    });
-  }
-
-  function handleRemoveAuth() {
-    onChange({
-      contract_id: calldata.contract_id,
-      function: calldata.function,
-      args: calldata.args,
-      auths: calldata.auths.slice(0, calldata.auths.length - 1),
     });
   }
 
@@ -105,6 +85,7 @@ export function CalldataForm({
         placeholder={"Enter Contract Id"}
         value={calldata.contract_id}
         onChange={handleContractIdChange}
+        isDisabled={isAuth}
       ></Input>
       <Typography.Small className="text-snapLink !my-2 ">
         Function Name
@@ -114,6 +95,7 @@ export function CalldataForm({
         placeholder={"Enter Function Name"}
         value={calldata.function}
         onChange={handleFunctionChange}
+        isDisabled={isAuth}
       ></Input>
 
       <Typography.Small className="text-snapLink !my-2 ">Args</Typography.Small>
@@ -125,16 +107,27 @@ export function CalldataForm({
           placeholder={"Enter Argument"}
           value={arg}
           onChange={(new_value) => handleInputChange(index, new_value)}
+          isDisabled={isAuth}
         />
       ))}
-      <Container slim className="flex gap-2 flex-row justify-end">
-        <Button className="my-1" onClick={handleRemoveTypedInput}>
-          Remove Argument
-        </Button>
-        <Button className="my-1" onClick={handleAddTypedInput}>
-          Add Argument
-        </Button>
-      </Container>
+      {isAuth !== undefined && !isAuth && (
+        <Container slim className="flex gap-2 flex-row justify-end">
+          <Button
+            className="my-1"
+            onClick={handleRemoveTypedInput}
+            disabled={isAuth}
+          >
+            Remove Argument
+          </Button>
+          <Button
+            className="my-1"
+            onClick={handleAddTypedInput}
+            disabled={isAuth}
+          >
+            Add Argument
+          </Button>
+        </Container>
+      )}
       {isAuth !== undefined && !isAuth && (
         <Typography.Small className="text-snapLink !my-2 ">
           Auths
@@ -149,17 +142,6 @@ export function CalldataForm({
           />
         </Container>
       ))}
-
-      {isAuth !== undefined && !isAuth && (
-        <Container slim className="flex gap-2 flex-row justify-start">
-          <Button className="my-2" onClick={handleRemoveAuth}>
-            Remove Auth
-          </Button>
-          <Button className="my-2" onClick={handleAddAuth}>
-            Add Auth
-          </Button>
-        </Container>
-      )}
     </>
   );
 }

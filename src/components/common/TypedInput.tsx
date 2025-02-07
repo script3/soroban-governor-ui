@@ -11,6 +11,7 @@ export interface TypedInputProps {
   className?: string;
   error?: boolean;
   errorMessage?: string;
+  isDisabled?: boolean;
 }
 export function TypedInput({
   onChange,
@@ -19,6 +20,7 @@ export function TypedInput({
   className,
   error = false,
   errorMessage,
+  isDisabled = false,
 }: TypedInputProps) {
   const baseInputRef = useRef(null);
 
@@ -26,13 +28,16 @@ export function TypedInput({
     const new_value = e.target.value;
     if (value.type.type === "i32" || value.type.type === "u32") {
       onChange({ value: Number(new_value), type: value.type });
-    } else if (value.type.type === "boolean" && (new_value.toLowerCase() === "true" || new_value.toLowerCase() === "false")) {
+    } else if (
+      value.type.type === "boolean" &&
+      (new_value.toLowerCase() === "true" ||
+        new_value.toLowerCase() === "false")
+    ) {
       onChange({ value: new_value.toLowerCase() === "true", type: value.type });
     } else {
-      onChange({ value: new_value, type: value.type});
+      onChange({ value: new_value, type: value.type });
     }
   }
-
   function handleTypeChange(type: string) {
     const new_type = { type: type };
     onChange({ value: value.value, type: new_type });
@@ -53,12 +58,16 @@ export function TypedInput({
         placeholder={placeholder}
         autoCorrect="off"
         autoCapitalize="none"
-        className="input w-full border-none bg-transparent focus:border-none outline-none z-10"
+        className={`input w-full border-none bg-transparent focus:border-none outline-none z-10 ${
+          isDisabled ? "text-gray-400" : ""
+        }`}
         onChange={handleValueChange}
+        disabled={isDisabled}
       />
       <TypeSelectorDropdown
         value={value.type.type}
         onChange={handleTypeChange}
+        isDisabled={isDisabled}
       />
       {!!errorMessage && (
         <Typography.Tiny className="text-red">{errorMessage}</Typography.Tiny>

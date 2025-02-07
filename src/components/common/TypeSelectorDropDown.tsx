@@ -7,9 +7,14 @@ export interface TypeProps {
   value: string | undefined;
   onChange: (new_value: string) => void;
   type?: "number" | "text" | "url" | "email" | "password";
+  isDisabled?: boolean;
 }
 
-export function TypeSelectorDropdown({ value, onChange }: TypeProps) {
+export function TypeSelectorDropdown({
+  value,
+  onChange,
+  isDisabled = false,
+}: TypeProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const types = [
@@ -26,7 +31,7 @@ export function TypeSelectorDropdown({ value, onChange }: TypeProps) {
     "u64",
     "u128",
     "u256",
-    "xdr"
+    "xdr",
   ];
 
   const ref = React.useRef<HTMLDivElement>(null);
@@ -54,6 +59,7 @@ export function TypeSelectorDropdown({ value, onChange }: TypeProps) {
           aria-haspopup="true"
           aria-expanded="true"
           onClick={() => setIsOpen(!isOpen)}
+          disabled={isDisabled}
         >
           {value == undefined || value == "" ? "Type" : value}
           {isOpen ? (

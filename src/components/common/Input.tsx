@@ -12,6 +12,7 @@ export interface InputProps {
   error?: boolean;
   errorMessage?: string;
   max?: string;
+  isDisabled?: boolean;
 }
 
 export function Input({
@@ -24,6 +25,7 @@ export function Input({
   error = false,
   errorMessage,
   max,
+  isDisabled = false,
 }: InputProps) {
   const baseInputRef = useRef(null);
 
@@ -64,8 +66,11 @@ export function Input({
         placeholder={placeholder}
         autoCorrect="off"
         autoCapitalize="none"
-        className="input w-full border-none bg-transparent focus:border-none outline-none "
+        className={`input w-full border-none bg-transparent focus:border-none outline-none ${
+          isDisabled ? "text-gray-400" : ""
+        }`}
         onChange={handleChange}
+        disabled={isDisabled}
       />
       {!!max && (
         <button

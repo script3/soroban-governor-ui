@@ -63,7 +63,6 @@ export const CALLDATA_PLACEHOLDER = `JSON string of the function arguments.\nExa
       }
     }
   ],
-  "auths": [],
   "contract_id": "CCZFATFQOJS2DYOAXXUBEKQIHZAPZPR2SO32BVSUW7GOZQF3LSTWJTK4",
   "function": "transfer"
 }`;

@@ -26,13 +26,10 @@ export function isCalldata(obj: any): obj is Calldata {
     typeof obj === "object" &&
     obj !== null &&
     "args" in obj &&
-    "auths" in obj &&
     "contract_id" in obj &&
     "function" in obj &&
     Array.isArray(obj.args) &&
-    Array.isArray(obj.auths) &&
     obj.args.every(isVal) &&
-    obj.auths.every(isCalldata) &&
     typeof obj.contract_id === "string" &&
     isContractId(obj.contract_id) &&
     typeof obj.function === "string" &&

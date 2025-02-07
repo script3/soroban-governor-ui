@@ -689,9 +689,7 @@ export const WalletProvider = ({ children = null as any }) => {
         setNotificationTitle("Simulation Failed");
         setCleanTxMessage(
           options.failureMessage
-            ? `${`${options.failureMessage} | ${
-                ContractErrorType[error.type]
-              }`} `
+            ? `${options.failureMessage} | ${ContractErrorType[error.type]} `
             : ContractErrorType[error.type]
         );
         setShowNotification(true);
@@ -703,8 +701,10 @@ export const WalletProvider = ({ children = null as any }) => {
       }
     } catch (e: any) {
       console.error("Failed to submit transaction: ", e);
-      setCleanTxMessage(options.failureMessage || e?.message);
-      setNotificationTitle("Transaction Failed");
+      setCleanTxMessage(
+        `${options.failureMessage} | ${e.message}` || e?.message
+      );
+      setNotificationTitle(`Transaction Failed | ${e.message}`);
       setShowNotification(true);
       setTxStatus(TxStatus.FAIL);
       return undefined;

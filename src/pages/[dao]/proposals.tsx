@@ -43,7 +43,10 @@ function Proposals() {
     governor?.voteTokenAddress
   );
   const delegateAddress = delegateAddressEntry?.entry;
-  const hasDelegate = connected && delegateAddress !== walletAddress;
+  const hasDelegate =
+    connected &&
+    delegateAddress !== undefined &&
+    delegateAddress !== walletAddress;
   const { data: votingPowerEntry } = useVotingPower(governor?.voteTokenAddress);
   const votingPower = votingPowerEntry?.entry ?? BigInt(0);
   const { data: proposals } = useProposals(

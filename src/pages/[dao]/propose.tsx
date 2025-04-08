@@ -259,10 +259,9 @@ export default function CreateProposal() {
           }
           setCalldataSimSuccess(true);
           setCalldataSimResult(
-            `Successfully simulated. ${
-              retval === ""
-                ? "No return value detected."
-                : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
+            `Successfully simulated. ${retval === ""
+              ? "No return value detected."
+              : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
             }`
           );
         } else if (rpc.Api.isSimulationRestore(result)) {
@@ -288,6 +287,11 @@ export default function CreateProposal() {
       console.error(e);
     }
   }
+
+  const isCalldataSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.CALLDATA]).includes(ProposalActionEnum.CALLDATA);
+  const isCouncilSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.COUNCIL]).includes(ProposalActionEnum.COUNCIL);
+  const isSettingsSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SETTINGS]).includes(ProposalActionEnum.SETTINGS);
+  const isSnapshotSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SNAPSHOT]).includes(ProposalActionEnum.SNAPSHOT);
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
@@ -321,70 +325,74 @@ export default function CreateProposal() {
 
         <Container slim className=" flex flex-col gap-0 ">
           <Typography.P className="text-snapLink">Proposal type</Typography.P>
-          <RadioButton
-            endText="DAO will submit a transaction"
-            selected={proposalAction === ProposalActionEnum.CALLDATA}
-            onChange={() => {
-              setProposalAction(ProposalActionEnum.CALLDATA);
-            }}
-            label={
-              <Chip
-                className={`${
-                  classByProposalAction[ProposalActionEnum.CALLDATA]
-                } !py-4`}
-              >
-                {ProposalActionEnum.CALLDATA}
-              </Chip>
-            }
-          />
-          <RadioButton
-            endText="Change the security council of the DAO"
-            selected={proposalAction === ProposalActionEnum.COUNCIL}
-            onChange={() => {
-              setProposalAction(ProposalActionEnum.COUNCIL);
-            }}
-            label={
-              <Chip
-                className={`${
-                  classByProposalAction[ProposalActionEnum.COUNCIL]
-                } !py-4`}
-              >
-                {ProposalActionEnum.COUNCIL}
-              </Chip>
-            }
-          />
-          <RadioButton
-            endText="Change the settings of the DAO"
-            selected={proposalAction === ProposalActionEnum.SETTINGS}
-            onChange={() => {
-              setProposalAction(ProposalActionEnum.SETTINGS);
-            }}
-            label={
-              <Chip
-                className={`${
-                  classByProposalAction[ProposalActionEnum.SETTINGS]
-                } !py-4`}
-              >
-                {ProposalActionEnum.SETTINGS}
-              </Chip>
-            }
-          />
-          <RadioButton
-            endText="No execution action"
-            selected={proposalAction === ProposalActionEnum.SNAPSHOT}
-            onChange={() => {
-              setProposalAction(ProposalActionEnum.SNAPSHOT);
-            }}
-            label={
-              <Chip
-                className={`${
-                  classByProposalAction[ProposalActionEnum.SNAPSHOT]
-                } !py-4`}
-              >
-                {ProposalActionEnum.SNAPSHOT}
-              </Chip>
-            }
-          />
+          {isCalldataSupported && (
+            <RadioButton
+              endText="DAO will submit a transaction"
+              selected={proposalAction === ProposalActionEnum.CALLDATA}
+              onChange={() => {
+                setProposalAction(ProposalActionEnum.CALLDATA);
+              }}
+              label={
+                <Chip
+                  className={`${classByProposalAction[ProposalActionEnum.CALLDATA]
+                    } !py-4`}
+                >
+                  {ProposalActionEnum.CALLDATA}
+                </Chip>
+              }
+            />
+          )}
+          {isCouncilSupported && (
+            <RadioButton
+              endText="Change the security council of the DAO"
+              selected={proposalAction === ProposalActionEnum.COUNCIL}
+              onChange={() => {
+                setProposalAction(ProposalActionEnum.COUNCIL);
+              }}
+              label={
+                <Chip
+                  className={`${classByProposalAction[ProposalActionEnum.COUNCIL]
+                    } !py-4`}
+                >
+                  {ProposalActionEnum.COUNCIL}
+                </Chip>
+              }
+            />
+          )}
+          {isSettingsSupported && (
+            <RadioButton
+              endText="Change the settings of the DAO"
+              selected={proposalAction === ProposalActionEnum.SETTINGS}
+              onChange={() => {
+                setProposalAction(ProposalActionEnum.SETTINGS);
+              }}
+              label={
+                <Chip
+                  className={`${classByProposalAction[ProposalActionEnum.SETTINGS]
+                    } !py-4`}
+                >
+                  {ProposalActionEnum.SETTINGS}
+                </Chip>
+              }
+            />
+          )}
+          {isSnapshotSupported && (
+            <RadioButton
+              endText="No execution action"
+              selected={proposalAction === ProposalActionEnum.SNAPSHOT}
+              onChange={() => {
+                setProposalAction(ProposalActionEnum.SNAPSHOT);
+              }}
+              label={
+                <Chip
+                  className={`${classByProposalAction[ProposalActionEnum.SNAPSHOT]
+                    } !py-4`}
+                >
+                  {ProposalActionEnum.SNAPSHOT}
+                </Chip>
+              }
+            />
+          )}
         </Container>
         {!isPreview && (
           <>
@@ -431,7 +439,7 @@ export default function CreateProposal() {
                           ? stringify(simulatedCallDataAuth, null, 2)
                           : ""
                       }
-                      onChange={() => {}}
+                      onChange={() => { }}
                       placeholder={"No Auth Required"}
                       disabled={true}
                     />
@@ -455,7 +463,7 @@ export default function CreateProposal() {
                         key={index}
                         calldata={auth}
                         isAuth={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                       />
                     ))}
                   </>

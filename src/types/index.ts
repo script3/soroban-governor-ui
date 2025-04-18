@@ -105,6 +105,7 @@ export interface Governor {
   isWrappedAsset: boolean;
   underlyingTokenAddress?: string;
   underlyingTokenMetadata?: TokenMetadata;
+  supportedProposalTypes?: string[]
 }
 
 export interface Vote {

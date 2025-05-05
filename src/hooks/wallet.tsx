@@ -232,8 +232,8 @@ export const WalletProvider = ({ children = null as any }) => {
       await walletKit.openModal({
         onWalletSelected: async (option: ISupportedWallet) => {
           walletKit.setWallet(option.id);
-          setAutoConnect(option.id);
           await handleSetWalletAddress();
+          setAutoConnect(option.id);
         },
       });
     } catch (e: any) {

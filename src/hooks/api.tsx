@@ -32,6 +32,7 @@ import { Address, rpc } from "@stellar/stellar-sdk";
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import governors from "../../public/governors/governors.json";
 import { useWallet } from "./wallet";
+
 const DEFAULT_STALE_TIME = 20 * 1000;
 const ONE_DAY_LEDGERS = 17280;
 const MAX_PROPOSAL_LIFETIME = 31 * ONE_DAY_LEDGERS;
@@ -128,22 +129,46 @@ export function useProposals(
 
   async function loadProposals(): Promise<Proposal[]> {
     if (paramsDefined) {
-      let proposals = (await fetchProposalsByGovernor(governorAddress)).sort(
-        ({ id: a }, { id: b }) => b - a
-      );
       let lastProposalId =
         ((await getNextPropId(network, governorAddress)) ?? 0) - 1;
-      let currPropIndex = 0;
 
-      for (let propId = lastProposalId; propId >= 0; propId--) {
-        let indexerProp = proposals[currPropIndex];
-        if (indexerProp !== undefined && indexerProp.id === propId) {
-          // check if proposal needs to be updated from chain
-          if (
-            indexerProp.status === ProposalStatusExt.Open ||
-            (indexerProp.status === ProposalStatusExt.Successful &&
-              indexerProp.action.tag !== "Snapshot")
-          ) {
+      // try and load proposals from GraphQL
+      // if it fails, load from RPC
+      try {
+        let proposals = (await fetchProposalsByGovernor(governorAddress)).sort(
+          ({ id: a }, { id: b }) => b - a
+        );
+        let currPropIndex = 0;
+  
+        for (let propId = lastProposalId; propId >= 0; propId--) {
+          let indexerProp = proposals[currPropIndex];
+          if (indexerProp !== undefined && indexerProp.id === propId) {
+            // check if proposal needs to be updated from chain
+            if (
+              indexerProp.status === ProposalStatusExt.Open ||
+              (indexerProp.status === ProposalStatusExt.Successful &&
+                indexerProp.action.tag !== "Snapshot")
+            ) {
+              let fromRPC = await getProposal(
+                network,
+                governorAddress,
+                propId,
+                currentBlock
+              );
+              if (fromRPC?.entry) {
+                proposals[currPropIndex] = fromRPC.entry;
+              } else {
+                break;
+              }
+            } else if (
+              indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
+              currentBlock
+            ) {
+              break;
+            }
+            currPropIndex++;
+          } else {
+            // propId does not exist. Insert it.
             let fromRPC = await getProposal(
               network,
               governorAddress,
@@ -151,19 +176,18 @@ export function useProposals(
               currentBlock
             );
             if (fromRPC?.entry) {
-              proposals[currPropIndex] = fromRPC.entry;
+              proposals.splice(currPropIndex, 0, fromRPC.entry);
+              currPropIndex++;
             } else {
               break;
             }
-          } else if (
-            indexerProp.vote_start + MAX_PROPOSAL_LIFETIME <
-            currentBlock
-          ) {
-            break;
           }
-          currPropIndex++;
-        } else {
-          // propId does not exist. Insert it.
+        }
+        return proposals;
+      } catch (e) {
+        console.error("Failed to fetch proposals from GraphQL: ", e);
+        const proposals = [];
+        for (let propId = lastProposalId; propId >= 0; propId--) {
           let fromRPC = await getProposal(
             network,
             governorAddress,
@@ -171,21 +195,20 @@ export function useProposals(
             currentBlock
           );
           if (fromRPC?.entry) {
-            proposals.splice(currPropIndex, 0, fromRPC.entry);
-            currPropIndex++;
+            proposals.push(fromRPC.entry);
           } else {
             break;
           }
         }
+        return proposals;
       }
-      return proposals;
     } else {
       return [];
     }
   }
 
   return useQuery({
-    staleTime: DEFAULT_STALE_TIME,
+    staleTime: 60 * 1000,
     enabled: paramsDefined && enabled,
     placeholderData: [],
     queryKey: ["proposals", governorAddress],

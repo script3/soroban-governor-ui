@@ -9,6 +9,7 @@ import governors from "../../../public/governors/governors.json";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { Loader } from "@/components/common/Loader";
 import { Address } from "@stellar/stellar-sdk";
+import ReactMarkdown from 'react-markdown';
 
 function About() {
   const router = useRouter();
@@ -20,7 +21,6 @@ function About() {
     // TEMP-1: Temp fix until CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV is no longer supported
     currentGovernor !== undefined && currentGovernor.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV"
   );
-
 
   if (settings == undefined || currentGovernor == undefined) {
     return (
@@ -41,7 +41,7 @@ function About() {
   }
 
   // TEMP-1: Temp fix until CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV is no longer supported
-  let resolved_council = currentGovernor?.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV" ? 
+  let resolved_council = currentGovernor?.address !== "CAPPT7L7GX4NWFISYGBZSUAWBDTLHT75LHHA2H5MPWVNE7LQH3RRH6OV" ?
     council : new Address("GBCAS7XIGDRZY4BMABJMGGW7J3YTITRRV5BTEMFQE5ZZSSVWHHX2ZSS4");
 
   let quorum_vote_types: string[] = [];
@@ -54,7 +54,6 @@ function About() {
   if (settings?.counting_type & 0b001) {
     quorum_vote_types.push("abstain");
   }
-
   return (
     <Container slim className=" mt-3 flex flex-col gap-6 w-full">
       <Box className="flex flex-col gap-3 p-4 w-full">
@@ -63,6 +62,14 @@ function About() {
         <Typography.Small className="text-snapLink pl-2">
           {currentGovernor.name}
         </Typography.Small>
+        {currentGovernor.description && (
+          <>
+            <Typography.P>Description</Typography.P>
+            <Typography.Small className="text-snapLink pl-2 markdown">
+              <ReactMarkdown>{currentGovernor.description}</ReactMarkdown>
+            </Typography.Small>
+          </>
+        )}
         <Typography.Medium>Settings</Typography.Medium>
         <Container className="pl-2 flex flex-col gap-3">
           <Typography.P>Council</Typography.P>

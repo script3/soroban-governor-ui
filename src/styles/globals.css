@@ -87,7 +87,7 @@ span {
 }
 
 .modal .shell .modal-body {
-  background:  #1c1b20;
+  background: #1c1b20;
   max-height: var(--5f7ca367);
   flex: auto;
   text-align: initial;
@@ -130,6 +130,10 @@ span {
 }
 
 /** markdown styles */
+.markdown a {
+  text-decoration: underline;
+}
+
 .markdown-body {
   font-size: 19px;
   line-height: 1.3;

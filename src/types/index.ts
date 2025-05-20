@@ -97,6 +97,7 @@ export interface TokenMetadata {
 
 export interface Governor {
   name: string;
+  description?: string;
   logo: string;
   address: string;
   voteTokenAddress: string;
@@ -106,6 +107,7 @@ export interface Governor {
   underlyingTokenAddress?: string;
   underlyingTokenMetadata?: TokenMetadata;
   supportedProposalTypes?: string[]
+  delegation?: boolean
 }
 
 export interface Vote {

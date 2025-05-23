@@ -593,7 +593,7 @@ export const WalletProvider = ({ children = null as any }) => {
       curr_time = Date.now();
       while (
         get_tx_response.status === "NOT_FOUND" &&
-        Date.now() - curr_time < 10000
+        Date.now() - curr_time < 20000
       ) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         get_tx_response = await stellarRpc.getTransaction(hash);
@@ -660,10 +660,12 @@ export const WalletProvider = ({ children = null as any }) => {
       setNotificationMode("flash");
       setTxStatus(TxStatus.BUILDING);
       const stellarRpc = rpcServer();
+      const fee_data = await stellarRpc.getFeeStats();
+      const fee = Math.max(Number(fee_data.sorobanInclusionFee.p60), 2000).toString();
       const account = await stellarRpc.getAccount(walletAddress);
       const tx_builder = new TransactionBuilder(account, {
         networkPassphrase: network.passphrase,
-        fee: BASE_FEE,
+        fee: fee,
         timebounds: {
           minTime: 0,
           maxTime: Math.floor(Date.now() / 1000) + 5 * 60 * 1000,

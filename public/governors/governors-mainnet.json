@@ -24,6 +24,7 @@
   },
   {
     "name": "YieldBlox",
+    "description": "YieldBlox DAO manages a decentralized lending market via Blend protocol, enabling permissionless lending and borrowing with fully decentralized, community-based governance.",
     "logo": "https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
     "address": "CANSYFVMIP7JVYEZQ463Y2I2VLEVNLDJJ4QNZTDBGLOOGKURPTW4A6FQ",
     "voteTokenAddress": "CAZ2U7Z2LS3N72NKMOR34HOV4WFDCMA2TPWD3KU4EA2VKZARFPMLF3LI",
@@ -38,6 +39,7 @@
       "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png",
       "issuer":"GBUYYBXWCLT2MOSSHRFCKMEDFOVSCAXNIEW424GLN666OEXHAAWBDYMX"
     },
+    "delegation": true,
     "voteTokenMetadata":{
       "name":"gYBX",
       "symbol":"gYBX",

@@ -4,10 +4,13 @@ import {
   ISupportedWallet,
   LobstrModule,
   StellarWalletsKit,
+  HanaModule,
+  HotWalletModule,
   WalletNetwork,
   XBULL_ID,
   xBullModule,
 } from "@creit.tech/stellar-wallets-kit/index";
+import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
 
 import {
   BondingVotesContract,
@@ -154,6 +157,9 @@ const walletKit: StellarWalletsKit = new StellarWalletsKit({
     new FreighterModule(),
     new LobstrModule(),
     new AlbedoModule(),
+    new HanaModule(),
+    new LedgerModule(),
+    new HotWalletModule(),
   ],
 });
 

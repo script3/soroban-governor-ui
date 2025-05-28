@@ -77,6 +77,10 @@ export default function CreateProposal() {
   const [simulatedCallDataAuth, setSimulatedCallDataAuth] = useState<
     Calldata[] | undefined
   >(undefined);
+  const [isValidCalldata, setIsValidCalldata] = useState<boolean>(false);
+  const [allowFailedSimulation, setAllowFailedSimulation] =
+    useState<boolean>(false);
+
   useDebouncedState(calldata, RPC_DEBOUNCE_DELAY, handleSimCalldata);
 
   const [governorSettings, setGovernorSettings] = useState<GovernorSettings>({
@@ -100,7 +104,8 @@ export default function CreateProposal() {
     proposalAction === ProposalActionEnum.CALLDATA &&
     (!isCalldata(calldata) ||
       !isCalldataString(jsonCalldata) ||
-      !calldataSimSuccess);
+      !calldataSimSuccess) &&
+    !allowFailedSimulation;
   const isSettingsDisabled =
     proposalAction === ProposalActionEnum.SETTINGS &&
     (!governorSettings ||
@@ -203,6 +208,7 @@ export default function CreateProposal() {
   async function handleSimCalldata(calldata: Calldata) {
     try {
       if (isCalldata(calldata)) {
+        setIsValidCalldata(true);
         let account = new Account(
           "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
           "1"
@@ -259,9 +265,10 @@ export default function CreateProposal() {
           }
           setCalldataSimSuccess(true);
           setCalldataSimResult(
-            `Successfully simulated. ${retval === ""
-              ? "No return value detected."
-              : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
+            `Successfully simulated. ${
+              retval === ""
+                ? "No return value detected."
+                : `Return Value: \n ${JSON.stringify(retval, jsonReplacer, 2)}`
             }`
           );
         } else if (rpc.Api.isSimulationRestore(result)) {
@@ -288,10 +295,18 @@ export default function CreateProposal() {
     }
   }
 
-  const isCalldataSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.CALLDATA]).includes(ProposalActionEnum.CALLDATA);
-  const isCouncilSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.COUNCIL]).includes(ProposalActionEnum.COUNCIL);
-  const isSettingsSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SETTINGS]).includes(ProposalActionEnum.SETTINGS);
-  const isSnapshotSupported = (currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SNAPSHOT]).includes(ProposalActionEnum.SNAPSHOT);
+  const isCalldataSupported = (
+    currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.CALLDATA]
+  ).includes(ProposalActionEnum.CALLDATA);
+  const isCouncilSupported = (
+    currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.COUNCIL]
+  ).includes(ProposalActionEnum.COUNCIL);
+  const isSettingsSupported = (
+    currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SETTINGS]
+  ).includes(ProposalActionEnum.SETTINGS);
+  const isSnapshotSupported = (
+    currentGovernor?.supportedProposalTypes ?? [ProposalActionEnum.SNAPSHOT]
+  ).includes(ProposalActionEnum.SNAPSHOT);
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
@@ -334,8 +349,9 @@ export default function CreateProposal() {
               }}
               label={
                 <Chip
-                  className={`${classByProposalAction[ProposalActionEnum.CALLDATA]
-                    } !py-4`}
+                  className={`${
+                    classByProposalAction[ProposalActionEnum.CALLDATA]
+                  } !py-4`}
                 >
                   {ProposalActionEnum.CALLDATA}
                 </Chip>
@@ -351,8 +367,9 @@ export default function CreateProposal() {
               }}
               label={
                 <Chip
-                  className={`${classByProposalAction[ProposalActionEnum.COUNCIL]
-                    } !py-4`}
+                  className={`${
+                    classByProposalAction[ProposalActionEnum.COUNCIL]
+                  } !py-4`}
                 >
                   {ProposalActionEnum.COUNCIL}
                 </Chip>
@@ -368,8 +385,9 @@ export default function CreateProposal() {
               }}
               label={
                 <Chip
-                  className={`${classByProposalAction[ProposalActionEnum.SETTINGS]
-                    } !py-4`}
+                  className={`${
+                    classByProposalAction[ProposalActionEnum.SETTINGS]
+                  } !py-4`}
                 >
                   {ProposalActionEnum.SETTINGS}
                 </Chip>
@@ -385,8 +403,9 @@ export default function CreateProposal() {
               }}
               label={
                 <Chip
-                  className={`${classByProposalAction[ProposalActionEnum.SNAPSHOT]
-                    } !py-4`}
+                  className={`${
+                    classByProposalAction[ProposalActionEnum.SNAPSHOT]
+                  } !py-4`}
                 >
                   {ProposalActionEnum.SNAPSHOT}
                 </Chip>
@@ -439,7 +458,7 @@ export default function CreateProposal() {
                           ? stringify(simulatedCallDataAuth, null, 2)
                           : ""
                       }
-                      onChange={() => { }}
+                      onChange={() => {}}
                       placeholder={"No Auth Required"}
                       disabled={true}
                     />
@@ -463,7 +482,7 @@ export default function CreateProposal() {
                         key={index}
                         calldata={auth}
                         isAuth={true}
-                        onChange={() => { }}
+                        onChange={() => {}}
                       />
                     ))}
                   </>
@@ -473,9 +492,34 @@ export default function CreateProposal() {
                     {calldataSimResult}
                   </Typography.Small>
                 ) : (
-                  <Typography.Small className="text-red-500 mt-4 whitespace-pre-wrap break-all">
-                    {calldataSimResult}
-                  </Typography.Small>
+                  <Container>
+                    <Typography.Small className="text-red-500 mt-4 whitespace-pre-wrap break-all block">
+                      {calldataSimResult}
+                    </Typography.Small>
+
+                    {isValidCalldata && (
+                      <Container
+                        slim
+                        className="flex flex-row items-center mb-4"
+                      >
+                        <button
+                          className={`rounded-full h-4 w-4 appearance-none border-2 focus:outline-1 focus:outline focus:outline-white mr-2 bg-white ${
+                            allowFailedSimulation
+                              ? "border-snapLink border-[5px]"
+                              : "border-white"
+                          }`}
+                          onClick={() => {
+                            setAllowFailedSimulation(!allowFailedSimulation);
+                          }}
+                        />
+                        <Typography.Small className="text-yellow-300 break-word">
+                          {
+                            "Click to proceed with failed proposal simulation. Ensure that pre-authorization is not required for the proposal."
+                          }
+                        </Typography.Small>
+                      </Container>
+                    )}
+                  </Container>
                 )}
               </>
             )}

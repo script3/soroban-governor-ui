@@ -33,6 +33,7 @@ import {
   isCalldata,
   isCalldataString,
   isMaxTimeExceeded,
+  isPreAuthCalldataString,
   isValidGovernorSettings,
   parseCallData,
 } from "@/utils/validation";
@@ -40,6 +41,7 @@ import {
   Calldata,
   GovernorSettings,
   authInvocationToCalldata,
+  calldataToAuthInvocation,
   valToScVal,
 } from "@script3/soroban-governor-sdk";
 import {
@@ -56,6 +58,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import governors from "../../../public/governors/governors.json";
+import { compareCalldataArrays } from "@/utils/calldata";
 
 const TYPE_FORM = "Form";
 const TYPE_JSON = "Json";
@@ -70,6 +73,10 @@ export default function CreateProposal() {
 
   const [calldata, setCalldata] = useState<Calldata | undefined>(undefined);
   const [jsonCalldata, setJsonCalldata] = useState("");
+  const [jsonPreAuthCalldata, setJsonPreAuthCalldata] = useState("");
+  const [useManualPreAuth, setUseManualPreAuth] = useState<boolean>(false);
+  const [callDataPreAuth, setCallDataPreAuth] = useState<Calldata[]>([]);
+
   const [inputStyle, setInputStyle] = useState<string>(TYPE_FORM);
 
   const [calldataSimSuccess, setCalldataSimSuccess] = useState<boolean>(false);
@@ -138,6 +145,36 @@ export default function CreateProposal() {
     );
   }
 
+  function handleSetPreAuthCalldataString(calldataString: string) {
+    setJsonPreAuthCalldata(calldataString);
+    if (isPreAuthCalldataString(calldataString)) {
+      const calldataObj = parse<Calldata[]>(calldataString);
+      setCallDataPreAuth(calldataObj);
+    }
+  }
+
+  function handleAddAuth() {
+    const newAuths = [
+      ...callDataPreAuth,
+      { contract_id: "", function: "", args: [], auths: [] },
+    ];
+    setJsonPreAuthCalldata(stringify(newAuths, null, 2));
+    setCallDataPreAuth(newAuths);
+  }
+
+  function handleRemoveAuth() {
+    let newAuths = callDataPreAuth.slice(0, callDataPreAuth.length - 1);
+    setCallDataPreAuth(newAuths);
+    setJsonPreAuthCalldata(stringify(newAuths, null, 2));
+  }
+
+  function handleAuthChange(index: number, newAuth: Calldata) {
+    const newAuths: Calldata[] = [...callDataPreAuth];
+    newAuths[index] = newAuth;
+    setCallDataPreAuth(newAuths);
+    setJsonPreAuthCalldata(stringify(newAuths, null, 2));
+  }
+
   async function handleProposal(action: string) {
     let newProposalId;
     switch (action) {
@@ -145,8 +182,10 @@ export default function CreateProposal() {
         const callDataToPass = parseCallData(calldata);
 
         if (callDataToPass !== null) {
-          if (simulatedCallDataAuth !== undefined) {
-            callDataToPass.auths = simulatedCallDataAuth;
+          if (useManualPreAuth) {
+            callDataToPass.auths = callDataPreAuth;
+          } else {
+            callDataToPass.auths = simulatedCallDataAuth ?? [];
           }
           newProposalId = await createProposal(
             title,
@@ -252,6 +291,8 @@ export default function CreateProposal() {
                   authInvocationToCalldata(auth.toXDR("base64"))
                 );
                 setSimulatedCallDataAuth(authFromSim);
+              } else {
+                setSimulatedCallDataAuth([]);
               }
             }
           } catch (e) {
@@ -274,25 +315,31 @@ export default function CreateProposal() {
         } else if (rpc.Api.isSimulationRestore(result)) {
           setCalldataSimSuccess(false);
           setCalldataSimResult(`Simulation hit expired ledger entries.`);
-          setSimulatedCallDataAuth([]);
+          setSimulatedCallDataAuth(undefined);
         } else {
           setCalldataSimSuccess(false);
           setCalldataSimResult(
             `Simulation failed: ${parseErrorFromSimError(result.error)}`
           );
-          setSimulatedCallDataAuth([]);
+          setSimulatedCallDataAuth(undefined);
         }
       } else {
         setCalldataSimSuccess(false);
         setCalldataSimResult("");
-        setSimulatedCallDataAuth([]);
+        setSimulatedCallDataAuth(undefined);
       }
     } catch (e: any) {
       setCalldataSimSuccess(false);
       setCalldataSimResult("Failed to build transaction");
-      setSimulatedCallDataAuth([]);
+      setSimulatedCallDataAuth(undefined);
       console.error(e);
     }
+  }
+
+  function handleToggleManualPreAuth() {
+    setUseManualPreAuth(!useManualPreAuth);
+    setCallDataPreAuth(simulatedCallDataAuth ?? []);
+    setJsonPreAuthCalldata(stringify(simulatedCallDataAuth ?? [], null, 2));
   }
 
   const isCalldataSupported = (
@@ -310,7 +357,7 @@ export default function CreateProposal() {
 
   return (
     <Container className="flex flex-col lg:flex-row gap-4">
-      <div className="flex flex-col w-max lg:w-8/12 lg:pr-5">
+      <div className="flex flex-col w-full lg:w-8/12 lg:pr-5">
         <Typography.P
           onClick={() => {
             router.back();
@@ -447,26 +494,11 @@ export default function CreateProposal() {
                       onChange={handleSetCalldataString}
                       placeholder={CALLDATA_PLACEHOLDER}
                     />
-                    <Typography.Small className="text-snapLink !my-2 ">
-                      Auths
-                    </Typography.Small>
-                    <TextArea
-                      isError={isCalldataDisabled}
-                      className="min-h-72"
-                      value={
-                        jsonCalldata !== ""
-                          ? stringify(simulatedCallDataAuth, null, 2)
-                          : ""
-                      }
-                      onChange={() => {}}
-                      placeholder={"No Auth Required"}
-                      disabled={true}
-                    />
                   </>
                 ) : (
                   <>
                     <CalldataForm
-                      isAuth={false}
+                      disabled={false}
                       calldata={
                         calldata ?? {
                           contract_id: "",
@@ -477,22 +509,104 @@ export default function CreateProposal() {
                       }
                       onChange={handleSetCalldata}
                     />
-                    {simulatedCallDataAuth?.map((auth, index) => (
-                      <CalldataForm
-                        key={index}
-                        calldata={auth}
-                        isAuth={true}
-                        onChange={() => {}}
-                      />
-                    ))}
                   </>
                 )}
+                <>
+                  <Container slim className="flex flex-row items-center my-2">
+                    <Typography.Small className="text-snapLink !my-2 mr-1">
+                      Auths
+                    </Typography.Small>
+                    <Button
+                      className={`${
+                        useManualPreAuth
+                          ? "bg-white text-black"
+                          : "bg-neutral-800 text-white"
+                      }  py-2 px-4`}
+                      onClick={handleToggleManualPreAuth}
+                    >
+                      {!useManualPreAuth ? "Edit" : "Simulate"}
+                    </Button>
+                  </Container>
+                  {inputStyle === TYPE_JSON ? (
+                    <TextArea
+                      isError={isCalldataDisabled}
+                      className="min-h-72"
+                      value={jsonPreAuthCalldata}
+                      onChange={handleSetPreAuthCalldataString}
+                      placeholder={"No Auth Required"}
+                      disabled={!useManualPreAuth}
+                    />
+                  ) : (
+                    <>
+                      {useManualPreAuth
+                        ? callDataPreAuth.map((arg, index) => (
+                            <CalldataForm
+                              key={index}
+                              disabled={!useManualPreAuth}
+                              calldata={arg}
+                              onChange={(new_value) =>
+                                handleAuthChange(index, new_value)
+                              }
+                            />
+                          ))
+                        : simulatedCallDataAuth?.map((arg, index) => (
+                            <CalldataForm
+                              key={index}
+                              disabled={true}
+                              calldata={arg}
+                              onChange={(new_value) =>
+                                handleAuthChange(index, new_value)
+                              }
+                            />
+                          ))}
+
+                      {useManualPreAuth && (
+                        <Container
+                          slim
+                          className="flex gap-2 flex-row justify-start"
+                        >
+                          <Button className="my-2" onClick={handleRemoveAuth}>
+                            Remove Auth
+                          </Button>
+                          <Button className="my-2" onClick={handleAddAuth}>
+                            Add Auth
+                          </Button>
+                        </Container>
+                      )}
+                    </>
+                  )}
+                </>
+                {useManualPreAuth &&
+                  simulatedCallDataAuth !== undefined &&
+                  !compareCalldataArrays(
+                    simulatedCallDataAuth,
+                    callDataPreAuth
+                  ) && (
+                    <>
+                      <Typography.Small className="text-yellow-300">
+                        The inputed pre-auth does not match the simulated
+                        pre-auth. Please ensure that the manual
+                        pre-authorization is correct.
+                      </Typography.Small>
+                      {simulatedCallDataAuth.map((auth, index) => (
+                        <Typography.Small
+                          className="text-yellow-300 break-all"
+                          key={index}
+                        >
+                          Simulated Auth XDR:{" "}
+                          {calldataToAuthInvocation(
+                            simulatedCallDataAuth[0]
+                          ).toXDR("base64")}
+                        </Typography.Small>
+                      ))}
+                    </>
+                  )}
                 {calldataSimSuccess ? (
                   <Typography.Small className="text-green-500 mt-4 whitespace-pre-wrap break-all">
                     {calldataSimResult}
                   </Typography.Small>
                 ) : (
-                  <Container>
+                  <Container slim>
                     <Typography.Small className="text-red-500 mt-4 whitespace-pre-wrap break-all block">
                       {calldataSimResult}
                     </Typography.Small>
@@ -503,7 +617,7 @@ export default function CreateProposal() {
                         className="flex flex-row items-center mb-4"
                       >
                         <button
-                          className={`rounded-full h-4 w-4 appearance-none border-2 focus:outline-1 focus:outline focus:outline-white mr-2 bg-white ${
+                          className={`rounded-full h-4 w-4 appearance-none border-2 focus:outline-1 focus:outline focus:outline-white mr-2 bg-white flex-shrink-0 ${
                             allowFailedSimulation
                               ? "border-snapLink border-[5px]"
                               : "border-white"
@@ -512,10 +626,10 @@ export default function CreateProposal() {
                             setAllowFailedSimulation(!allowFailedSimulation);
                           }}
                         />
-                        <Typography.Small className="text-yellow-300 break-word">
-                          {
-                            "Click to proceed with failed proposal simulation. Ensure that pre-authorization is not required for the proposal."
-                          }
+                        <Typography.Small className="text-yellow-300">
+                          Click to proceed with failed proposal simulation. If
+                          pre-authorization is required you must manually input
+                          the pre-authorization calldata.
                         </Typography.Small>
                       </Container>
                     )}

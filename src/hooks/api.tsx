@@ -13,6 +13,7 @@ import {
   getGovernorCouncil,
   getGovernorSettings,
   getNextPropId,
+  getPastTotalSupply,
   getPastVotingPower,
   getProposal,
   getUserVoteForProposal,
@@ -345,7 +346,7 @@ export function useVotingPowerByLedger(
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && connected && enabled,
     placeholderData: { entry: BigInt(0) },
-    queryKey: ["votingPowerByProposal", ledger, connected],
+    queryKey: ["votingPowerByProposal", voteTokenAddress, ledger, connected],
     queryFn: async (): Promise<LedgerEntry<bigint>> => {
       if (!paramsDefined || !connected || walletAddress === "") {
         return { entry: BigInt(0) };
@@ -360,6 +361,38 @@ export function useVotingPowerByLedger(
     },
   });
 }
+
+export function useTotalSupplyByLedger(
+  voteTokenAddress: string | undefined,
+  ledger: number | undefined,
+  currentLedger: number | undefined,
+  enabled: boolean = true
+): UseQueryResult<LedgerEntry<bigint>> {
+  const { network } = useWallet();
+  const paramsDefined =
+    voteTokenAddress !== undefined &&
+    ledger !== undefined &&
+    currentLedger !== undefined;
+
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && enabled,
+    placeholderData: { entry: BigInt(0) },
+    queryKey: ["voteTotalSupply", voteTokenAddress, ledger],
+    queryFn: async (): Promise<LedgerEntry<bigint>> => {
+      if (!paramsDefined) {
+        return { entry: BigInt(0) };
+      }
+      return await getPastTotalSupply(
+        network,
+        voteTokenAddress,
+        ledger,
+        currentLedger
+      );
+    },
+  });
+}
+
 
 export function useUserVoteByProposalId(
   governorAddress: string | undefined,

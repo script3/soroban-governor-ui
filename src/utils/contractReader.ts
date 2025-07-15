@@ -399,6 +399,54 @@ export async function getPastVotingPower(
 }
 
 /**
+ * Fetch the total voting supply at a given ledger. If the ledger is in the future,
+ * the current total voting supply is returned.
+ * @param network - The network to use
+ * @param contractId - The contract ID to call
+ * @param voteStart - The ledger timestamp where votes will be fetched from and when voting can begin
+ * @param currentLedger - The current ledger timestamp
+ * @returns BigInt of the  total voting supply
+ * @throws Error if the operation fails
+ */
+export async function getPastTotalSupply(
+  network: Network,
+  contractId: string,
+  voteStart: number,
+  currentLedger: number
+): Promise<LedgerEntry<bigint>> {
+  const stellarRpc = new rpc.Server(network.rpc, network.opts);
+  const contract = new VotesContract(contractId);
+  const sequence = Math.min(voteStart, currentLedger)
+  const operation = contract.getPastTotalSupply({
+    sequence,
+  });
+  const sim_result = await simulateOperation(stellarRpc, operation);
+  // If the ledger is in the future
+  if (rpc.Api.isSimulationSuccess(sim_result)) {
+    return {
+      entry: VotesContract.votes_parsers.getVotes(
+        sim_result.result!.retval.toXDR("base64")
+      ),
+    };
+  } else if (rpc.Api.isSimulationRestore(sim_result)) {
+    console.log(
+      "Restore required for getPastTotalSupply. Footprint: " +
+        sim_result.restorePreamble.transactionData
+          ?.getFootprint()
+          ?.toXDR("base64")
+    );
+    return {
+      entry: BigInt(0),
+      restoreResponse: sim_result,
+    };
+  } else {
+    throw new Error(
+      "Failed getPastTotalSupply simulation " + sim_result.error
+    );
+  }
+}
+
+/**
  * Fetch the emission config for a bonding votes contract
  * @param network - The network to use
  * @param contractId - The contract ID to check

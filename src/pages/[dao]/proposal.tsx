@@ -23,6 +23,7 @@ import {
   useGovernor,
   useGovernorSettings,
   useProposal,
+  useTotalSupplyByLedger,
   useUserVoteByProposalId,
   useVotes,
   useVotingPowerByLedger,
@@ -38,6 +39,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { parseQuorumInfo } from "@/utils/vote";
 
 export default function Proposal() {
   const router = useRouter();
@@ -66,8 +68,7 @@ export default function Proposal() {
     !!params.id && !!currentGovernor?.address
   );
   const { data: governorSettings } = useGovernorSettings(
-    currentGovernor?.address,
-    proposal?.action?.tag === ProposalActionEnum.SETTINGS
+    currentGovernor?.address
   );
 
   const { data: tempVotes, refetch: refetchVotes } = useVotes(
@@ -77,6 +78,12 @@ export default function Proposal() {
   const votes = tempVotes
     ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount))
     : [];
+
+  const { data: voteSupplyEntry } = useTotalSupplyByLedger(
+    currentGovernor?.voteTokenAddress,
+    proposal?.vote_start,
+    currentBlockNumber
+  );
 
   const { data: userVote, refetch: refetchUserVote } = useUserVoteByProposalId(
     currentGovernor?.address,
@@ -94,6 +101,11 @@ export default function Proposal() {
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
+  const quorumInfo = parseQuorumInfo(
+    voteSupplyEntry?.entry,
+    governorSettings,
+    proposal?.vote_count
+  );
   const isExecutable =
     proposal !== undefined &&
     proposal.status === ProposalStatusExt.Successful &&
@@ -614,6 +626,41 @@ export default function Proposal() {
                     }
                     percentage={percent_abstain}
                   />{" "}
+                  { // quorum info is not stored on chain forever. Only render if we got info.
+                    quorumInfo.quorumRequirement != BigInt(0) && (
+                      <>
+                        <ProgressBar
+                          className="flex flex-col gap-2 mb-4"
+                          label="Quorum"
+                          barClassName={
+                            proposal.status === ProposalStatusExt.Active
+                              ? "bg-secondary"
+                              : "bg-neutral-200"
+                          }
+                          endContent={
+                            <Container slim>
+                              <Typography.P>
+                                {quorumInfo.quorumVotes > BigInt(0)
+                                  ? `${toBalance(
+                                      quorumInfo.quorumVotes,
+                                      currentGovernor.decimals
+                                    )} -`
+                                  : "   "}
+                              </Typography.P>
+                              <Typography.P>
+                                {" "}
+                                {quorumInfo.quorumPercentage > 0
+                                  ? Math.min(quorumInfo.quorumPercentage * 100, 100).toFixed(2)
+                                  : "0"}
+                                %
+                              </Typography.P>
+                            </Container>
+                          }
+                          percentage={quorumInfo.quorumPercentage}
+                        />{" "}
+                      </>
+                    )
+                  }
                 </Container>
               </Box>
             )}

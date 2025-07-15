@@ -1,7 +1,7 @@
 [
   {
     "name": "Testnet XLM Governor",
-    "description": "A tesnet governor that uses bonded XLM (gXLM) as the vote token.",
+    "description": "A testnet governor that uses bonded XLM (gXLM) as the vote token.",
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
     "address": "CCB6WBD6SF5GB6KVEF7QDB5WNZMT6S3RY2MJBKSD5YJXOD6F2KCBTJTV",
     "voteTokenAddress": "CBNR4JWTS4IVGUO6Z2344R3UPRK7XUZJ5N4E2DN3K5QNYRPYC27GFXMD",

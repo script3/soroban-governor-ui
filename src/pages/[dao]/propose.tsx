@@ -324,6 +324,7 @@ export default function CreateProposal() {
           setSimulatedCallDataAuth(undefined);
         }
       } else {
+        setIsValidCalldata(false);
         setCalldataSimSuccess(false);
         setCalldataSimResult("");
         setSimulatedCallDataAuth(undefined);
@@ -611,28 +612,30 @@ export default function CreateProposal() {
                       {calldataSimResult}
                     </Typography.Small>
 
-                    {isValidCalldata && (
-                      <Container
-                        slim
-                        className="flex flex-row items-center mb-4"
-                      >
-                        <button
-                          className={`rounded-full h-4 w-4 appearance-none border-2 focus:outline-1 focus:outline focus:outline-white mr-2 bg-white flex-shrink-0 ${
-                            allowFailedSimulation
-                              ? "border-snapLink border-[5px]"
-                              : "border-white"
-                          }`}
-                          onClick={() => {
-                            setAllowFailedSimulation(!allowFailedSimulation);
-                          }}
-                        />
-                        <Typography.Small className="text-yellow-300">
-                          Click to proceed with failed proposal simulation. If
-                          pre-authorization is required you must manually input
-                          the pre-authorization calldata.
-                        </Typography.Small>
-                      </Container>
-                    )}
+                    {isValidCalldata &&
+                      calldataSimResult.search(/Simulation failed:/i) !==
+                        -1 && (
+                        <Container
+                          slim
+                          className="flex flex-row items-center mb-4"
+                        >
+                          <button
+                            className={`rounded-full h-4 w-4 appearance-none border-2 focus:outline-1 focus:outline focus:outline-white mr-2 bg-white flex-shrink-0 ${
+                              allowFailedSimulation
+                                ? "border-snapLink border-[5px]"
+                                : "border-white"
+                            }`}
+                            onClick={() => {
+                              setAllowFailedSimulation(!allowFailedSimulation);
+                            }}
+                          />
+                          <Typography.Small className="text-yellow-300">
+                            Click to proceed with failed proposal simulation. If
+                            pre-authorization is required you must manually
+                            input the pre-authorization calldata.
+                          </Typography.Small>
+                        </Container>
+                      )}
                   </Container>
                 )}
               </>

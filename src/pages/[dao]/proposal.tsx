@@ -23,6 +23,7 @@ import {
   useGovernor,
   useGovernorSettings,
   useProposal,
+  useTotalSupplyByLedger,
   useUserVoteByProposalId,
   useVotes,
   useVotingPowerByLedger,
@@ -38,6 +39,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { parseQuorumInfo } from "@/utils/vote";
 
 export default function Proposal() {
   const router = useRouter();
@@ -66,8 +68,7 @@ export default function Proposal() {
     !!params.id && !!currentGovernor?.address
   );
   const { data: governorSettings } = useGovernorSettings(
-    currentGovernor?.address,
-    proposal?.action?.tag === ProposalActionEnum.SETTINGS
+    currentGovernor?.address
   );
 
   const { data: tempVotes, refetch: refetchVotes } = useVotes(
@@ -77,6 +78,12 @@ export default function Proposal() {
   const votes = tempVotes
     ? tempVotes.sort((a, b) => Number(b.amount) - Number(a.amount))
     : [];
+
+  const { data: voteSupplyEntry } = useTotalSupplyByLedger(
+    currentGovernor?.voteTokenAddress,
+    proposal?.vote_start,
+    currentBlockNumber
+  );
 
   const { data: userVote, refetch: refetchUserVote } = useUserVoteByProposalId(
     currentGovernor?.address,
@@ -94,6 +101,11 @@ export default function Proposal() {
   const [isVotesModalOpen, setIsVotesModalOpen] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
+  const quorumInfo = parseQuorumInfo(
+    voteSupplyEntry?.entry,
+    governorSettings,
+    proposal?.vote_count
+  );
   const isExecutable =
     proposal !== undefined &&
     proposal.status === ProposalStatusExt.Successful &&
@@ -123,6 +135,10 @@ export default function Proposal() {
     rpc.Api.SimulateTransactionRestoreResponse | undefined
   >(votingPowerEntry?.restoreResponse);
 
+  const [restoreProposalStateSim, setRestoreProposalStateSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(undefined);
+
   function handleVote() {
     if (
       selectedSupport !== null &&
@@ -146,28 +162,49 @@ export default function Proposal() {
 
   function handleExecute() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      executeProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      executeProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
   function handleClose() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      closeProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      closeProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
   function handleCancel() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      cancelProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      cancelProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
@@ -177,6 +214,7 @@ export default function Proposal() {
     if (connected && sim !== undefined) {
       restore(sim).then(() => {
         setRestoreVoteSim(undefined);
+        setRestoreProposalStateSim(undefined);
         refetch();
         refetchVotes();
       });
@@ -243,42 +281,48 @@ export default function Proposal() {
                 </Container>
                 <Container slim className="flex items-center gap-2">
                   {isExecutable && connected && (
-                    <Button
+                    <RestoreButton
+                      onClick={handleExecute}
+                      onRestore={() => handleRestore(restoreProposalStateSim)}
                       className={`w-32 !bg-secondary ${
                         isLoading ? "!py-1.5" : ""
                       } `}
-                      disabled={isLoading}
-                      onClick={handleExecute}
+                      simResult={restoreProposalStateSim}
+                      isLoading={isLoading}
                     >
-                      {isLoading ? <Loader /> : "Execute"}
-                    </Button>
+                      {"Execute"}
+                    </RestoreButton>
                   )}
                   {proposal.status === ProposalStatusExt.Open &&
                     currentBlockNumber &&
                     proposal.vote_end < currentBlockNumber &&
                     connected && (
-                      <Button
+                      <RestoreButton
+                        onClick={handleClose}
+                        onRestore={() => handleRestore(restoreProposalStateSim)}
                         className={`w-32 !bg-secondary ${
                           isLoading ? "!py-1.5" : ""
                         } `}
-                        disabled={isLoading}
-                        onClick={handleClose}
+                        simResult={restoreProposalStateSim}
+                        isLoading={isLoading}
                       >
-                        {isLoading ? <Loader /> : "Close"}
-                      </Button>
+                        {"Close"}
+                      </RestoreButton>
                     )}
                   {proposal?.proposer === walletAddress &&
                     connected &&
                     proposal.status === ProposalStatusExt.Pending && (
-                      <Button
+                      <RestoreButton
+                        onClick={handleCancel}
+                        onRestore={() => handleRestore(restoreProposalStateSim)}
                         className={`w-32 !bg-secondary ${
                           isLoading ? "!py-1.5" : ""
                         } `}
-                        disabled={isLoading}
-                        onClick={handleCancel}
+                        simResult={restoreProposalStateSim}
+                        isLoading={isLoading}
                       >
-                        {isLoading ? <Loader /> : "Cancel"}
-                      </Button>
+                        {"Cancel"}
+                      </RestoreButton>
                     )}
                   <Button
                     onClick={() => {
@@ -614,6 +658,41 @@ export default function Proposal() {
                     }
                     percentage={percent_abstain}
                   />{" "}
+                  { // quorum info is not stored on chain forever. Only render if we got info.
+                    quorumInfo.quorumRequirement != BigInt(0) && (
+                      <>
+                        <ProgressBar
+                          className="flex flex-col gap-2 mb-4"
+                          label="Quorum"
+                          barClassName={
+                            proposal.status === ProposalStatusExt.Active
+                              ? "bg-secondary"
+                              : "bg-neutral-200"
+                          }
+                          endContent={
+                            <Container slim>
+                              <Typography.P>
+                                {quorumInfo.quorumVotes > BigInt(0)
+                                  ? `${toBalance(
+                                      quorumInfo.quorumVotes,
+                                      currentGovernor.decimals
+                                    )} -`
+                                  : "   "}
+                              </Typography.P>
+                              <Typography.P>
+                                {" "}
+                                {quorumInfo.quorumPercentage > 0
+                                  ? Math.min(quorumInfo.quorumPercentage * 100, 100).toFixed(2)
+                                  : "0"}
+                                %
+                              </Typography.P>
+                            </Container>
+                          }
+                          percentage={quorumInfo.quorumPercentage}
+                        />{" "}
+                      </>
+                    )
+                  }
                 </Container>
               </Box>
             )}

@@ -135,6 +135,10 @@ export default function Proposal() {
     rpc.Api.SimulateTransactionRestoreResponse | undefined
   >(votingPowerEntry?.restoreResponse);
 
+  const [restoreProposalStateSim, setRestoreProposalStateSim] = useState<
+    rpc.Api.SimulateTransactionRestoreResponse | undefined
+  >(undefined);
+
   function handleVote() {
     if (
       selectedSupport !== null &&
@@ -158,28 +162,49 @@ export default function Proposal() {
 
   function handleExecute() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      executeProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      executeProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
   function handleClose() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      closeProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      closeProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
   function handleCancel() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      cancelProposal(proposal.id, currentGovernor.address).then(() => {
-        refetch();
-        refetchVotes();
-      });
+      cancelProposal(proposal.id, currentGovernor.address).then(
+        (res) => {
+          if (isRestoreResponse(res)) {
+            setRestoreProposalStateSim(res);
+          } else {
+            setRestoreProposalStateSim(undefined);
+          }
+          refetch();
+          refetchVotes();
+        }
+      );
     }
   }
 
@@ -189,6 +214,7 @@ export default function Proposal() {
     if (connected && sim !== undefined) {
       restore(sim).then(() => {
         setRestoreVoteSim(undefined);
+        setRestoreProposalStateSim(undefined);
         refetch();
         refetchVotes();
       });
@@ -255,42 +281,48 @@ export default function Proposal() {
                 </Container>
                 <Container slim className="flex items-center gap-2">
                   {isExecutable && connected && (
-                    <Button
+                    <RestoreButton
+                      onClick={handleExecute}
+                      onRestore={() => handleRestore(restoreProposalStateSim)}
                       className={`w-32 !bg-secondary ${
                         isLoading ? "!py-1.5" : ""
                       } `}
-                      disabled={isLoading}
-                      onClick={handleExecute}
+                      simResult={restoreProposalStateSim}
+                      isLoading={isLoading}
                     >
-                      {isLoading ? <Loader /> : "Execute"}
-                    </Button>
+                      {"Execute"}
+                    </RestoreButton>
                   )}
                   {proposal.status === ProposalStatusExt.Open &&
                     currentBlockNumber &&
                     proposal.vote_end < currentBlockNumber &&
                     connected && (
-                      <Button
+                      <RestoreButton
+                        onClick={handleClose}
+                        onRestore={() => handleRestore(restoreProposalStateSim)}
                         className={`w-32 !bg-secondary ${
                           isLoading ? "!py-1.5" : ""
                         } `}
-                        disabled={isLoading}
-                        onClick={handleClose}
+                        simResult={restoreProposalStateSim}
+                        isLoading={isLoading}
                       >
-                        {isLoading ? <Loader /> : "Close"}
-                      </Button>
+                        {"Close"}
+                      </RestoreButton>
                     )}
                   {proposal?.proposer === walletAddress &&
                     connected &&
                     proposal.status === ProposalStatusExt.Pending && (
-                      <Button
+                      <RestoreButton
+                        onClick={handleCancel}
+                        onRestore={() => handleRestore(restoreProposalStateSim)}
                         className={`w-32 !bg-secondary ${
                           isLoading ? "!py-1.5" : ""
                         } `}
-                        disabled={isLoading}
-                        onClick={handleCancel}
+                        simResult={restoreProposalStateSim}
+                        isLoading={isLoading}
                       >
-                        {isLoading ? <Loader /> : "Cancel"}
-                      </Button>
+                        {"Cancel"}
+                      </RestoreButton>
                     )}
                   <Button
                     onClick={() => {

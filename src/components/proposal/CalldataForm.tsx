@@ -5,6 +5,7 @@ import { Button } from "../common/Button";
 import { TypedInput } from "../common/TypedInput";
 import { Calldata, Val } from "@script3/soroban-governor-sdk";
 import { isContractId } from "@/utils/validation";
+import { nativeToScVal } from "@stellar/stellar-sdk";
 
 export interface CalldataFormProps {
   calldata: Calldata;
@@ -64,17 +65,6 @@ export function CalldataForm({
     });
   }
 
-  function handleAuthChange(index: number, newAuth: Calldata) {
-    const newAuths: Calldata[] = [...calldata.auths];
-    newAuths[index] = newAuth;
-    onChange({
-      contract_id: calldata.contract_id,
-      function: calldata.function,
-      args: calldata.args,
-      auths: newAuths,
-    });
-  }
-
   return (
     <>
       <Typography.Small className="text-snapLink !my-2 ">
@@ -108,6 +98,14 @@ export function CalldataForm({
           value={arg}
           onChange={(new_value) => handleInputChange(index, new_value)}
           isDisabled={disabled}
+          error={(() => {
+            try {
+              nativeToScVal(arg.value, arg.type);
+              return false;
+            } catch (e) {
+              return true;
+            }
+          })()}
         />
       ))}
       {!disabled && (

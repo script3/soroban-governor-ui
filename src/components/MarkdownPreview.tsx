@@ -13,6 +13,7 @@ export const remarkable = new Remarkable({
   typographer: false,
   linkTarget: "_blank",
 }).use(linkify);
+
 export function MarkdownPreview({
   body,
   className,
@@ -67,10 +68,11 @@ export function MarkdownPreview({
         toolbar: false,
       });
     }
-  }, []);
+  }, [bodyToRender]);
+
   return (
     <div
-      className={`markdown-body break-words ${className || ""}}`}
+      className={`markdown-body break-words [&_a]:text-secondary [&_a]:underline [&_a:hover]:text-white [&_a]:transition-colors [&_a]:duration-200 ${className || ""}}`}
       dangerouslySetInnerHTML={{ __html: bodyToRender }}
       id="md-body"
     ></div>

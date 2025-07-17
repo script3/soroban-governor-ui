@@ -140,6 +140,23 @@ export function useProposals(
           ({ id: a }, { id: b }) => b - a
         );
         let currPropIndex = 0;
+
+        // pre-process proposals to ensure the we don't attempt to fetch proposals 
+        // that have potentially expired from the ledger
+        for (let proposal of proposals) {
+            if (
+              proposal.status === ProposalStatusExt.Open ||
+              (proposal.status === ProposalStatusExt.Successful &&
+                proposal.action.tag !== "Snapshot")
+            ) {
+              // validate the proposal status is being updated by the indexer
+              // OK if vote start + MAX_PROPOSAL_LIFETIME is in the future
+              if (proposal.vote_start + MAX_PROPOSAL_LIFETIME < currentBlock) {
+                // something is wrong with the indexer, mark the status as unknown and skip this proposal
+                proposal.status = ProposalStatusExt.Unknown;
+              }
+            }
+        }
   
         for (let propId = lastProposalId; propId >= 0; propId--) {
           let indexerProp = proposals[currPropIndex];
@@ -150,6 +167,7 @@ export function useProposals(
               (indexerProp.status === ProposalStatusExt.Successful &&
                 indexerProp.action.tag !== "Snapshot")
             ) {
+
               let fromRPC = await getProposal(
                 network,
                 governorAddress,
@@ -255,6 +273,7 @@ export function useProposal(
         return null;
       }
     }
+
     let isActive =
       proposal.status === ProposalStatusExt.Open ||
       (proposal.status === ProposalStatusExt.Successful &&

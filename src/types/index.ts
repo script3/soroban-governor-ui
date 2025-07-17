@@ -36,6 +36,11 @@ export enum ProposalStatusExt {
    * The proposal is open for voting
    */
   Active = 7,
+  /**
+   * Frontend Only
+   * Unable to reconcile the proposal status from the indexer. This is likely due to invalid indexer data.
+   */
+  Unknown = 8,
 }
 
 export interface Proposal {

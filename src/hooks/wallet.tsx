@@ -667,7 +667,10 @@ export const WalletProvider = ({ children = null as any }) => {
       setTxStatus(TxStatus.BUILDING);
       const stellarRpc = rpcServer();
       const fee_data = await stellarRpc.getFeeStats();
-      const fee = Math.max(Number(fee_data.sorobanInclusionFee.p60), 2000).toString();
+      const fee = Math.max(
+        Number(fee_data.sorobanInclusionFee.p60),
+        2000
+      ).toString();
       const account = await stellarRpc.getAccount(walletAddress);
       const tx_builder = new TransactionBuilder(account, {
         networkPassphrase: network.passphrase,

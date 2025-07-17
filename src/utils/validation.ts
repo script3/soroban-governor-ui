@@ -47,6 +47,17 @@ export function isCalldataString(str: string): boolean {
   return condition;
 }
 
+export function isPreAuthCalldataString(str: string): boolean {
+  const { data, isValid } = safeJSONParse(str);
+  if (!isValid) {
+    return false;
+  }
+  if (Array.isArray(data)) {
+    return data.every((item: any) => isCalldata(item));
+  }
+  return false;
+}
+
 export function parseCallData(calldataObj: any): Calldata | null {
   if (isCalldata(calldataObj)) {
     return {

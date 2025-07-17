@@ -109,10 +109,8 @@ export default function CreateProposal() {
 
   const isCalldataDisabled =
     proposalAction === ProposalActionEnum.CALLDATA &&
-    (!isCalldata(calldata) ||
-      !isCalldataString(jsonCalldata) ||
-      !calldataSimSuccess) &&
-    !allowFailedSimulation;
+    (!isValidCalldata ||
+    (!calldataSimSuccess && !allowFailedSimulation));
   const isSettingsDisabled =
     proposalAction === ProposalActionEnum.SETTINGS &&
     (!governorSettings ||
@@ -247,7 +245,6 @@ export default function CreateProposal() {
   async function handleSimCalldata(calldata: Calldata) {
     try {
       if (isCalldata(calldata)) {
-        setIsValidCalldata(true);
         let account = new Account(
           "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
           "1"
@@ -269,6 +266,7 @@ export default function CreateProposal() {
             )
           )
           .build();
+        setIsValidCalldata(true);
         let server = new rpc.Server(network.rpc, network.opts);
         let result = await server.simulateTransaction(tx);
         if (rpc.Api.isSimulationSuccess(result)) {
@@ -330,6 +328,7 @@ export default function CreateProposal() {
         setSimulatedCallDataAuth(undefined);
       }
     } catch (e: any) {
+      setIsValidCalldata(false);
       setCalldataSimSuccess(false);
       setCalldataSimResult("Failed to build transaction");
       setSimulatedCallDataAuth(undefined);
@@ -585,7 +584,7 @@ export default function CreateProposal() {
                   ) && (
                     <>
                       <Typography.Small className="text-yellow-300">
-                        The inputed pre-auth does not match the simulated
+                        The inputted pre-auth does not match the simulated
                         pre-auth. Please ensure that the manual
                         pre-authorization is correct.
                       </Typography.Small>
@@ -612,9 +611,7 @@ export default function CreateProposal() {
                       {calldataSimResult}
                     </Typography.Small>
 
-                    {isValidCalldata &&
-                      calldataSimResult.search(/Simulation failed:/i) !==
-                        -1 && (
+                    {isValidCalldata && (
                         <Container
                           slim
                           className="flex flex-row items-center mb-4"

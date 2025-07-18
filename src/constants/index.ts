@@ -9,6 +9,7 @@ export const ProposalStatusText = {
   [ProposalStatusExt.Executed]: "Executed",
   [ProposalStatusExt.Canceled]: "Canceled",
   [ProposalStatusExt.Open]: "Open",
+  [ProposalStatusExt.Unknown]: "Unknown",
 };
 
 export enum ProposalActionEnum {
@@ -37,6 +38,7 @@ export const classByStatus: ObType = {
   [ProposalStatusExt.Expired]: "!bg-gray-500",
   [ProposalStatusExt.Executed]: "!bg-gray-500",
   [ProposalStatusExt.Pending]: "!bg-amber-800",
+  [ProposalStatusExt.Unknown]: "!bg-gray-500",
 };
 
 export const EighteenDecimals = 10_000_000_000_000_000_000;

@@ -280,16 +280,24 @@ export function useProposal(
         proposal.action.tag !== "Snapshot");
 
     if (isActive) {
-      let fromRPC = await getProposal(
-        network,
-        governorAddress,
-        proposal.id,
-        currentBlock
-      );
-      if (fromRPC?.entry) {
-        proposal = fromRPC?.entry;
+      // validate the proposal status is being updated by the indexer
+      // OK if vote start + MAX_PROPOSAL_LIFETIME is in the future
+      if (proposal.vote_start + MAX_PROPOSAL_LIFETIME < currentBlock) {
+        // something is wrong with the indexer, mark the status as unknown and skip this proposal
+        proposal.status = ProposalStatusExt.Unknown;
       } else {
-        return null;
+        // update from RPC if the proposal is active and safe to fetch
+        let fromRPC = await getProposal(
+          network,
+          governorAddress,
+          proposal.id,
+          currentBlock
+        );
+        if (fromRPC?.entry) {
+          proposal = fromRPC?.entry;
+        } else {
+          return null;
+        }
       }
     }
     return proposal;

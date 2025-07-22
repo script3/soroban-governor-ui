@@ -2,7 +2,6 @@ import { Container } from "@/components/common/BaseContainer";
 import { Box } from "@/components/common/Box";
 import { Button } from "@/components/common/Button";
 import { Chip } from "@/components/common/Chip";
-import { Loader } from "@/components/common/Loader";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SelectableList } from "@/components/common/SelectableList";
 import { TabBar } from "@/components/common/Tab/TabBar";
@@ -61,7 +60,7 @@ export default function Proposal() {
 
   const { data: currentBlockNumber } = useCurrentBlockNumber();
   const currentGovernor = useGovernor(params.dao as string);
-  const { data: proposal, refetch } = useProposal(
+  const { data: proposal, isFetched: isProposalFetched, refetch, isFetched } = useProposal(
     currentGovernor?.address,
     Number(params.id),
     currentBlockNumber,
@@ -107,7 +106,7 @@ export default function Proposal() {
     proposal?.vote_count
   );
   const isExecutable =
-    proposal !== undefined &&
+    proposal &&
     proposal.status === ProposalStatusExt.Successful &&
     proposal.action.tag !== ProposalActionEnum.SNAPSHOT &&
     currentBlockNumber
@@ -245,7 +244,7 @@ export default function Proposal() {
         </Typography.Small>
       </Container>
 
-      {proposal !== undefined && currentGovernor !== undefined && (
+      {proposal && currentGovernor !== undefined && (
         <Container
           slim
           className="flex flex-col px-0 md:px-4 gap-4 mx-auto lg:w-[1012px]  2xl:w-[1400px]  mt-[20px] w-auto m-auto lg:flex-row "
@@ -699,7 +698,22 @@ export default function Proposal() {
           </Container>
         </Container>
       )}
-
+      {!proposal && isProposalFetched && (
+        <Container
+          slim
+          className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
+        >
+          <Image
+            src="/icons/report.svg"
+            width={28}
+            height={28}
+            alt={"close"}
+          />
+          <Typography.P className="text-warning">
+            {`Unable to load proposal ${params.id} for the governor contract ${currentGovernor?.address ?? "UNKOWN ADDRESS"}.\n\n`}
+          </Typography.P>
+        </Container>
+      )}
       <Modal
         isOpen={isVotesModalOpen}
         onClose={() => {

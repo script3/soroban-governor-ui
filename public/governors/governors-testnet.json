@@ -42,6 +42,7 @@
       "symbol": "SCF",
       "decimals": 9,
       "icon": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png"
-    }
+    },
+    "displayProposalThreshold": false
   }
 ]

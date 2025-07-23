@@ -84,10 +84,14 @@ function About() {
           <Typography.Small className="text-snapLink pl-2">
             {`${settings.grace_period} ledgers`}
           </Typography.Small>
-          <Typography.P>Proposal Threshold</Typography.P>
-          <Typography.Small className="text-snapLink pl-2">
-            {`${toBalance(settings.proposal_threshold, currentGovernor.decimals)} ${currentGovernor.voteTokenMetadata?.symbol}`}
-          </Typography.Small>
+          {currentGovernor.displayProposalThreshold !== false && (
+            <>
+              <Typography.P>Proposal Threshold</Typography.P>
+              <Typography.Small className="text-snapLink pl-2">
+                {`${toBalance(settings.proposal_threshold, currentGovernor.decimals)} ${currentGovernor.voteTokenMetadata?.symbol}`}
+              </Typography.Small>
+            </>
+          )}
           <Typography.P>Quorum</Typography.P>
           <Typography.Small className="text-snapLink pl-2">
             {`${settings.quorum / 100}%`}

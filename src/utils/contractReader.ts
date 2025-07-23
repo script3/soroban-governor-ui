@@ -46,9 +46,9 @@ export async function getBalance(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getBalance. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return { entry: BigInt(0), restoreResponse: sim_result };
   } else {
@@ -77,7 +77,7 @@ export async function getGovernorSettings(
   let safe_parser =
     contractId === ONLY_V0_GOV
       ? (result: string): GovernorSettings =>
-          oldSettingsSpec.funcResToNative("settings", result)
+        oldSettingsSpec.funcResToNative("settings", result)
       : GovernorContract.parsers.settings;
 
   if (rpc.Api.isSimulationSuccess(sim_result)) {
@@ -85,9 +85,9 @@ export async function getGovernorSettings(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for settings. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return { entry: {} as GovernorSettings, restoreResponse: sim_result };
   } else {
@@ -119,9 +119,9 @@ export async function getGovernorCouncil(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for settings. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return { entry: {} as Address, restoreResponse: sim_result };
   } else {
@@ -158,9 +158,9 @@ export async function getProposalVotes(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getProposalVotes. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: { _for: BigInt(0), against: BigInt(0), abstain: BigInt(0) },
@@ -202,9 +202,9 @@ export async function getUserVoteForProposal(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getUserVoteForProposal. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: undefined,
@@ -267,9 +267,9 @@ export async function getProposal(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getProposal. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: undefined,
@@ -332,9 +332,9 @@ export async function getVotingPower(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getVotingPower. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: BigInt(0),
@@ -380,9 +380,9 @@ export async function getPastVotingPower(
     } else if (rpc.Api.isSimulationRestore(sim_result)) {
       console.log(
         "Restore required for getPastVotingPower. Footprint: " +
-          sim_result.restorePreamble.transactionData
-            ?.getFootprint()
-            ?.toXDR("base64")
+        sim_result.restorePreamble.transactionData
+          ?.getFootprint()
+          ?.toXDR("base64")
       );
       return {
         entry: BigInt(0),
@@ -431,9 +431,9 @@ export async function getPastTotalSupply(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getPastTotalSupply. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: BigInt(0),
@@ -468,7 +468,7 @@ export async function getEmissionConfig(
       let emis_data = scValToNative(data) as EmissionConfig;
       return emis_data;
     }
-  } catch (e) {}
+  } catch (e) { }
   return {
     eps: BigInt(0),
     expiration: BigInt(0),
@@ -503,9 +503,9 @@ export async function getClaimAmount(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getClaim. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: BigInt(0),
@@ -542,9 +542,9 @@ export async function getDelegate(
   } else if (rpc.Api.isSimulationRestore(sim_result)) {
     console.log(
       "Restore required for getDelegate. Footprint: " +
-        sim_result.restorePreamble.transactionData
-          ?.getFootprint()
-          ?.toXDR("base64")
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
     );
     return {
       entry: "",
@@ -552,5 +552,44 @@ export async function getDelegate(
     };
   } else {
     throw new Error("Failed getDelegate simulation " + sim_result.error);
+  }
+}
+
+/**
+ * Fetch the current total voting supply.
+ * @param network - The network to use
+ * @param contractId - The contract ID to call
+ * @returns BigInt of the  total voting supply
+ * @throws Error if the operation fails
+ */
+export async function getTotalSupply(
+  network: Network,
+  contractId: string,
+): Promise<LedgerEntry<bigint>> {
+  const stellarRpc = new rpc.Server(network.rpc, network.opts);
+  const contract = new VotesContract(contractId);
+  const operation = contract.totalSupply();
+  const sim_result = await simulateOperation(stellarRpc, operation);
+  if (rpc.Api.isSimulationSuccess(sim_result)) {
+    return {
+      entry: VotesContract.votes_parsers.getVotes(
+        sim_result.result!.retval.toXDR("base64")
+      ),
+    };
+  } else if (rpc.Api.isSimulationRestore(sim_result)) {
+    console.log(
+      "Restore required for getTotalSupply. Footprint: " +
+      sim_result.restorePreamble.transactionData
+        ?.getFootprint()
+        ?.toXDR("base64")
+    );
+    return {
+      entry: BigInt(0),
+      restoreResponse: sim_result,
+    };
+  } else {
+    throw new Error(
+      "Failed getTotalSupply simulation " + sim_result.error
+    );
   }
 }

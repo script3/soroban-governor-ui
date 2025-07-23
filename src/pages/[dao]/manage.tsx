@@ -8,6 +8,7 @@ import { RestoreButton } from "@/components/common/RestoreButton";
 import Typography from "@/components/common/Typography";
 import {
   useClaimAmount,
+  useCurrentTotalSupply,
   useDelegate,
   useEmissionConfig,
   useGovernor,
@@ -78,6 +79,9 @@ function ManageVotes() {
     emisConfig?.eps !== undefined && emisConfig.eps !== BigInt(0)
   );
   const claimAmount = claimAmountSim?.entry;
+
+  const { data: currentTotalAmount } = useCurrentTotalSupply(governor?.voteTokenAddress)
+  const totalAmount = currentTotalAmount?.entry || BigInt(0);
 
   const isOldYBXGovernor =
     governor?.address ===
@@ -350,6 +354,7 @@ function ManageVotes() {
               )}
             </Container>
           </Container>
+
           <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
             <Typography.Tiny className="text-snapLink">
               Current Voting tokens balance
@@ -378,6 +383,18 @@ function ManageVotes() {
                 )}
             </Container>
           </Container>
+
+          <Container className="flex flex-col p-3 gap-2 border-t border-snapBorder w-full">
+            <Typography.Tiny className="text-snapLink">
+              Total amount of token issued
+            </Typography.Tiny>
+            <Container slim className="flex gap-2">
+              <Typography.P>
+                {toBalance(totalAmount, governor?.decimals || 7)}{" "}{governor?.voteTokenMetadata?.symbol}
+              </Typography.P>
+            </Container>
+          </Container>
+
           {governor?.isWrappedAsset === true &&
             (restoreClaimSim !== undefined ||
               (claimAmount !== undefined && claimAmount > BigInt(0))) && (

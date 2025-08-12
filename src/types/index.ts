@@ -111,9 +111,8 @@ export interface Governor {
   isWrappedAsset: boolean;
   underlyingTokenAddress?: string;
   underlyingTokenMetadata?: TokenMetadata;
-  supportedProposalTypes?: string[];
-  delegation?: boolean;
-  displayProposalThreshold?: boolean
+  supportedProposalTypes?: string[]
+  delegation?: boolean
 }
 
 export interface Vote {

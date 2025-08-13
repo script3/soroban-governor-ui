@@ -416,15 +416,14 @@ export async function getPastTotalSupply(
 ): Promise<LedgerEntry<bigint>> {
   const stellarRpc = new rpc.Server(network.rpc, network.opts);
   const contract = new VotesContract(contractId);
-  const sequence = Math.min(voteStart, currentLedger)
+  const sequence = Math.min(voteStart, currentLedger);
   const operation = contract.getPastTotalSupply({
     sequence,
   });
   const sim_result = await simulateOperation(stellarRpc, operation);
-  // If the ledger is in the future
   if (rpc.Api.isSimulationSuccess(sim_result)) {
     return {
-      entry: VotesContract.votes_parsers.getVotes(
+      entry: VotesContract.votes_parsers.getPastTotalSupply(
         sim_result.result!.retval.toXDR("base64")
       ),
     };
@@ -440,9 +439,44 @@ export async function getPastTotalSupply(
       restoreResponse: sim_result,
     };
   } else {
-    throw new Error(
-      "Failed getPastTotalSupply simulation " + sim_result.error
+    throw new Error("Failed getPastTotalSupply simulation " + sim_result.error);
+  }
+}
+
+/**
+ * Fetch the total voting supply.
+ * @param network - The network to use
+ * @param contractId - The contract ID to call
+ * @returns BigInt of the total voting supply
+ * @throws Error if the operation fails
+ */
+export async function getTotalSupply(
+  network: Network,
+  contractId: string
+): Promise<LedgerEntry<bigint>> {
+  const stellarRpc = new rpc.Server(network.rpc, network.opts);
+  const contract = new VotesContract(contractId);
+  const operation = contract.totalSupply();
+  const sim_result = await simulateOperation(stellarRpc, operation);
+  if (rpc.Api.isSimulationSuccess(sim_result)) {
+    return {
+      entry: VotesContract.votes_parsers.totalSupply(
+        sim_result.result!.retval.toXDR("base64")
+      ),
+    };
+  } else if (rpc.Api.isSimulationRestore(sim_result)) {
+    console.log(
+      "Restore required for getTotalSupply. Footprint: " +
+        sim_result.restorePreamble.transactionData
+          ?.getFootprint()
+          ?.toXDR("base64")
     );
+    return {
+      entry: BigInt(0),
+      restoreResponse: sim_result,
+    };
+  } else {
+    throw new Error("Failed getTotalSupply simulation " + sim_result.error);
   }
 }
 

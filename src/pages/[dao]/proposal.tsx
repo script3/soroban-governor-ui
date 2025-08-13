@@ -60,7 +60,12 @@ export default function Proposal() {
 
   const { data: currentBlockNumber } = useCurrentBlockNumber();
   const currentGovernor = useGovernor(params.dao as string);
-  const { data: proposal, isFetched: isProposalFetched, refetch, isFetched } = useProposal(
+  const {
+    data: proposal,
+    isFetched: isProposalFetched,
+    refetch,
+    isFetched,
+  } = useProposal(
     currentGovernor?.address,
     Number(params.id),
     currentBlockNumber,
@@ -161,49 +166,43 @@ export default function Proposal() {
 
   function handleExecute() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      executeProposal(proposal.id, currentGovernor.address).then(
-        (res) => {
-          if (isRestoreResponse(res)) {
-            setRestoreProposalStateSim(res);
-          } else {
-            setRestoreProposalStateSim(undefined);
-          }
-          refetch();
-          refetchVotes();
+      executeProposal(proposal.id, currentGovernor.address).then((res) => {
+        if (isRestoreResponse(res)) {
+          setRestoreProposalStateSim(res);
+        } else {
+          setRestoreProposalStateSim(undefined);
         }
-      );
+        refetch();
+        refetchVotes();
+      });
     }
   }
 
   function handleClose() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      closeProposal(proposal.id, currentGovernor.address).then(
-        (res) => {
-          if (isRestoreResponse(res)) {
-            setRestoreProposalStateSim(res);
-          } else {
-            setRestoreProposalStateSim(undefined);
-          }
-          refetch();
-          refetchVotes();
+      closeProposal(proposal.id, currentGovernor.address).then((res) => {
+        if (isRestoreResponse(res)) {
+          setRestoreProposalStateSim(res);
+        } else {
+          setRestoreProposalStateSim(undefined);
         }
-      );
+        refetch();
+        refetchVotes();
+      });
     }
   }
 
   function handleCancel() {
     if (proposal !== undefined && currentGovernor !== undefined) {
-      cancelProposal(proposal.id, currentGovernor.address).then(
-        (res) => {
-          if (isRestoreResponse(res)) {
-            setRestoreProposalStateSim(res);
-          } else {
-            setRestoreProposalStateSim(undefined);
-          }
-          refetch();
-          refetchVotes();
+      cancelProposal(proposal.id, currentGovernor.address).then((res) => {
+        if (isRestoreResponse(res)) {
+          setRestoreProposalStateSim(res);
+        } else {
+          setRestoreProposalStateSim(undefined);
         }
-      );
+        refetch();
+        refetchVotes();
+      });
     }
   }
 
@@ -657,7 +656,8 @@ export default function Proposal() {
                     }
                     percentage={percent_abstain}
                   />{" "}
-                  { // quorum info is not stored on chain forever. Only render if we got info.
+                  {
+                    // quorum info is not stored on chain forever. Only render if we got info.
                     quorumInfo.quorumRequirement != BigInt(0) && (
                       <>
                         <ProgressBar
@@ -669,22 +669,29 @@ export default function Proposal() {
                               : "bg-neutral-200"
                           }
                           endContent={
-                            <Container slim>
+                            <Container
+                              slim
+                              className="flex flex-row gap-1 items-center"
+                            >
                               <Typography.P>
-                                {quorumInfo.quorumVotes > BigInt(0)
+                                {quorumInfo.quorumPercentage < 1
                                   ? `${toBalance(
                                       quorumInfo.quorumVotes,
                                       currentGovernor.decimals
-                                    )} -`
-                                  : "   "}
+                                    )} / ${toBalance(
+                                      quorumInfo.quorumRequirement,
+                                      currentGovernor.decimals
+                                    )}`
+                                  : "Reached"}
                               </Typography.P>
-                              <Typography.P>
-                                {" "}
-                                {quorumInfo.quorumPercentage > 0
-                                  ? Math.min(quorumInfo.quorumPercentage * 100, 100).toFixed(2)
-                                  : "0"}
-                                %
-                              </Typography.P>
+                              {quorumInfo.quorumPercentage >= 1 && (
+                                <Image
+                                  src="/icons/check.svg"
+                                  height={24}
+                                  alt="check"
+                                  color="green"
+                                />
+                              )}
                             </Container>
                           }
                           percentage={quorumInfo.quorumPercentage}
@@ -703,14 +710,11 @@ export default function Proposal() {
           slim
           className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
         >
-          <Image
-            src="/icons/report.svg"
-            width={28}
-            height={28}
-            alt={"close"}
-          />
+          <Image src="/icons/report.svg" width={28} height={28} alt={"close"} />
           <Typography.P className="text-warning">
-            {`Unable to load proposal ${params.id} for the governor contract ${currentGovernor?.address ?? "UNKOWN ADDRESS"}.\n\n`}
+            {`Unable to load proposal ${params.id} for the governor contract ${
+              currentGovernor?.address ?? "UNKOWN ADDRESS"
+            }.\n\n`}
           </Typography.P>
         </Container>
       )}

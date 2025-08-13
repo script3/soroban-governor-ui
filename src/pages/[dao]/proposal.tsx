@@ -536,7 +536,7 @@ export default function Proposal() {
                             currentBlockNumber
                           )
                         )
-                      : "unkown"}
+                      : "unknown"}
                   </Typography.Small>
                 </Container>
                 {proposal.eta > 0 && (
@@ -713,7 +713,7 @@ export default function Proposal() {
           <Image src="/icons/report.svg" width={28} height={28} alt={"close"} />
           <Typography.P className="text-warning">
             {`Unable to load proposal ${params.id} for the governor contract ${
-              currentGovernor?.address ?? "UNKOWN ADDRESS"
+              currentGovernor?.address ?? "UNKNOWN ADDRESS"
             }.\n\n`}
           </Typography.P>
         </Container>

@@ -1,6 +1,6 @@
 {
   "name": "soroban-governor-ui",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@creit.tech/stellar-wallets-kit": "1.7.6",
+    "@creit.tech/stellar-wallets-kit": "1.7.7",
     "@headlessui/react": "^1.7.18",
     "@script3/soroban-governor-sdk": "1.4.0-beta",
     "@snapshot-labs/pineapple": "^1.1.0",

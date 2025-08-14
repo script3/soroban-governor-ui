@@ -288,7 +288,7 @@ function Proposals() {
                         proposal.vote_end,
                         currentBlockNumber
                       )
-                    : "unkown"}
+                    : "unknown"}
                 </Typography.Tiny>
               </div>
             </Box>

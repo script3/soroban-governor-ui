@@ -11,6 +11,7 @@ import {
   useDelegate,
   useEmissionConfig,
   useGovernor,
+  useTotalSupply,
   useVotingPower,
   useWalletBalance,
 } from "@/hooks/api";
@@ -58,6 +59,11 @@ function ManageVotes() {
     delegateAddress !== undefined &&
     delegateAddress !== walletAddress;
 
+  const { data: voteSupplyEntry, refetch: refetchVoteSupply } = useTotalSupply(
+    governor?.voteTokenAddress
+  );
+  const voteTotalSupply = voteSupplyEntry?.entry;
+
   const { data: voteTokenBalanceEntry, refetch: refetchTokenBalance } =
     useWalletBalance(governor?.voteTokenAddress);
   const voteTokenBalance = voteTokenBalanceEntry?.entry;
@@ -96,7 +102,6 @@ function ManageVotes() {
     rpc.Api.SimulateTransactionRestoreResponse | undefined
   >(claimAmountSim?.restoreResponse);
 
-
   function handleWrapClick() {
     if (governor) {
       if (!connected) {
@@ -110,6 +115,7 @@ function ManageVotes() {
           } else {
             setRestoreWrapSim(undefined);
           }
+          refetchVoteSupply();
           refetchTokenBalance();
           refetchUnderlying();
           refetchVotingPower();
@@ -136,6 +142,7 @@ function ManageVotes() {
           } else {
             setRestoreUnwrapSim(undefined);
           }
+          refetchVoteSupply();
           refetchUnderlying();
           refetchTokenBalance();
           refetchVotingPower();
@@ -157,6 +164,7 @@ function ManageVotes() {
         } else {
           setRestoreClaimSim(undefined);
         }
+        refetchVoteSupply();
         refetchUnderlying();
         refetchTokenBalance();
         refetchVotingPower();
@@ -226,7 +234,7 @@ function ManageVotes() {
       });
     }
   }
-  const isDelegationSupported = governor?.delegation ?? true
+  const isDelegationSupported = governor?.delegation ?? true;
 
   return (
     <Container slim className="flex flex-col gap-4">
@@ -246,30 +254,30 @@ function ManageVotes() {
           Back
         </Typography.P>
         <Typography.Huge>Your Votes</Typography.Huge>
-        {governor?.isWrappedAsset === true && (
-          <Container>
-            {isOldYBXGovernor && (
-              <Container
-                slim
-                className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
-              >
-                <Image
-                  src="/icons/report.svg"
-                  width={28}
-                  height={28}
-                  alt={"close"}
-                />
-                <Typography.P className="text-warning">
-                  {"This DAO is being sunset. Please unbond your tokens.\n\n"}
-                </Typography.P>
-              </Container>
-            )}
-            <Typography.P>
-              This space uses a bonded token for voting. You can get bonded
-              tokens by bonding the corresponding Stellar asset. A bonded token
-              can be returned back to a Stellar asset at any time.
-            </Typography.P>
-            <Container slim className="py-2 gap-1 flex flex-col">
+        <Container slim className="py-2 gap-1 flex flex-col">
+          {governor?.isWrappedAsset === true && (
+            <>
+              {isOldYBXGovernor && (
+                <Container
+                  slim
+                  className="py-2 gap-1 flex flex-row items-center bg-warningOpaque rounded pl-2 mb-2"
+                >
+                  <Image
+                    src="/icons/report.svg"
+                    width={28}
+                    height={28}
+                    alt={"close"}
+                  />
+                  <Typography.P className="text-warning">
+                    {"This DAO is being sunset. Please unbond your tokens.\n\n"}
+                  </Typography.P>
+                </Container>
+              )}
+              <Typography.P>
+                This space uses a bonded token for voting. You can get bonded
+                tokens by bonding the corresponding Stellar asset. A bonded
+                token can be returned back to a Stellar asset at any time.
+              </Typography.P>
               <Typography.P>
                 Stellar asset:{" "}
                 <Typography.P
@@ -302,11 +310,9 @@ function ManageVotes() {
                   {governor?.voteTokenAddress}
                 </Typography.P>
               </Typography.P>
-            </Container>
-          </Container>
-        )}
-        {governor?.isWrappedAsset === false && (
-          <Container slim className="py-2 gap-1 flex flex-col">
+            </>
+          )}
+          {governor?.isWrappedAsset === false && (
             <Typography.P>
               Contract address:{" "}
               <Typography.P
@@ -321,8 +327,12 @@ function ManageVotes() {
                 {governor?.voteTokenAddress}
               </Typography.P>
             </Typography.P>
-          </Container>
-        )}
+          )}
+          <Typography.P>{`Total vote supply: ${toBalance(
+            voteTotalSupply,
+            governor?.decimals || 7
+          )}`}</Typography.P>
+        </Container>
         <Box className="p-t-3 mb-3 flex flex-col !px-0">
           <Container className="flex flex-col p-3 gap-2  w-full">
             <Typography.Tiny className="text-snapLink">
@@ -532,7 +542,9 @@ function ManageVotes() {
                     <Typography.Small>Your delegate</Typography.Small>
                   </Container>
                   <Container className="w-full flex flex-row justify-between gap-3">
-                    <Typography.P>{shortenAddress(delegateAddress)}</Typography.P>
+                    <Typography.P>
+                      {shortenAddress(delegateAddress)}
+                    </Typography.P>
                     <Typography.P>
                       {toBalance(
                         voteTokenBalance,

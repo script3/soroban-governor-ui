@@ -16,6 +16,7 @@ import {
   getPastTotalSupply,
   getPastVotingPower,
   getProposal,
+  getTotalSupply,
   getUserVoteForProposal,
   getVotingPower,
 } from "@/utils/contractReader";
@@ -141,23 +142,23 @@ export function useProposals(
         );
         let currPropIndex = 0;
 
-        // pre-process proposals to ensure the we don't attempt to fetch proposals 
+        // pre-process proposals to ensure the we don't attempt to fetch proposals
         // that have potentially expired from the ledger
         for (let proposal of proposals) {
-            if (
-              proposal.status === ProposalStatusExt.Open ||
-              (proposal.status === ProposalStatusExt.Successful &&
-                proposal.action.tag !== "Snapshot")
-            ) {
-              // validate the proposal status is being updated by the indexer
-              // OK if vote start + MAX_PROPOSAL_LIFETIME is in the future
-              if (proposal.vote_start + MAX_PROPOSAL_LIFETIME < currentBlock) {
-                // something is wrong with the indexer, mark the status as unknown and skip this proposal
-                proposal.status = ProposalStatusExt.Unknown;
-              }
+          if (
+            proposal.status === ProposalStatusExt.Open ||
+            (proposal.status === ProposalStatusExt.Successful &&
+              proposal.action.tag !== "Snapshot")
+          ) {
+            // validate the proposal status is being updated by the indexer
+            // OK if vote start + MAX_PROPOSAL_LIFETIME is in the future
+            if (proposal.vote_start + MAX_PROPOSAL_LIFETIME < currentBlock) {
+              // something is wrong with the indexer, mark the status as unknown and skip this proposal
+              proposal.status = ProposalStatusExt.Unknown;
             }
+          }
         }
-  
+
         for (let propId = lastProposalId; propId >= 0; propId--) {
           let indexerProp = proposals[currPropIndex];
           if (indexerProp !== undefined && indexerProp.id === propId) {
@@ -167,7 +168,6 @@ export function useProposals(
               (indexerProp.status === ProposalStatusExt.Successful &&
                 indexerProp.action.tag !== "Snapshot")
             ) {
-
               let fromRPC = await getProposal(
                 network,
                 governorAddress,
@@ -420,6 +420,26 @@ export function useTotalSupplyByLedger(
   });
 }
 
+export function useTotalSupply(
+  voteTokenAddress: string | undefined,
+  enabled: boolean = true
+): UseQueryResult<LedgerEntry<bigint>> {
+  const { network } = useWallet();
+  const paramsDefined = voteTokenAddress !== undefined;
+
+  return useQuery({
+    staleTime: DEFAULT_STALE_TIME,
+    enabled: paramsDefined && enabled,
+    placeholderData: { entry: BigInt(0) },
+    queryKey: ["curVoteTotalSupply", voteTokenAddress],
+    queryFn: async (): Promise<LedgerEntry<bigint>> => {
+      if (!paramsDefined) {
+        return { entry: BigInt(0) };
+      }
+      return await getTotalSupply(network, voteTokenAddress);
+    },
+  });
+}
 
 export function useUserVoteByProposalId(
   governorAddress: string | undefined,

@@ -258,7 +258,12 @@ export function useProposal(
     if (!paramsDefined) {
       return null;
     }
-    let proposal = await fetchProposalById(governorAddress, proposalId);
+    let proposal: Proposal | undefined = undefined;
+    try {
+      proposal = await fetchProposalById(governorAddress, proposalId);
+    } catch (e) {
+      console.error("Failed to fetch proposal from GraphQL: ", e);
+    }
 
     if (!proposal) {
       let fromRPC = await getProposal(

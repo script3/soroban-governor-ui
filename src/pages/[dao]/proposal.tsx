@@ -539,20 +539,48 @@ export default function Proposal() {
                       : "unknown"}
                   </Typography.Small>
                 </Container>
-                {proposal.eta > 0 && (
-                  <Container className="flex justify-between mb-2">
-                    <Typography.P className=" text-snapLink">
-                      Execution unlocked{" "}
-                    </Typography.P>
-                    <Typography.Small className="">
-                      {currentBlockNumber
-                        ? formatDate(
-                            getProposalDate(proposal?.eta, currentBlockNumber)
-                          )
-                        : "unknown"}
-                    </Typography.Small>
-                  </Container>
-                )}
+                {proposal.eta > 0 &&
+                  (proposal.execution_hash === undefined ||
+                    proposal.execution_hash === "") && (
+                    <Container className="flex justify-between mb-2">
+                      <Typography.P className=" text-snapLink">
+                        Execution unlocked{" "}
+                      </Typography.P>
+                      <Typography.Small className="">
+                        {currentBlockNumber
+                          ? formatDate(
+                              getProposalDate(proposal?.eta, currentBlockNumber)
+                            )
+                          : "unknown"}
+                      </Typography.Small>
+                    </Container>
+                  )}
+                {proposal.eta > 0 &&
+                  proposal.execution_hash !== undefined &&
+                  proposal.execution_hash !== "" && (
+                    <Container className="flex justify-between mb-2">
+                      <Typography.P className=" text-snapLink">
+                        Executed{" "}
+                      </Typography.P>
+                      <Typography.Small
+                        onClick={() => {
+                          window.open(
+                            `${process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL}/tx/${proposal.execution_hash}`,
+                            "_blank"
+                          );
+                        }}
+                        className="underline cursor-pointer flex flex-row gap-1 items-center"
+                      >
+                        View
+                        <Image
+                          src="/icons/external-link.svg"
+                          width={20}
+                          height={20}
+                          alt="link"
+                        />
+                      </Typography.Small>
+                    </Container>
+                  )}
                 <Container className="flex justify-between mb-2">
                   <Typography.P className=" text-snapLink">ID </Typography.P>
                   <Typography.Small className="">

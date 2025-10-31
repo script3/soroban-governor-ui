@@ -84,6 +84,10 @@ export interface Proposal {
    * The current vote count
    */
   vote_count: VoteCount;
+  /**
+   * Execution hash
+   */
+  execution_hash?: string;
 }
 
 export const oldSettingsSpec = new contract.Spec([
@@ -113,16 +117,17 @@ export interface Governor {
   underlyingTokenMetadata?: TokenMetadata;
   supportedProposalTypes?: string[];
   delegation?: boolean;
-  displayProposalThreshold?: boolean
+  displayProposalThreshold?: boolean;
 }
 
 export interface Vote {
-  proposal_id: string;
+  tx_hash: string;
+  governor: string;
+  proposal_id: number;
+  voter: string;
   support: number;
   amount: bigint;
-  voter: string;
-  governor: string;
-  ledger: string;
+  ledger: number;
 }
 
 export enum VoteSupport {

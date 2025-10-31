@@ -20,11 +20,6 @@ import {
   getUserVoteForProposal,
   getVotingPower,
 } from "@/utils/contractReader";
-import {
-  fetchProposalById,
-  fetchProposalsByGovernor,
-  fetchVotesByProposal,
-} from "@/utils/graphql";
 import { LedgerEntry } from "@/utils/stellar";
 import {
   EmissionConfig,
@@ -34,6 +29,7 @@ import { Address, rpc } from "@stellar/stellar-sdk";
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import governors from "../../public/governors/governors.json";
 import { useWallet } from "./wallet";
+import { indexer } from "@/utils/indexer";
 
 const DEFAULT_STALE_TIME = 20 * 1000;
 const ONE_DAY_LEDGERS = 17280;
@@ -134,12 +130,11 @@ export function useProposals(
       let lastProposalId =
         ((await getNextPropId(network, governorAddress)) ?? 0) - 1;
 
-      // try and load proposals from GraphQL
+      // try and load proposals from indexer
       // if it fails, load from RPC
       try {
-        let proposals = (await fetchProposalsByGovernor(governorAddress)).sort(
-          ({ id: a }, { id: b }) => b - a
-        );
+        let proposals = await indexer.fetchProposals(governorAddress);
+        proposals.sort((a, b) => b.id - a.id); // sort descending by id
         let currPropIndex = 0;
 
         // pre-process proposals to ensure the we don't attempt to fetch proposals
@@ -260,7 +255,7 @@ export function useProposal(
     }
     let proposal: Proposal | undefined = undefined;
     try {
-      proposal = await fetchProposalById(governorAddress, proposalId);
+      proposal = await indexer.fetchProposal(governorAddress, proposalId);
     } catch (e) {
       console.error("Failed to fetch proposal from GraphQL: ", e);
     }
@@ -316,6 +311,8 @@ export function useProposal(
   });
 }
 
+// "SELECT SUM(est_profit) as total_profit FROM filled_auctions WHERE auction_type = 2 AND timestamp >= CAST(strftime('%s', 'now', '-7 days') AS INTEGER);"
+
 //********* Votes **********//
 
 export function useVotes(
@@ -326,18 +323,22 @@ export function useVotes(
   const paramsDefined =
     governorAddress !== undefined && proposalId !== undefined;
 
+  async function loadVotes(): Promise<Vote[]> {
+    if (paramsDefined) {
+      let votes = await indexer.fetchVotes(governorAddress, proposalId);
+      votes.sort((a, b) => Number(b.amount - a.amount)); // sort descending by amount
+      return votes;
+    } else {
+      return [];
+    }
+  }
+
   return useQuery({
     staleTime: DEFAULT_STALE_TIME,
     enabled: paramsDefined && enabled,
     placeholderData: [],
     queryKey: ["votes", governorAddress, proposalId],
-    queryFn: () => {
-      if (paramsDefined) {
-        return fetchVotesByProposal(governorAddress, proposalId);
-      } else {
-        return [];
-      }
-    },
+    queryFn: loadVotes,
   });
 }
 

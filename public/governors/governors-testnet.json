@@ -3,8 +3,8 @@
     "name": "Testnet XLM Governor",
     "description": "A testnet governor that uses bonded XLM (gXLM) as the vote token.",
     "logo": "https://cdn.stamp.fyi/space/stgdao.eth?s=164&cb=7faee6797e3d57e7",
-    "address": "CDAO6Q5MAFH2A5PMQORP5G56UWDDJ5THCHU2GXWEJ6V75VXCPU2PZYPB",
-    "voteTokenAddress": "CDTH2SLP64VPKZ75I4PVQDRIKZKYA2WBKRGKMV2UZRUEZ7636YG3HNRP",
+    "address": "CCHDCD6EPFGNAFJ5DLTFDXU3XWMMYSARLCYCIYKU5CRCLW4PGRXUFKYM",
+    "voteTokenAddress": "CD7LHB2EGPVWUFL25UP5YAY4YXV2E7UKWVOYT7JGJLQ5MHA4XEPOXU2P",
     "decimals": 7,
     "delegation": true,
     "isWrappedAsset": true,
@@ -21,26 +21,6 @@
       "symbol":"gXLM",
       "decimals":7,
       "icon":"/icons/token/soroban.svg"
-    }
-  },
-  {
-    "name": "Stellar Community Fund",
-    "description": "The Stellar Community Fund (SCF) leverages community input to fund and support teams building on Stellar. SCF leverages Soroban Governor to support funding allocation for essential public goods in the Stellar ecosystem, visit the SCF Handbook to learn more.",
-    "logo": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png",
-    "address": "CAAZC6VH23GNNY4YVWULS7UJ5EQEMZJ4ZBH4UMU76KVTUJD7NXQPPBQM",
-    "voteTokenAddress": "CCO5IATSNMSXT67EGN5FGZJDY2YV7B4KAUKWQ5BWWVJF4SHTDJMRXUIG",
-    "decimals": 9,
-    "isWrappedAsset": false,
-    "supportedProposalTypes": [
-      "Calldata",
-      "Snapshot"
-    ],
-    "delegation": false,
-    "voteTokenMetadata": {
-      "name": "SCF",
-      "symbol": "SCF",
-      "decimals": 9,
-      "icon": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png"
     }
   }
 ]

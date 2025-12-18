@@ -11,6 +11,10 @@ import {
   xBullModule,
 } from "@creit.tech/stellar-wallets-kit/index";
 import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+import {
+  WalletConnectAllowedMethods,
+  WalletConnectModule,
+} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
 
 import {
   BondingVotesContract,
@@ -149,8 +153,8 @@ interface Network {
 }
 
 const walletKit: StellarWalletsKit = new StellarWalletsKit({
-  network: (process.env.NEXT_PUBLIC_PASSPHRASE ||
-    "Test SDF Network ; September 2015") as WalletNetwork,
+  network: (process.env.NEXT_PUBLIC_PASSPHRASE ??
+    WalletNetwork.TESTNET) as WalletNetwork,
   selectedWalletId: XBULL_ID,
   modules: [
     new xBullModule(),
@@ -159,6 +163,18 @@ const walletKit: StellarWalletsKit = new StellarWalletsKit({
     new AlbedoModule(),
     new HanaModule(),
     new LedgerModule(),
+    new WalletConnectModule({
+      url: process.env.NEXT_PUBLIC_WALLET_CONNECT_URL ?? "",
+      projectId: process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ?? "",
+      method: WalletConnectAllowedMethods.SIGN,
+      description: `Soroban Governor is a platform that supports participating in Governor based DAOs.`,
+      name: process.env.NEXT_PUBLIC_WALLET_CONNECT_NAME ?? "",
+      icons: [
+        "https://raw.githubusercontent.com/script3/soroban-governor-ui/refs/heads/main/public/sorobangov.svg",
+      ],
+      network: (process.env.NEXT_PUBLIC_PASSPHRASE ??
+        WalletNetwork.TESTNET) as WalletNetwork,
+    }),
     new HotWalletModule(),
   ],
 });
@@ -193,7 +209,12 @@ export const WalletProvider = ({ children = null as any }) => {
   const [walletAddress, setWalletAddress] = useState<string>("");
 
   useEffect(() => {
-    if (!connected && !!autoConnect && autoConnect !== "false") {
+    if (
+      !connected &&
+      !!autoConnect &&
+      autoConnect !== "false" &&
+      autoConnect !== "wallet_connect"
+    ) {
       // @dev: timeout ensures chrome has the ability to load extensions
       setTimeout(() => {
         walletKit.setWallet(autoConnect);

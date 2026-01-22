@@ -46,5 +46,25 @@
       "decimals":7,
       "icon":"https://uploads-ssl.webflow.com/607f603d2f412c67690368b8/60df683719cc056004ea932b_YBX%20token%20web%20bad.png"
     }
+  },
+  {
+    "name": "Stellar Community Fund",
+    "description": "The Stellar Community Fund (SCF) leverages community input to fund and support teams building on Stellar. SCF leverages Soroban Governor to support funding allocation for essential public goods in the Stellar ecosystem, visit the SCF Handbook to learn more.",
+    "logo": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png",
+    "address": "CD5BO2F56Q7WK37SWASI7J5J46H37ZWEERJWZFJLPQLP6Y6I76MQZCZO",
+    "voteTokenAddress": "CDHUZKXBNMAHTK62HDS6AVIZANVOABKRGY3SP3EUKYE634RFQ5KT5NPG",
+    "decimals": 9,
+    "isWrappedAsset": false,
+    "supportedProposalTypes": [
+      "Calldata",
+      "Snapshot"
+    ],
+    "delegation": false,
+    "voteTokenMetadata": {
+      "name": "SCF",
+      "symbol": "SCF",
+      "decimals": 9,
+      "icon": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png"
+    }
   }
 ]

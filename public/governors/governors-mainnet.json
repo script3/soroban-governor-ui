@@ -66,5 +66,30 @@
       "decimals": 9,
       "icon": "https://cdn.sanity.io/images/thmxviu9/public/7bbb944ce610aea39c8bbe71c9dd8e75017ad3a2-1649x1649.png"
     }
+  },
+  {
+    "name": "Soroban Domains",
+    "description": "Naming protocol for the Stellar Network.",
+    "logo": "https://app.sorobandomains.org/favicon.png",
+    "address": "CDXTT5PBPZ3ERZCC5S6NE2M3NMUNDKL4SJLT26DD3CYUWUWSUV5QPZRW",
+    "voteTokenAddress": "CC4Y5WAI5MF3HF77BAM4YOS3Y4NFZAW3FTRFS25GRLCRBGPDWPYN6VZ3",
+    "decimals": 7,
+    "isWrappedAsset": true,
+    "underlyingTokenAddress":"CCXXXCPNH73L4GVWU3PJ6GZF32724K6P3IY23OZEGO5QBJCJXY5TXQVW",
+    "underlyingTokenMetadata":{
+      "name":"PSD",
+      "symbol":"PSD",
+      "decimals": 7,
+      "domain":"sorobandomains.org",
+      "icon": "https://app.sorobandomains.org/favicon.png",
+      "issuer":"GCBCBKEKTVPUGEUELD636LQL45JOUFBRXMBQ7QJAMSLL6KCCFRYTQCVF"
+    },
+    "delegation": true,
+    "voteTokenMetadata":{
+      "name":"gPSD",
+      "symbol":"gPSD",
+      "decimals":7,
+      "icon":"https://app.sorobandomains.org/favicon.png"
+    }
   }
 ]
